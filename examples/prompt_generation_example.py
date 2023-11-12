@@ -1,4 +1,4 @@
-from basereduce.prompt_generation import LMPromptGenerator, LMName
+from basereduce.prompt_generation.prompt_generator import LMPromptGenerator, LMName
 
 
 if __name__ == "__main__":
