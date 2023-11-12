@@ -16,8 +16,7 @@ setup(
         'transformers',
         'diffusers',
         'tqdm',
-        'Pillow',  # Replace with actual dependencies of your library
-        # Add other dependencies as needed
+        'Pillow',
     ],
     python_requires='>=3.6',
     classifiers=[
