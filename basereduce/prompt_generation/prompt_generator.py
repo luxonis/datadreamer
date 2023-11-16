@@ -10,14 +10,20 @@ from typing import List, Optional, Union
 from abc import ABC, abstractmethod
 import enum
 
+
 # Enum for language model names
 class LMName(enum.Enum):
-    MISTRAL = 'mistralai/Mistral-7B-Instruct-v0.1'
+    MISTRAL = "mistralai/Mistral-7B-Instruct-v0.1"
+
 
 # Abstract base class for prompt generation
 class PromptGenerator(ABC):
-
-    def __init__(self, class_names: List[str], prompts_number: int = 10, seed: Optional[float] = None) -> None:
+    def __init__(
+        self,
+        class_names: List[str],
+        prompts_number: int = 10,
+        seed: Optional[float] = None,
+    ) -> None:
         self.class_names = class_names
         self.prompts_number = prompts_number
         self.seed = seed
@@ -32,15 +38,23 @@ class PromptGenerator(ABC):
 
 
 class LMPromptGenerator(PromptGenerator):
-
-    def __init__(self, class_names: List[str], model_name: LMName, prompts_number: int = 10, seed: Optional[float] = None, device: str = "cuda") -> None:
+    def __init__(
+        self,
+        class_names: List[str],
+        model_name: LMName,
+        prompts_number: int = 10,
+        seed: Optional[float] = None,
+        device: str = "cuda",
+    ) -> None:
         super().__init__(class_names, prompts_number, seed)
         self.model_name = model_name
         self.device = device
         self.model, self.tokenizer = self._init_lang_model()
 
     def _init_lang_model(self):
-        model = AutoModelForCausalLM.from_pretrained(self.model_name.value, torch_dtype=torch.float16).to(self.device)
+        model = AutoModelForCausalLM.from_pretrained(
+            self.model_name.value, torch_dtype=torch.float16
+        ).to(self.device)
         tokenizer = AutoTokenizer.from_pretrained(self.model_name.value)
         return model, tokenizer
 
@@ -62,19 +76,25 @@ class LMPromptGenerator(PromptGenerator):
 
     def _generate_prompt(self, prompt_text: str) -> str:
         encoded_input = self.tokenizer(prompt_text, return_tensors="pt").to(self.device)
-        generated_ids = self.model.generate(**encoded_input, max_new_tokens=100, do_sample=True)
-        decoded_prompt = self.tokenizer.decode(generated_ids[0], skip_special_tokens=True)
+        generated_ids = self.model.generate(
+            **encoded_input, max_new_tokens=100, do_sample=True
+        )
+        decoded_prompt = self.tokenizer.decode(
+            generated_ids[0], skip_special_tokens=True
+        )
         instructional_pattern = r"\[INST].*?\[/INST\]\s*"
         # Remove the instructional text to isolate the caption
-        decoded_prompt = re.sub(instructional_pattern, '', decoded_prompt).replace('\"', '').replace('\'', '')
+        decoded_prompt = (
+            re.sub(instructional_pattern, "", decoded_prompt)
+            .replace('"', "")
+            .replace("'", "")
+        )
 
         return decoded_prompt
 
     def _test_prompt(self, prompt: str, selected_objects: List[str]) -> bool:
         return all(obj.lower() in prompt.lower() for obj in selected_objects)
-    
 
     def save_prompts(self, prompts: List[str], save_path: str) -> None:
-        with open(save_path, 'w') as f:
+        with open(save_path, "w") as f:
             json.dump(prompts, f)
-
