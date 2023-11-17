@@ -6,14 +6,13 @@ import matplotlib.patches as patches
 # Initialize the OWLv2Annotator
 annotator = OWLv2Annotator(
     seed=42,
-    model_name=ModelName.OWL_V2, 
+    model_name=ModelName.OWL_V2,
     task_definition=TaskList.OBJECT_DETECTION,
-    device="cuda"  # Use "cuda" for GPU or "cpu" for CPU
+    device="cuda",  # Use "cuda" for GPU or "cpu" for CPU
 )
 
 # Load your image
-image = Image.open('../images/dalle-logo.png').convert("RGB")
-
+image = Image.open("../images/dalle-logo.png").convert("RGB")
 
 
 # Define prompts to guide the detection
@@ -40,9 +39,16 @@ for box, score, label in zip(boxes, scores, labels):
     # Each box is (x1, y1, x2, y2)
     x1, y1, x2, y2 = box
     width, height = x2 - x1, y2 - y1
-    rect = patches.Rectangle((x1, y1), width, height, linewidth=2, edgecolor='r', facecolor='none')
+    rect = patches.Rectangle(
+        (x1, y1), width, height, linewidth=2, edgecolor="r", facecolor="none"
+    )
     ax.add_patch(rect)
-    
-    plt.text(x1, y1, f'{prompts[label]} {score:.2f}', bbox=dict(facecolor='yellow', alpha=0.5))
+
+    plt.text(
+        x1,
+        y1,
+        f"{prompts[label]} {score:.2f}",
+        bbox=dict(facecolor="yellow", alpha=0.5),
+    )
 
 plt.show()
