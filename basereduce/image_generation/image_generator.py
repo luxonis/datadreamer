@@ -22,9 +22,9 @@ class ImageGenerator(ABC):
     def __init__(
         self,
         model_name: GenModelName,
-        prompt_prefix: Optional[str] = None,
-        prompt_suffix: Optional[str] = None,
-        negative_prompt: Optional[str] = None,
+        prompt_prefix: Optional[str] = "",
+        prompt_suffix: Optional[str] = ", hd, 8k, highly detailed",
+        negative_prompt: Optional[str] = "cartoon, blue skin, painting, scrispture, golden, illustration, worst quality, low quality, normal quality:2, unrealistic dream, low resolution,  static, sd character, low quality, low resolution, greyscale, monochrome, nose, cropped, lowres, jpeg artifacts, deformed iris, deformed pupils, bad eyes, semi-realistic worst quality, bad lips, deformed mouth, deformed face, deformed fingers, bad anatomy",
         seed: Optional[float] = None,
     ) -> None:
         self.seed = seed
