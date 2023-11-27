@@ -27,6 +27,8 @@ class PromptGenerator(ABC):
         self.class_names = class_names
         self.prompts_number = prompts_number
         self.seed = seed
+        if seed is not None:
+            self.set_seed(seed)
 
     @abstractmethod
     def generate_prompts(self) -> List[str]:
@@ -36,6 +38,12 @@ class PromptGenerator(ABC):
     def _test_prompt(self, prompt: str) -> bool:
         pass
 
+    @staticmethod
+    def set_seed(seed: int):
+        random.seed(seed)
+        torch.manual_seed(seed)
+        torch.cuda.manual_seed_all(seed)
+
 
 class LMPromptGenerator(PromptGenerator):
     def __init__(
@@ -43,7 +51,7 @@ class LMPromptGenerator(PromptGenerator):
         class_names: List[str],
         model_name: LMName,
         prompts_number: int = 10,
-        seed: Optional[float] = None,
+        seed: Optional[float] = 42,
         device: str = "cuda",
     ) -> None:
         super().__init__(class_names, prompts_number, seed)

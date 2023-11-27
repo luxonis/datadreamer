@@ -8,6 +8,7 @@ import torch
 from diffusers import DiffusionPipeline
 from compel import Compel, ReturnedEmbeddingsType
 from tqdm import tqdm
+import random
 
 
 # Enum for generative model names
@@ -20,17 +21,19 @@ class GenModelName(enum.Enum):
 class ImageGenerator(ABC):
     def __init__(
         self,
-        seed: float,
         model_name: GenModelName,
         prompt_prefix: Optional[str] = None,
         prompt_suffix: Optional[str] = None,
         negative_prompt: Optional[str] = None,
+        seed: Optional[float] = None,
     ) -> None:
         self.seed = seed
         self.model_name = model_name
         self.prompt_prefix = prompt_prefix
         self.prompt_suffix = prompt_suffix
         self.negative_prompt = negative_prompt
+        if seed is not None:
+            self.set_seed(seed)
 
     @abstractmethod
     def generate_images(self):
@@ -39,6 +42,12 @@ class ImageGenerator(ABC):
     @abstractmethod
     def _test_image(self):
         pass
+
+    @staticmethod
+    def set_seed(seed: int):
+        random.seed(seed)
+        torch.manual_seed(seed)
+        torch.cuda.manual_seed_all(seed)
 
 
 class StableDiffusionImageGenerator(ImageGenerator):
