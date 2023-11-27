@@ -45,3 +45,8 @@ class OWLv2Annotator(BaseAnnotator):
         )
 
         return boxes, scores, labels
+
+    def release(self, empty_cuda_cache=False) -> None:
+        self.model = self.model.to('cpu')
+        with torch.no_grad():
+            torch.cuda.empty_cache()

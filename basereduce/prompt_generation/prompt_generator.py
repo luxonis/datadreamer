@@ -106,3 +106,8 @@ class LMPromptGenerator(PromptGenerator):
     def save_prompts(self, prompts: List[str], save_path: str) -> None:
         with open(save_path, "w") as f:
             json.dump(prompts, f)
+
+    def release(self, empty_cuda_cache=False) -> None:
+        self.model = self.model.to('cpu')
+        with torch.no_grad():
+            torch.cuda.empty_cache()

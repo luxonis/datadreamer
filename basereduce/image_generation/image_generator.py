@@ -132,3 +132,8 @@ class StableDiffusionImageGenerator(ImageGenerator):
         # Implement the image testing logic here
         # For now, we return True to indicate a valid image
         return True
+
+    def release(self, empty_cuda_cache=False) -> None:
+        self.model = self.model.to('cpu')
+        with torch.no_grad():
+            torch.cuda.empty_cache()
