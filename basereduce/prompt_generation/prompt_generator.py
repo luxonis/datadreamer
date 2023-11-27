@@ -75,7 +75,7 @@ class LMPromptGenerator(PromptGenerator):
             while not correct_prompt_generated:
                 generated_prompt = self._generate_prompt(prompt_text)
                 if self._test_prompt(generated_prompt, selected_objects):
-                    prompts.append(generated_prompt)
+                    prompts.append((selected_objects, generated_prompt))
                     correct_prompt_generated = True
         return prompts
 
@@ -101,7 +101,7 @@ class LMPromptGenerator(PromptGenerator):
         return decoded_prompt
 
     def _test_prompt(self, prompt: str, selected_objects: List[str]) -> bool:
-        return all(obj.lower() in prompt.lower() for obj in selected_objects)
+        return all(obj.lower() in prompt.lower() for obj in selected_objects) and prompt.startswith("A photo of")
 
     def save_prompts(self, prompts: List[str], save_path: str) -> None:
         with open(save_path, "w") as f:
