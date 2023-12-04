@@ -9,11 +9,13 @@ from diffusers import DiffusionPipeline
 from compel import Compel, ReturnedEmbeddingsType
 from tqdm import tqdm
 import random
+from transformers import CLIPProcessor, CLIPModel
 
 
 # Enum for generative model names
 class GenModelName(enum.Enum):
     STABLE_DIFFUSION_XL = "stabilityai/stable-diffusion-xl-base-1.0"
+    STABLE_DIFFUSION_XL_TURBO = "stabilityai/sdxl-turbo"
     # Add more models as needed
 
 
@@ -128,12 +130,50 @@ class StableDiffusionImageGenerator(ImageGenerator):
 
         return image
 
-    def _test_image(self, image: Image.Image) -> bool:
-        # Implement the image testing logic here
-        # For now, we return True to indicate a valid image
-        return True
+    def release(self, empty_cuda_cache=False) -> None:
+        self.model = self.model.to('cpu')
+        if empty_cuda_cache:
+            with torch.no_grad():
+                torch.cuda.empty_cache()
+
+
+class StableDiffusionTurboImageGenerator(ImageGenerator):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.base = self._init_gen_model()
+
+
+    def _init_gen_model(self):
+        # Load the model and processor here
+        base = DiffusionPipeline.from_pretrained(
+            self.model_name.value,
+            torch_dtype=torch.float16,
+            variant="fp16",
+            use_safetensors=True,
+        )
+        base.enable_model_cpu_offload()
+
+        return base
+
+    def generate_images(self, prompts: List[str]) -> List[Image.Image]:
+        images = []
+        for prompt in tqdm(prompts):
+            images.append(self._generate_image(prompt))
+        return images
+
+    def _generate_image(self, prompt: str) -> Image.Image:
+        prompt = self.prompt_prefix + prompt + self.prompt_suffix
+
+        image = self.base(
+            prompt = prompt,
+            guidance_scale = 0.0,
+            num_inference_steps = 4,
+        ).images[0]
+
+        return image
 
     def release(self, empty_cuda_cache=False) -> None:
         self.model = self.model.to('cpu')
-        with torch.no_grad():
-            torch.cuda.empty_cache()
+        if empty_cuda_cache:
+            with torch.no_grad():
+                torch.cuda.empty_cache()
