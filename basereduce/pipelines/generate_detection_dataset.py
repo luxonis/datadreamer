@@ -7,113 +7,207 @@ import os
 import json
 import argparse
 
-from basereduce.prompt_generation import SimplePromptGenerator
-from basereduce.image_generation import StableDiffusionTurboImageGenerator
+from basereduce.prompt_generation import SimplePromptGenerator, LMPromptGenerator, SynonymGenerator
+from basereduce.image_generation import StableDiffusionTurboImageGenerator, StableDiffusionImageGenerator
 from basereduce.dataset_annotation import OWLv2Annotator
 
-# Argument parsing
-parser = argparse.ArgumentParser(description="Generate and annotate images.")
-parser.add_argument(
-    "--save_dir",
-    type=str,
-    default="generated_dataset",
-    help="Directory to save generated images and annotations",
-)
-parser.add_argument(
-    "--object_names",
-    type=str,
-    nargs="+",
-    default=["aeroplane", "bicycle", "bird", "boat", "person"],
-    help="List of object names for prompt generation",
-)
-parser.add_argument(
-    "--prompts_number", type=int, default=10, help="Number of prompts to generate"
-)
 
-args = parser.parse_args()
+prompt_generators = {
+    "simple": SimplePromptGenerator,
+    "lm": LMPromptGenerator
+}
 
-save_dir = args.save_dir
-object_names = args.object_names
-prompts_number = args.prompts_number
+image_generators = {
+    "sdxl": StableDiffusionImageGenerator,
+    "sdxl-turbo": StableDiffusionTurboImageGenerator
+}
 
-# Directories for saving images and bboxes
-bbox_dir = os.path.join(save_dir, "bboxes")
-if not os.path.exists(save_dir):
-    os.makedirs(save_dir)
-if not os.path.exists(bbox_dir):
-    os.makedirs(bbox_dir)
+annotators = {
+    "owlv2": OWLv2Annotator
+}
 
-# Prompt generator
-prompt_generator = SimplePromptGenerator(
-    class_names=object_names, prompts_number=prompts_number
-)
-generated_prompts = prompt_generator.generate_prompts()
-print(generated_prompts)
-
-# Image generation
-image_generator = StableDiffusionTurboImageGenerator(seed=42.0)
-prompts = [p[1] for p in generated_prompts]
-prompt_objects = [p[0] for p in generated_prompts]
-generated_images = list(image_generator.generate_images(prompts))
-image_generator.release(empty_cuda_cache=True)
-
-# Annotation
-annotator = OWLv2Annotator(seed=42, device="cuda")
-boxes_list = []
-scores_list = []
-labels_list = []
-
-for i, (image, prompt_objs) in enumerate(zip(generated_images, prompt_objects)):
-    boxes, scores, labels = annotator.annotate(
-        image, prompt_objs, conf_threshold=0.2, use_tta=True
+def parse_args():
+    # Argument parsing
+    parser = argparse.ArgumentParser(description="Generate and annotate images.")
+    parser.add_argument(
+        "--save_dir",
+        type=str,
+        default="generated_dataset",
+        help="Directory to save generated images and annotations",
     )
-    # Convert to numpy arrays
-    boxes = boxes.detach().cpu().numpy() if not isinstance(boxes, np.ndarray) else boxes
-    scores = (
-        scores.detach().cpu().numpy() if not isinstance(scores, np.ndarray) else scores
+    parser.add_argument(
+        "--class_names",
+        type=str,
+        nargs="+",
+        default=["aeroplane", "bicycle", "bird", "boat", "person"],
+        help="List of object names for prompt generation",
     )
-    labels = labels if isinstance(labels, np.ndarray) else labels.detach().cpu().numpy()
+    parser.add_argument(
+        "--prompts_number", type=int, default=10, help="Number of prompts to generate"
+    )
 
-    boxes_list.append(boxes)
-    scores_list.append(scores)
-    labels_list.append(labels)
+    parser.add_argument(
+        "--num_objects_range",
+        type=int,
+        nargs="+",
+        default=[1, 3],
+        help="Range of number of objects in a prompt",
+    )
 
-    # Save bbox visualizations
-    fig, ax = plt.subplots(1)
-    ax.imshow(image)
-    for box, score, label in zip(boxes, scores, labels):
-        x1, y1, x2, y2 = box
-        rect = patches.Rectangle(
-            (x1, y1), x2 - x1, y2 - y1, linewidth=2, edgecolor="r", facecolor="none"
+    parser.add_argument(
+        "--prompt_generator",
+        type=str,
+        default="simple",
+        choices=["simple", "lm"],
+        help="Prompt generator to use: simple or language model"
+    )
+    parser.add_argument(
+        "--image_generator",
+        type=str,
+        default="sdxl-turbo",
+        choices=["sdxl", "sdxl-turbo"],
+        help="Image generator to use",
+    )
+    parser.add_argument(
+        "--image_annotator",
+        type=str,
+        default="owlv2",
+        choices=["owlv2"],
+        help="Image annotator to use",
+    )
+
+    parser.add_argument(
+        "--conf_threshold",
+        type=float,
+        default=0.1,
+        help="Confidence threshold for object detection",
+    )
+
+    parser.add_argument(
+        "--use_tta",
+        type=bool,
+        default=True,
+        help="Whether to use test time augmentation for object detection",
+    )
+
+    parser.add_argument(
+        "--device",
+        type=str,
+        default="cuda",
+        choices=["cuda", "cpu"],
+        help="Device to use",
+    )
+
+    parser.add_argument(
+        "--seed", type=int, default=42, help="Random seed for image generation"
+    )
+
+    return parser.parse_args()
+
+def save_annotations_to_json(boxes_list, labels_list, class_names, save_dir, file_name="annotations.json"):
+    # Convert numpy arrays to lists
+    boxes_list = [sub.tolist() for sub in boxes_list]
+    labels_list = [sub.tolist() for sub in labels_list]
+
+    # Combine all annotations into a single dictionary
+    annotations = {
+        "boxes": boxes_list,
+        "labels": labels_list,
+        "class_names": class_names
+    }
+
+    # Save to JSON file
+    with open(os.path.join(save_dir, file_name), 'w') as f:
+        json.dump(annotations, f, indent=4)
+
+def main():
+    args = parse_args()
+
+    save_dir = args.save_dir
+
+    # Directories for saving images and bboxes
+    bbox_dir = os.path.join(save_dir, "bboxes")
+    if not os.path.exists(save_dir):
+        os.makedirs(save_dir)
+    if not os.path.exists(bbox_dir):
+        os.makedirs(bbox_dir)
+
+    # Prompt generation
+    prompt_generator_class = prompt_generators[args.prompt_generator]
+    prompt_generator = prompt_generator_class(
+        class_names=args.class_names,
+        prompts_number=args.prompts_number,
+        num_objects_range=args.num_objects_range,
+        seed=args.seed,
+    )
+    generated_prompts = prompt_generator.generate_prompts()
+    prompt_generator.save_prompts(generated_prompts, os.path.join(save_dir, "prompts.json"))
+    prompt_generator.release(empty_cuda_cache=True)
+
+    # Image generation
+    image_generator_class = image_generators[args.image_generator]
+    image_generator = image_generator_class(seed=args.seed)
+
+    prompts = [p[1] for p in generated_prompts]
+    prompt_objects = [p[0] for p in generated_prompts]
+    generated_images = list(image_generator.generate_images(prompts))
+    image_generator.release(empty_cuda_cache=True)
+
+    # Annotation
+    annotator_class = annotators[args.image_annotator]
+    annotator = annotator_class(device=args.device)
+
+    boxes_list = []
+    scores_list = []
+    labels_list = []
+
+    for i, (image, prompt_objs) in enumerate(zip(generated_images, prompt_objects)):
+        boxes, scores, local_labels = annotator.annotate(
+            image, prompt_objs, conf_threshold=args.conf_threshold, use_tta = args.use_tta
         )
-        ax.add_patch(rect)
-        label_text = prompt_objs[label] if isinstance(label, np.int64) else label
-        plt.text(
-            x1,
-            y1,
-            f"{label_text} {score:.2f}",
-            bbox=dict(facecolor="yellow", alpha=0.5),
+        # Convert to numpy arrays
+        boxes = boxes.detach().cpu().numpy() if not isinstance(boxes, np.ndarray) else boxes
+        scores = (
+            scores.detach().cpu().numpy() if not isinstance(scores, np.ndarray) else scores
         )
+        local_labels = local_labels if isinstance(local_labels, np.ndarray) else local_labels.detach().cpu().numpy()
 
-    plt.savefig(os.path.join(bbox_dir, f"bbox_{i}.jpg"))
-    plt.close()
-
-# Save images
-for i, img in enumerate(generated_images):
-    img.save(os.path.join(save_dir, f"image_{i}.jpg"))
+        boxes_list.append(boxes)
+        scores_list.append(scores)
 
 
-# Function to save data to JSON
-def save_to_json(data, filename):
-    with open(filename, "w") as file:
-        json.dump(data, file)
+        labels = []
+        # Save bbox visualizations
+        fig, ax = plt.subplots(1)
+        ax.imshow(image)
+        for box, score, label in zip(boxes, scores, local_labels):
+            labels.append(args.class_names.index(prompt_objs[label]) if isinstance(label, np.int64) else label)
+            x1, y1, x2, y2 = box
+            rect = patches.Rectangle(
+                (x1, y1), x2 - x1, y2 - y1, linewidth=2, edgecolor="r", facecolor="none"
+            )
+            ax.add_patch(rect)
+            label_text = prompt_objs[label] if isinstance(label, np.int64) else label
+            plt.text(
+                x1,
+                y1,
+                f"{label_text} {score:.2f}",
+                bbox=dict(facecolor="yellow", alpha=0.5),
+            )
+
+        labels_list.append(np.array(labels))
+
+        plt.savefig(os.path.join(bbox_dir, f"bbox_{i}.jpg"))
+        plt.close()
+
+    # Save images
+    for i, img in enumerate(generated_images):
+        img.save(os.path.join(save_dir, f"image_{i}.jpg"))
+
+    # Save annotations as JSON files
+    save_annotations_to_json(boxes_list, labels_list, args.class_names, save_dir)
 
 
-# Save annotations as JSON files
-save_to_json(
-    [sub.tolist() for sub in boxes_list], os.path.join(save_dir, "boxes_list.json")
-)
-save_to_json(
-    [sub.tolist() for sub in labels_list], os.path.join(save_dir, "labels_list.json")
-)
-save_to_json(object_names, os.path.join(save_dir, "object_names.json"))
+if __name__ == "__main__":
+    main()
+    
