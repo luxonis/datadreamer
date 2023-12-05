@@ -91,6 +91,13 @@ def parse_args():
     )
 
     parser.add_argument(
+        "--enhance_class_names",
+        type=bool,
+        default=False,
+        help="Whether to enhance class names with synonyms",
+    )
+
+    parser.add_argument(
         "--device",
         type=str,
         default="cuda",
@@ -123,7 +130,7 @@ def main():
     save_dir = args.save_dir
 
     # Directories for saving images and bboxes
-    bbox_dir = os.path.join(save_dir, "bboxes")
+    bbox_dir = os.path.join(save_dir, "bboxes_visualization")
     if not os.path.exists(save_dir):
         os.makedirs(save_dir)
     if not os.path.exists(bbox_dir):
@@ -168,6 +175,14 @@ def main():
     boxes_list = []
     scores_list = []
     labels_list = []
+
+    if args.enhance_class_names:
+        synonym_generator = SynonymGenerator()
+        synonym_dict = synonym_generator.generate_synonyms_for_list(args.class_names)
+        synonym_generator.release(empty_cuda_cache=True)
+        class_map = {value: key for key, value in synonym_dict.items()}
+        for key, _ in synonym_dict.items():
+            class_map[key] = key
 
     for i, (image_path, prompt_objs) in enumerate(zip(image_paths, prompt_objects)):
         image = Image.open(image_path)
