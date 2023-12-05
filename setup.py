@@ -13,7 +13,7 @@ setup(
     packages=find_packages(exclude=("tests", "docs")),
     entry_points={
         'console_scripts': [
-            'basereduce=basereduce.pipelines.generate_detection_dataset:main',
+            'basereduce=basereduce.pipelines.generate_dataset_from_scratch:main',
         ],
     },
     install_requires=[

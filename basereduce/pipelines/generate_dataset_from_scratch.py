@@ -35,6 +35,15 @@ def parse_args():
         default="generated_dataset",
         help="Directory to save generated images and annotations",
     )
+
+    parser.add_argument(
+        "--task",
+        type=str,
+        default="detection",
+        choices=["detection", "classification"],
+        help="Task to generate data for",
+    )
+
     parser.add_argument(
         "--class_names",
         type=str,
@@ -111,11 +120,23 @@ def parse_args():
 
     return parser.parse_args()
 
-def save_annotations_to_json(image_paths, boxes_list, labels_list, class_names, save_dir, file_name="annotations.json"):
+def save_det_annotations_to_json(image_paths, boxes_list, labels_list, class_names, save_dir, file_name="annotations.json"):
     annotations = {}
     for image_path, bboxes, labels_list in zip(image_paths, boxes_list, labels_list):
         annotations[image_path] = {
             "boxes": bboxes.tolist(),
+            "labels": labels_list.tolist(),
+        }
+    annotations["class_names"] = class_names
+
+    # Save to JSON file
+    with open(os.path.join(save_dir, file_name), 'w') as f:
+        json.dump(annotations, f, indent=4)
+
+def save_clf_annotations_to_json(image_paths, labels_list, class_names, save_dir, file_name="annotations.json"):
+    annotations = {}
+    for image_path, labels_list in zip(image_paths, labels_list):
+        annotations[image_path] = {
             "labels": labels_list.tolist(),
         }
     annotations["class_names"] = class_names
@@ -168,66 +189,77 @@ def main():
     #generated_images = list(image_generator.generate_images(prompts))
     image_generator.release(empty_cuda_cache=True)
 
-    # Annotation
-    annotator_class = annotators[args.image_annotator]
-    annotator = annotator_class(device=args.device)
+    if args.task == "classification":
+        # Classification annotation
+        labels_list = []
+        for i, (image_path, prompt_objs) in enumerate(zip(image_paths, prompt_objects)):
+            labels = []
+            for obj in prompt_objs:
+                labels.append(args.class_names.index(obj))
+            labels_list.append(np.unique(labels))
 
-    boxes_list = []
-    scores_list = []
-    labels_list = []
+        save_clf_annotations_to_json(image_paths, labels_list, args.class_names, save_dir)
+    else:
+        # Annotation
+        annotator_class = annotators[args.image_annotator]
+        annotator = annotator_class(device=args.device)
 
-    if args.enhance_class_names:
-        synonym_generator = SynonymGenerator()
-        synonym_dict = synonym_generator.generate_synonyms_for_list(args.class_names)
-        synonym_generator.release(empty_cuda_cache=True)
-        class_map = {value: key for key, value in synonym_dict.items()}
-        for key, _ in synonym_dict.items():
-            class_map[key] = key
+        boxes_list = []
+        scores_list = []
+        labels_list = []
 
-    for i, (image_path, prompt_objs) in enumerate(zip(image_paths, prompt_objects)):
-        image = Image.open(image_path)
-        boxes, scores, local_labels = annotator.annotate(
-            image, prompt_objs, conf_threshold=args.conf_threshold, use_tta = args.use_tta
-        )
-        # Convert to numpy arrays
-        boxes = boxes.detach().cpu().numpy() if not isinstance(boxes, np.ndarray) else boxes
-        scores = (
-            scores.detach().cpu().numpy() if not isinstance(scores, np.ndarray) else scores
-        )
-        local_labels = local_labels if isinstance(local_labels, np.ndarray) else local_labels.detach().cpu().numpy()
+        if args.enhance_class_names:
+            synonym_generator = SynonymGenerator()
+            synonym_dict = synonym_generator.generate_synonyms_for_list(args.class_names)
+            synonym_generator.release(empty_cuda_cache=True)
+            class_map = {value: key for key, value in synonym_dict.items()}
+            for key, _ in synonym_dict.items():
+                class_map[key] = key
 
-        boxes_list.append(boxes)
-        scores_list.append(scores)
-
-
-        labels = []
-        # Save bbox visualizations
-        fig, ax = plt.subplots(1)
-        ax.imshow(image)
-        for box, score, label in zip(boxes, scores, local_labels):
-            labels.append(args.class_names.index(prompt_objs[label]) if isinstance(label, np.int64) else label)
-            x1, y1, x2, y2 = box
-            rect = patches.Rectangle(
-                (x1, y1), x2 - x1, y2 - y1, linewidth=2, edgecolor="r", facecolor="none"
+        for i, (image_path, prompt_objs) in enumerate(zip(image_paths, prompt_objects)):
+            image = Image.open(image_path)
+            boxes, scores, local_labels = annotator.annotate(
+                image, prompt_objs, conf_threshold=args.conf_threshold, use_tta = args.use_tta
             )
-            ax.add_patch(rect)
-            label_text = prompt_objs[label] if isinstance(label, np.int64) else label
-            plt.text(
-                x1,
-                y1,
-                f"{label_text} {score:.2f}",
-                bbox=dict(facecolor="yellow", alpha=0.5),
+            # Convert to numpy arrays
+            boxes = boxes.detach().cpu().numpy() if not isinstance(boxes, np.ndarray) else boxes
+            scores = (
+                scores.detach().cpu().numpy() if not isinstance(scores, np.ndarray) else scores
             )
-            # Add prompt text as title
-            plt.title(generated_prompts[i][1])
+            local_labels = local_labels if isinstance(local_labels, np.ndarray) else local_labels.detach().cpu().numpy()
 
-        labels_list.append(np.array(labels))
+            boxes_list.append(boxes)
+            scores_list.append(scores)
 
-        plt.savefig(os.path.join(bbox_dir, f"bbox_{i}.jpg"))
-        plt.close()
 
-    # Save annotations as JSON files
-    save_annotations_to_json(image_paths, boxes_list, labels_list, args.class_names, save_dir)
+            labels = []
+            # Save bbox visualizations
+            fig, ax = plt.subplots(1)
+            ax.imshow(image)
+            for box, score, label in zip(boxes, scores, local_labels):
+                labels.append(args.class_names.index(prompt_objs[label]) if isinstance(label, np.int64) else label)
+                x1, y1, x2, y2 = box
+                rect = patches.Rectangle(
+                    (x1, y1), x2 - x1, y2 - y1, linewidth=2, edgecolor="r", facecolor="none"
+                )
+                ax.add_patch(rect)
+                label_text = prompt_objs[label] if isinstance(label, np.int64) else label
+                plt.text(
+                    x1,
+                    y1,
+                    f"{label_text} {score:.2f}",
+                    bbox=dict(facecolor="yellow", alpha=0.5),
+                )
+                # Add prompt text as title
+                plt.title(generated_prompts[i][1])
+
+            labels_list.append(np.array(labels))
+
+            plt.savefig(os.path.join(bbox_dir, f"bbox_{i}.jpg"))
+            plt.close()
+
+        # Save annotations as JSON files
+        save_det_annotations_to_json(image_paths, boxes_list, labels_list, args.class_names, save_dir)
 
 
 if __name__ == "__main__":
