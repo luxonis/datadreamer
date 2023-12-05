@@ -49,13 +49,18 @@ class StableDiffusionImageGenerator(ImageGenerator):
         )
         return compel, compel_refiner
 
-    def generate_image(self, prompt: str, negative_prompt: str, prompt_objects: Optional[List[str]] = None) -> Image.Image:
+    def generate_image(
+        self,
+        prompt: str,
+        negative_prompt: str,
+        prompt_objects: Optional[List[str]] = None,
+    ) -> Image.Image:
         if prompt_objects is not None:
             for obj in prompt_objects:
                 prompt = prompt.replace(obj, f"({obj})1.5", 1)
 
         print(prompt)
-        
+
         conditioning, pooled = self.base_processor(prompt)
         conditioning_neg, pooled_neg = self.base_processor(negative_prompt)
 
@@ -83,10 +88,10 @@ class StableDiffusionImageGenerator(ImageGenerator):
         ).images[0]
 
         return image
-    
+
     def release(self, empty_cuda_cache=False) -> None:
-        self.base = self.base.to('cpu')
-        self.refiner = self.refiner.to('cpu')
+        self.base = self.base.to("cpu")
+        self.refiner = self.refiner.to("cpu")
         if empty_cuda_cache:
             with torch.no_grad():
                 torch.cuda.empty_cache()

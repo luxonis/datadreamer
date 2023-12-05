@@ -1,5 +1,3 @@
-
-
 from typing import List, Optional
 import random
 import torch
@@ -10,6 +8,7 @@ import re
 from typing import List, Optional
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
+
 
 class SynonymGenerator:
     def __init__(
@@ -25,12 +24,11 @@ class SynonymGenerator:
 
     def _init_lang_model(self):
         model = AutoModelForCausalLM.from_pretrained(
-            "mistralai/Mistral-7B-Instruct-v0.1",
-            torch_dtype=torch.float16
+            "mistralai/Mistral-7B-Instruct-v0.1", torch_dtype=torch.float16
         ).to(self.device)
         tokenizer = AutoTokenizer.from_pretrained(self.model_name)
         return model, tokenizer
-    
+
     def generate_synonyms_for_list(self, words: List[str]) -> dict:
         synonyms_dict = {}
         for word in words:
@@ -72,25 +70,31 @@ class SynonymGenerator:
 
     def _extract_synonyms(self, text: str) -> List[str]:
         # Assuming the output is in the format "Synonyms: word1, word2, word3"
-        #synonyms_text = text.split(':')[-1]  # Get the part after "Synonyms:"
-        synonyms = [word.strip() for word in text.split(',')]  # Split and strip each synonym
-        return synonyms[:self.synonyms_number]
+        # synonyms_text = text.split(':')[-1]  # Get the part after "Synonyms:"
+        synonyms = [
+            word.strip() for word in text.split(",")
+        ]  # Split and strip each synonym
+        return synonyms[: self.synonyms_number]
 
     def save_synonyms(self, synonyms: List[str], save_path: str) -> None:
         with open(save_path, "w") as f:
             json.dump(synonyms, f)
 
     def release(self, empty_cuda_cache=False) -> None:
-        self.model = self.model.to('cpu')
+        self.model = self.model.to("cpu")
         if empty_cuda_cache:
             with torch.no_grad():
                 torch.cuda.empty_cache()
 
+
 if __name__ == "__main__":
     # Example usage
-    generator = SynonymGenerator("mistralai/Mistral-7B-Instruct-v0.1", synonyms_number=3)
-    synonyms = generator.generate_synonyms_for_list(["astronaut", "cat", "dog", "person", "horse"])
+    generator = SynonymGenerator(
+        "mistralai/Mistral-7B-Instruct-v0.1", synonyms_number=3
+    )
+    synonyms = generator.generate_synonyms_for_list(
+        ["astronaut", "cat", "dog", "person", "horse"]
+    )
     print(synonyms)
-    #generator.save_synonyms(synonyms, "synonyms.json")
-    #generator.release()
-
+    # generator.save_synonyms(synonyms, "synonyms.json")
+    # generator.release()

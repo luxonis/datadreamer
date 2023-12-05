@@ -23,8 +23,7 @@ class LMPromptGenerator(PromptGenerator):
 
     def _init_lang_model(self):
         model = AutoModelForCausalLM.from_pretrained(
-            "mistralai/Mistral-7B-Instruct-v0.1",
-            torch_dtype=torch.float16
+            "mistralai/Mistral-7B-Instruct-v0.1", torch_dtype=torch.float16
         ).to(self.device)
         tokenizer = AutoTokenizer.from_pretrained("mistralai/Mistral-7B-Instruct-v0.1")
         return model, tokenizer
@@ -32,7 +31,9 @@ class LMPromptGenerator(PromptGenerator):
     def generate_prompts(self) -> List[str]:
         prompts = []
         for _ in tqdm(range(self.prompts_number)):
-            selected_objects = random.sample(self.class_names, random.randint(*self.num_objects_range))
+            selected_objects = random.sample(
+                self.class_names, random.randint(*self.num_objects_range)
+            )
             prompt_text = self._create_lm_prompt_text(selected_objects)
             correct_prompt_generated = False
             while not correct_prompt_generated:
@@ -64,19 +65,20 @@ class LMPromptGenerator(PromptGenerator):
         return decoded_prompt
 
     def _test_prompt(self, prompt: str, selected_objects: List[str]) -> bool:
-        return all(obj.lower() in prompt.lower() for obj in selected_objects) and prompt.startswith("A photo of")
+        return all(
+            obj.lower() in prompt.lower() for obj in selected_objects
+        ) and prompt.startswith("A photo of")
 
     def release(self, empty_cuda_cache=False) -> None:
-        self.model = self.model.to('cpu')
+        self.model = self.model.to("cpu")
         if empty_cuda_cache:
             with torch.no_grad():
                 torch.cuda.empty_cache()
 
+
 if __name__ == "__main__":
     object_names = ["aeroplane", "bicycle", "bird", "boat"]
-    prompt_generator = LMPromptGenerator(
-        class_names=object_names
-    )
+    prompt_generator = LMPromptGenerator(class_names=object_names)
     generated_prompts = prompt_generator.generate_prompts()
     for prompt in generated_prompts:
         print(prompt)

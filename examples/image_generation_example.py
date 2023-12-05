@@ -1,5 +1,8 @@
 from basereduce.image_generation.clip_image_tester import ClipImageTester
-from basereduce.image_generation import StableDiffusionImageGenerator, StableDiffusionTurboImageGenerator
+from basereduce.image_generation import (
+    StableDiffusionImageGenerator,
+    StableDiffusionTurboImageGenerator,
+)
 import matplotlib.pyplot as plt
 
 # Define some prompts for image generation

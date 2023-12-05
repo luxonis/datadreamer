@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from typing import List, Generic, TypeVar
 import enum
 
+
 # Enum for different labeling tasks
 class TaskList(enum.Enum):
     CLASSIFICATION = "classification"

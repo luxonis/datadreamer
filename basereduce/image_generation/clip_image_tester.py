@@ -3,12 +3,15 @@ from PIL import Image
 import torch
 from transformers import CLIPModel, CLIPProcessor
 
-class ClipImageTester():
+
+class ClipImageTester:
     def __init__(self) -> None:
         # Initialize CLIP model and processor
         self.clip = CLIPModel.from_pretrained("openai/clip-vit-base-patch32")
-        self.clip_processor = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32")
-    
+        self.clip_processor = CLIPProcessor.from_pretrained(
+            "openai/clip-vit-base-patch32"
+        )
+
     def test_image(self, image: Image.Image, objects: List[str], conf_threshold=0.05):
         """
         Tests the generated image against a set of objects using the CLIP model.
@@ -19,7 +22,9 @@ class ClipImageTester():
         :return: True if the image passes the test, False otherwise. Also returns the probabilities of the objects.
         """
         # Process the inputs for the CLIP model
-        inputs = self.clip_processor(text=objects, images=image, return_tensors="pt", padding=True)
+        inputs = self.clip_processor(
+            text=objects, images=image, return_tensors="pt", padding=True
+        )
 
         # Get similarity scores from the CLIP model
         outputs = self.clip(**inputs)

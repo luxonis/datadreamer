@@ -6,6 +6,7 @@ from typing import List, Optional
 
 from abc import ABC, abstractmethod
 
+
 # Abstract base class for prompt generation
 class PromptGenerator(ABC):
     def __init__(
@@ -13,7 +14,7 @@ class PromptGenerator(ABC):
         class_names: List[str],
         prompts_number: int = 10,
         num_objects_range: Optional[List[int]] = [1, 3],
-        seed: Optional[float] = None
+        seed: Optional[float] = None,
     ) -> None:
         self.class_names = class_names
         self.prompts_number = prompts_number

@@ -29,7 +29,6 @@ class OWLv2Annotator(BaseAnnotator):
         )
 
     def annotate(self, image, prompts, conf_threshold=0.1, use_tta=False):
-
         if use_tta:
             augmented_images = apply_tta(image)
         else:
@@ -42,13 +41,21 @@ class OWLv2Annotator(BaseAnnotator):
         target_sizes = torch.Tensor([augmented_images[0].size[::-1]]).to(self.device)
 
         for aug_image in augmented_images:
-            inputs = self.processor(text=prompts, images=aug_image, return_tensors="pt").to(self.device)
+            inputs = self.processor(
+                text=prompts, images=aug_image, return_tensors="pt"
+            ).to(self.device)
             with torch.no_grad():
                 outputs = self.model(**inputs)
-            #print(outputs)
-            preds = self.processor.post_process_object_detection(outputs=outputs, target_sizes=target_sizes, threshold=conf_threshold)
-            
-            boxes, scores, labels = preds[0]["boxes"], preds[0]["scores"], preds[0]["labels"]
+            # print(outputs)
+            preds = self.processor.post_process_object_detection(
+                outputs=outputs, target_sizes=target_sizes, threshold=conf_threshold
+            )
+
+            boxes, scores, labels = (
+                preds[0]["boxes"],
+                preds[0]["scores"],
+                preds[0]["labels"],
+            )
             # Flip boxes back if using TTA
             if use_tta and len(all_boxes) == 1:
                 boxes[:, [0, 2]] = image.size[0] - boxes[:, [2, 0]]
@@ -73,6 +80,6 @@ class OWLv2Annotator(BaseAnnotator):
         return final_boxes, final_scores, final_labels
 
     def release(self, empty_cuda_cache=False) -> None:
-        self.model = self.model.to('cpu')
+        self.model = self.model.to("cpu")
         with torch.no_grad():
             torch.cuda.empty_cache()

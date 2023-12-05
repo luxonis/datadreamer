@@ -14,9 +14,8 @@ annotator = OWLv2Annotator(
 image = Image.open("generated_images/Figure_1.png").convert("RGB")
 
 
-
 # Define prompts to guide the detection
-#prompts = ["Eye", "Text"]
+# prompts = ["Eye", "Text"]
 
 class_map = {
     "Austronaut": "astronaut",
@@ -38,7 +37,9 @@ class_map = {
 prompts = list(class_map.keys())
 
 # Perform object detection
-boxes, scores, labels = annotator.annotate(image, prompts, conf_threshold=0.2, use_tta=True)
+boxes, scores, labels = annotator.annotate(
+    image, prompts, conf_threshold=0.2, use_tta=True
+)
 
 # Convert to numpy arrays
 if not isinstance(boxes, np.ndarray):
