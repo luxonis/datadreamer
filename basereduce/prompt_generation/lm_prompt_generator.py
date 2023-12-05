@@ -22,15 +22,17 @@ class LMPromptGenerator(PromptGenerator):
         self.model, self.tokenizer = self._init_lang_model()
 
     def _init_lang_model(self):
+        print("Loading language model...")
         model = AutoModelForCausalLM.from_pretrained(
             "mistralai/Mistral-7B-Instruct-v0.1", torch_dtype=torch.float16
         ).to(self.device)
         tokenizer = AutoTokenizer.from_pretrained("mistralai/Mistral-7B-Instruct-v0.1")
+        print("Done!")
         return model, tokenizer
 
     def generate_prompts(self) -> List[str]:
         prompts = []
-        for _ in tqdm(range(self.prompts_number)):
+        for _ in tqdm(range(self.prompts_number), desc="Generating prompts"):
             selected_objects = random.sample(
                 self.class_names, random.randint(*self.num_objects_range)
             )
@@ -49,7 +51,7 @@ class LMPromptGenerator(PromptGenerator):
     def generate_prompt(self, prompt_text: str) -> str:
         encoded_input = self.tokenizer(prompt_text, return_tensors="pt").to(self.device)
         generated_ids = self.model.generate(
-            **encoded_input, max_new_tokens=100, do_sample=True
+            **encoded_input, max_new_tokens=100, do_sample=True, pad_token_id=self.tokenizer.eos_token_id
         )
         decoded_prompt = self.tokenizer.decode(
             generated_ids[0], skip_special_tokens=True
