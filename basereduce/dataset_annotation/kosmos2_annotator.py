@@ -3,7 +3,6 @@ import torchvision.ops as ops
 import numpy as np
 
 from basereduce.dataset_annotation.image_annotator import BaseAnnotator
-from basereduce.dataset_annotation.image_annotator import ModelName, TaskList
 from transformers import AutoProcessor, Kosmos2ForConditionalGeneration
 from basereduce.dataset_annotation.utils import apply_tta
 
@@ -12,11 +11,9 @@ class Kosmos2Annotator(BaseAnnotator):
     def __init__(
         self,
         seed: float,
-        model_name: ModelName,
-        task_definition: TaskList,
         device: str = "cuda",
     ) -> None:
-        super().__init__(seed, model_name, task_definition)
+        super().__init__(seed)
         self.model = self._init_model()
         self.processor = self._init_processor()
         self.device = device

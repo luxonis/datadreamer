@@ -2,7 +2,6 @@ import torch
 import torchvision.ops as ops
 
 from basereduce.dataset_annotation.image_annotator import BaseAnnotator
-from basereduce.dataset_annotation.image_annotator import ModelName, TaskList
 from transformers import Owlv2Processor, Owlv2ForObjectDetection
 from basereduce.dataset_annotation.utils import apply_tta
 
@@ -11,11 +10,9 @@ class OWLv2Annotator(BaseAnnotator):
     def __init__(
         self,
         seed: float,
-        model_name: ModelName,
-        task_definition: TaskList,
         device: str = "cuda",
     ) -> None:
-        super().__init__(seed, model_name, task_definition)
+        super().__init__(seed)
         self.model = self._init_model()
         self.processor = self._init_processor()
         self.device = device
