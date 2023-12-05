@@ -1,34 +1,47 @@
-from basereduce.image_generation.image_generator import (
+from basereduce.image_generation.clip_image_tester import ClipImageTester
+from basereduce.image_generation import (
     StableDiffusionImageGenerator,
-    GenModelName,
+    StableDiffusionTurboImageGenerator,
 )
 import matplotlib.pyplot as plt
 
 # Define some prompts for image generation
 prompts = [
     "a futuristic city skyline at sunset",
-    "a portrait of a robotic dog in a meadow",
-    "an astronaut riding a horse on the moon",
+    "a robotic dog in a meadow",
+    "an army of astronauts riding a horse on the moon",
+]
+
+prompt_objects = [
+    ["city", "skyline"],
+    ["robotic dog"],
+    ["astronauts", "horse", "moon"],
 ]
 
 # Initialize the image generator with the required parameters
-image_generator = StableDiffusionImageGenerator(
+image_generator = StableDiffusionTurboImageGenerator(
+    prompt_prefix="A photo of ",
     seed=42.0,
-    model_name=GenModelName.STABLE_DIFFUSION_XL,
-    prompt_prefix="A high-resolution image of ",
-    prompt_suffix=" with intricate details.",
-    negative_prompt="a low-quality image, blurry details, incorrect anatomy",
 )
 
-# Generate images using the list of prompts
-generated_images = image_generator.generate_images(prompts)
+# Generate images using the list of prompts assuming yield is used in the generator
+generated_images = list(image_generator.generate_images(prompts, prompt_objects))
+
+# Release the model and empty the CUDA cache
+image_generator.release(empty_cuda_cache=True)
+
+# Initialize the image tester
+image_tester = ClipImageTester()
+
 
 # Optionally test each image and do something with the results
-for img in generated_images:
-    if image_generator._test_image(img):
-        plt.imshow(img)
-        plt.axis("off")  # Hide the axis
-        plt.show()
-    else:
-        # Handle the case for invalid images
-        print("Generated image did not pass the test.")
+for img, prompt, prompt_objs in zip(generated_images, prompts, prompt_objects):
+    # Test the image against the prompt objects
+    passed, probs = image_tester.test_image(img, prompt_objs)
+    print(f"Image passed test for prompt '{prompt}': {passed}")
+    print(f"Prompt objects: {prompt_objs}")
+    print(f"Object probabilities: {probs}")
+
+    # Show the image
+    plt.imshow(img)
+    plt.show()

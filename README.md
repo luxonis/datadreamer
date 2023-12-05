@@ -39,6 +39,40 @@ pip install -e .
 
 ## Usage
 
+### Overview
+The pipelines/generate_detection_dataset.py script is designed to generate and annotate images based on specified object names. This tool uses advanced models to create images and annotate them with bounding boxes for the objects of interest.
+
+### Requirements
+Python 3.x
+Relevant Python libraries: matplotlib, torch, PIL, numpy, argparse
+Pre-installed basereduce package with its submodules: prompt_generation, image_generation, dataset_annotation
+
+### Usage
+To use the script, run the following command in your terminal:
+
+```bash
+python generate_images.py --save_dir <directory> --object_names <objects> --prompts_number <number>
+```
+
+### Parameters
+--save_dir (required): Path to the directory where the generated images and their annotations will be saved.
+--object_names (required): Space-separated list of object names to be included in the image generation and annotation process. For example, aeroplane bicycle bird.
+--prompts_number (optional): The number of prompts to generate for each object. Defaults to 10 if not specified.
+
+### Example
+```bash
+python generate_images.py --save_dir /path/to/save_directory --object_names aeroplane bicycle bird boat person --prompts_number 10
+```
+This command will generate images for the objects 'aeroplane', 'bicycle', 'bird', 'boat', and 'person'. The images and their annotations will be saved in /path/to/save_directory.
+
+### Output
+Generated images will be saved in the specified save_dir.
+Bounding box annotations for each image will be saved in a subdirectory within save_dir, named bboxes.
+Additional data including boxes, labels, and object names will be saved in JSON format in the save_dir.
+
+### Note
+Ensure that all dependencies are correctly installed and that the basereduce package is properly set up in your Python environment before running the script.
+
 ## License
 
 ## Acknowledgements
