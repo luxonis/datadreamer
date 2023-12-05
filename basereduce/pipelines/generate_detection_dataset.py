@@ -104,17 +104,14 @@ def parse_args():
 
     return parser.parse_args()
 
-def save_annotations_to_json(boxes_list, labels_list, class_names, save_dir, file_name="annotations.json"):
-    # Convert numpy arrays to lists
-    boxes_list = [sub.tolist() for sub in boxes_list]
-    labels_list = [sub.tolist() for sub in labels_list]
-
-    # Combine all annotations into a single dictionary
-    annotations = {
-        "boxes": boxes_list,
-        "labels": labels_list,
-        "class_names": class_names
-    }
+def save_annotations_to_json(image_paths, boxes_list, labels_list, class_names, save_dir, file_name="annotations.json"):
+    annotations = {}
+    for image_path, bboxes, labels_list in zip(image_paths, boxes_list, labels_list):
+        annotations[image_path] = {
+            "boxes": bboxes.tolist(),
+            "labels": labels_list.tolist(),
+        }
+    annotations["class_names"] = class_names
 
     # Save to JSON file
     with open(os.path.join(save_dir, file_name), 'w') as f:
@@ -131,6 +128,10 @@ def main():
         os.makedirs(save_dir)
     if not os.path.exists(bbox_dir):
         os.makedirs(bbox_dir)
+
+    # Save arguments
+    with open(os.path.join(save_dir, "generation_args.json"), 'w') as f:
+        json.dump(vars(args), f, indent=4)
 
     # Prompt generation
     prompt_generator_class = prompt_generators[args.prompt_generator]
@@ -150,7 +151,14 @@ def main():
 
     prompts = [p[1] for p in generated_prompts]
     prompt_objects = [p[0] for p in generated_prompts]
-    generated_images = list(image_generator.generate_images(prompts))
+
+    image_paths = []
+    for i, generated_image in enumerate(image_generator.generate_images(prompts)):
+        image_path = os.path.join(save_dir, f"image_{i}.jpg")
+        generated_image.save(image_path)
+        image_paths.append(image_path)
+
+    #generated_images = list(image_generator.generate_images(prompts))
     image_generator.release(empty_cuda_cache=True)
 
     # Annotation
@@ -161,7 +169,8 @@ def main():
     scores_list = []
     labels_list = []
 
-    for i, (image, prompt_objs) in enumerate(zip(generated_images, prompt_objects)):
+    for i, (image_path, prompt_objs) in enumerate(zip(image_paths, prompt_objects)):
+        image = Image.open(image_path)
         boxes, scores, local_labels = annotator.annotate(
             image, prompt_objs, conf_threshold=args.conf_threshold, use_tta = args.use_tta
         )
@@ -200,12 +209,8 @@ def main():
         plt.savefig(os.path.join(bbox_dir, f"bbox_{i}.jpg"))
         plt.close()
 
-    # Save images
-    for i, img in enumerate(generated_images):
-        img.save(os.path.join(save_dir, f"image_{i}.jpg"))
-
     # Save annotations as JSON files
-    save_annotations_to_json(boxes_list, labels_list, args.class_names, save_dir)
+    save_annotations_to_json(image_paths, boxes_list, labels_list, args.class_names, save_dir)
 
 
 if __name__ == "__main__":
