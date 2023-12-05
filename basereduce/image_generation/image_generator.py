@@ -1,49 +1,27 @@
 from abc import ABC, abstractmethod
 from typing import Optional, Union, List
 import enum
-import os
-import json
 from PIL import Image
 import torch
-from diffusers import DiffusionPipeline
-from compel import Compel, ReturnedEmbeddingsType
 from tqdm import tqdm
 import random
-from transformers import CLIPProcessor, CLIPModel
 
-
-# Enum for generative model names
-class GenModelName(enum.Enum):
-    STABLE_DIFFUSION_XL = "stabilityai/stable-diffusion-xl-base-1.0"
-    STABLE_DIFFUSION_XL_TURBO = "stabilityai/sdxl-turbo"
-    # Add more models as needed
-
-
-# Abstract base class for image generation
-class ImageGenerator(ABC):
-    def __init__(
-        self,
-        model_name: GenModelName,
-        prompt_prefix: Optional[str] = "",
-        prompt_suffix: Optional[str] = ", hd, 8k, highly detailed",
-        negative_prompt: Optional[str] = "cartoon, blue skin, painting, scrispture, golden, illustration, worst quality, low quality, normal quality:2, unrealistic dream, low resolution,  static, sd character, low quality, low resolution, greyscale, monochrome, nose, cropped, lowres, jpeg artifacts, deformed iris, deformed pupils, bad eyes, semi-realistic worst quality, bad lips, deformed mouth, deformed face, deformed fingers, bad anatomy",
-        seed: Optional[float] = None,
-    ) -> None:
-        self.seed = seed
-        self.model_name = model_name
+class ImageGenerator:
+    def __init__(self,
+                 #model_name: GenModelName,
+                 prompt_prefix: Optional[str] = "",
+                 prompt_suffix: Optional[str] = ", hd, 8k, highly detailed",
+                 negative_prompt: Optional[str] = "cartoon, blue skin, painting, scrispture, golden, illustration, worst quality, low quality, normal quality:2, unrealistic dream, low resolution,  static, sd character, low quality, low resolution, greyscale, monochrome, nose, cropped, lowres, jpeg artifacts, deformed iris, deformed pupils, bad eyes, semi-realistic worst quality, bad lips, deformed mouth, deformed face, deformed fingers, bad anatomy",
+                 seed: Optional[float] = 42
+                 ) -> None:
+        #model_class = globals()[model_name.value]
+        #self.model = model_class()
         self.prompt_prefix = prompt_prefix
         self.prompt_suffix = prompt_suffix
         self.negative_prompt = negative_prompt
+        self.seed = seed
         if seed is not None:
             self.set_seed(seed)
-
-    @abstractmethod
-    def generate_images(self):
-        pass
-
-    @abstractmethod
-    def _test_image(self):
-        pass
 
     @staticmethod
     def set_seed(seed: int):
@@ -52,128 +30,23 @@ class ImageGenerator(ABC):
         torch.cuda.manual_seed_all(seed)
 
 
-class StableDiffusionImageGenerator(ImageGenerator):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.base, self.refiner = self._init_gen_model()
-        self.base_processor, self.refiner_processor = self._init_processor()
+    def generate_images(self, prompts: Union[str, List[str]], prompt_objects: Optional[List[List[str]]] = None):
+        if isinstance(prompts, str):
+            prompts = [prompts]
 
-    def _init_gen_model(self):
-        # Load the model and processor here
-        base = DiffusionPipeline.from_pretrained(
-            self.model_name.value,
-            torch_dtype=torch.float16,
-            variant="fp16",
-            use_safetensors=True,
-        )
-        base.enable_model_cpu_offload()
-        refiner = DiffusionPipeline.from_pretrained(
-            "stabilityai/stable-diffusion-xl-refiner-1.0",
-            text_encoder_2=base.text_encoder_2,
-            vae=base.vae,
-            torch_dtype=torch.float16,
-            use_safetensors=True,
-            variant="fp16",
-        )
-        refiner.enable_model_cpu_offload()
-
-        return base, refiner
-
-    def _init_processor(self):
-        compel = Compel(
-            tokenizer=[self.base.tokenizer, self.base.tokenizer_2],
-            text_encoder=[self.base.text_encoder, self.base.text_encoder_2],
-            returned_embeddings_type=ReturnedEmbeddingsType.PENULTIMATE_HIDDEN_STATES_NON_NORMALIZED,
-            requires_pooled=[False, True],
-        )
-        compel_refiner = Compel(
-            tokenizer=[self.refiner.tokenizer_2],
-            text_encoder=[self.refiner.text_encoder_2],
-            returned_embeddings_type=ReturnedEmbeddingsType.PENULTIMATE_HIDDEN_STATES_NON_NORMALIZED,
-            requires_pooled=[True],
-        )
-        return compel, compel_refiner
-
-    def generate_images(self, prompts: List[str]) -> List[Image.Image]:
-        images = []
-        for prompt in tqdm(prompts):
-            images.append(self._generate_image(prompt))
-        return images
-
-    def _generate_image(self, prompt: str) -> Image.Image:
-        prompt = self.prompt_prefix + prompt + self.prompt_suffix
-        conditioning, pooled = self.base_processor(prompt)
-        conditioning_neg, pooled_neg = self.base_processor(self.negative_prompt)
-
-        conditioning_refiner, pooled_refiner = self.refiner_processor(prompt)
-        negative_conditioning_refiner, negative_pooled_refiner = self.refiner_processor(
-            self.negative_prompt
-        )
-        image = self.base(
-            prompt_embeds=conditioning,
-            pooled_prompt_embeds=pooled,
-            negative_prompt_embeds=conditioning_neg,
-            negative_pooled_prompt_embeds=pooled_neg,
-            num_inference_steps=65,
-            denoising_end=0.78,
-            output_type="latent",
-        ).images
-        image = self.refiner(
-            prompt_embeds=conditioning_refiner,
-            pooled_prompt_embeds=pooled_refiner,
-            negative_prompt_embeds=negative_conditioning_refiner,
-            negative_pooled_prompt_embeds=negative_pooled_refiner,
-            num_inference_steps=65,
-            denoising_start=0.78,
-            image=image,
-        ).images[0]
-
-        return image
-
+        prompts = [self.prompt_prefix + prompt + self.prompt_suffix for prompt in prompts]
+        if prompt_objects is None:
+            for prompt in prompts:
+                yield self.generate_image(prompt, self.negative_prompt)
+        else:
+            for prompt, prompt_object in zip(prompts, prompt_objects):
+                yield self.generate_image(prompt, self.negative_prompt, prompt_object)
+    
+    @abstractmethod
     def release(self, empty_cuda_cache=False) -> None:
-        self.model = self.model.to('cpu')
-        if empty_cuda_cache:
-            with torch.no_grad():
-                torch.cuda.empty_cache()
+        pass
 
+    @abstractmethod
+    def generate_image(self, prompt: str, negative_prompt: str, prompt_objects: Optional[List[str]] = None) -> Image.Image:
+        pass
 
-class StableDiffusionTurboImageGenerator(ImageGenerator):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.base = self._init_gen_model()
-
-
-    def _init_gen_model(self):
-        # Load the model and processor here
-        base = DiffusionPipeline.from_pretrained(
-            self.model_name.value,
-            torch_dtype=torch.float16,
-            variant="fp16",
-            use_safetensors=True,
-        )
-        base.enable_model_cpu_offload()
-
-        return base
-
-    def generate_images(self, prompts: List[str]) -> List[Image.Image]:
-        images = []
-        for prompt in tqdm(prompts):
-            images.append(self._generate_image(prompt))
-        return images
-
-    def _generate_image(self, prompt: str) -> Image.Image:
-        prompt = self.prompt_prefix + prompt + self.prompt_suffix
-
-        image = self.base(
-            prompt = prompt,
-            guidance_scale = 0.0,
-            num_inference_steps = 4,
-        ).images[0]
-
-        return image
-
-    def release(self, empty_cuda_cache=False) -> None:
-        self.model = self.model.to('cpu')
-        if empty_cuda_cache:
-            with torch.no_grad():
-                torch.cuda.empty_cache()
