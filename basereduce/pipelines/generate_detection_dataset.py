@@ -203,6 +203,8 @@ def main():
                 f"{label_text} {score:.2f}",
                 bbox=dict(facecolor="yellow", alpha=0.5),
             )
+            # Add prompt text as title
+            plt.title(generated_prompts[i][1])
 
         labels_list.append(np.array(labels))
 
