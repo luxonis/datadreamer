@@ -6,6 +6,7 @@ import numpy as np
 import os
 import json
 import argparse
+from tqdm import tqdm
 
 from basereduce.prompt_generation import (
     SimplePromptGenerator,
@@ -207,6 +208,7 @@ def main():
     prompt_generator.release(empty_cuda_cache=True)
 
     # Synonym generation
+    synonym_dict = None
     if args.enhance_class_names:
         synonym_generator = SynonymGenerator()
         synonym_dict = synonym_generator.generate_synonyms_for_list(
@@ -253,7 +255,7 @@ def main():
         scores_list = []
         labels_list = []
 
-        for i, (image_path, prompt_objs) in enumerate(zip(image_paths, prompt_objects)):
+        for i, (image_path, prompt_objs) in tqdm(enumerate(zip(image_paths, prompt_objects)), desc="Annotating images", total=len(image_paths)):
             image = Image.open(image_path)
             boxes, scores, local_labels = annotator.annotate(
                 image,
