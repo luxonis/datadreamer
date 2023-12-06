@@ -42,6 +42,8 @@ class StableDiffusionTurboImageGenerator(ImageGenerator):
 
     def release(self, empty_cuda_cache=False) -> None:
         self.base = self.base.to("cpu")
+        if self.use_clip_image_tester:
+            self.clip_image_tester.release()
         if empty_cuda_cache:
             with torch.no_grad():
                 torch.cuda.empty_cache()

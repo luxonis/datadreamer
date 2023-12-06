@@ -94,5 +94,6 @@ class OWLv2Annotator(BaseAnnotator):
 
     def release(self, empty_cuda_cache=False) -> None:
         self.model = self.model.to("cpu")
-        with torch.no_grad():
-            torch.cuda.empty_cache()
+        if empty_cuda_cache:
+            with torch.no_grad():
+                torch.cuda.empty_cache()

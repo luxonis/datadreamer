@@ -35,3 +35,9 @@ class ClipImageTester:
 
         # Check if all objects meet the confidence threshold
         return passed, probs, num_passed
+    
+    def release(self, empty_cuda_cache=False) -> None:
+        self.clip = self.clip.to("cpu")
+        if empty_cuda_cache:
+            with torch.no_grad():
+                torch.cuda.empty_cache()
