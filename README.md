@@ -40,7 +40,7 @@ pip install -e .
 ## Usage
 
 ### Overview
-The pipelines/generate_detection_dataset.py script is designed to generate and annotate images based on specified object names. This tool uses advanced models to create images and annotate them with bounding boxes for the objects of interest.
+The pipelines/generate_dataset_from_scratch.py script is designed to generate and annotate images based on specified object names. This tool uses advanced models to create images and annotate them with bounding boxes for the objects of interest.
 
 ### Requirements
 Python 3.x
@@ -51,7 +51,7 @@ Pre-installed basereduce package with its submodules: prompt_generation, image_g
 To use the script, run the following command in your terminal:
 
 ```bash
-python generate_images.py --save_dir <directory> --object_names <objects> --prompts_number <number>
+basereduce --save_dir <directory> --object_names <objects> --prompts_number <number>
 ```
 
 ### Parameters
@@ -61,7 +61,7 @@ python generate_images.py --save_dir <directory> --object_names <objects> --prom
 
 ### Example
 ```bash
-python generate_images.py --save_dir /path/to/save_directory --object_names aeroplane bicycle bird boat person --prompts_number 10
+basereduce --save_dir path/to/save_directory --class_names person moon robot lightsaber tractor --prompts_number 20 --prompt_generator simple --num_objects_range 2 4 --image_generator sdxl-turbo
 ```
 This command will generate images for the objects 'aeroplane', 'bicycle', 'bird', 'boat', and 'person'. The images and their annotations will be saved in /path/to/save_directory.
 

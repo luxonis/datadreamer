@@ -23,7 +23,7 @@ class SimplePromptGenerator(PromptGenerator):
         return prompts
 
     def generate_prompt(self, selected_objects: List[str]) -> str:
-        return f"A photo of a {', a '.join(selected_objects)}."
+        return f"A photo of a {', a '.join(selected_objects)}"
 
     def release(self, empty_cuda_cache=False) -> None:
         pass

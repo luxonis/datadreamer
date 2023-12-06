@@ -45,10 +45,12 @@ class ImageGenerator:
             self.prompt_prefix + prompt + self.prompt_suffix for prompt in prompts
         ]
         if prompt_objects is None:
-            for prompt in prompts:
+            for prompt in tqdm(prompts, desc="Generating images"):
                 yield self.generate_image(prompt, self.negative_prompt)
         else:
-            for prompt, prompt_object in zip(prompts, prompt_objects):
+            for prompt, prompt_object in tqdm(
+                zip(prompts, prompt_objects), desc="Generating images"
+            ):
                 yield self.generate_image(prompt, self.negative_prompt, prompt_object)
 
     @abstractmethod

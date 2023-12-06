@@ -9,7 +9,7 @@ from basereduce.dataset_annotation.utils import apply_tta
 class OWLv2Annotator(BaseAnnotator):
     def __init__(
         self,
-        seed: float,
+        seed: float = 42,
         device: str = "cuda",
     ) -> None:
         super().__init__(seed)

@@ -11,6 +11,11 @@ setup(
     url="https://github.com/luxonis/basereduce",
     license="MIT",
     packages=find_packages(exclude=("tests", "docs")),
+    entry_points={
+        "console_scripts": [
+            "basereduce=basereduce.pipelines.generate_dataset_from_scratch:main",
+        ],
+    },
     install_requires=[
         "torch",
         "transformers",
@@ -18,7 +23,7 @@ setup(
         "tqdm",
         "Pillow",
     ],
-    python_requires=">=3.6",
+    python_requires=">=3.8",
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Intended Audience :: Developers",
