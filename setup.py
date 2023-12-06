@@ -18,10 +18,16 @@ setup(
     },
     install_requires=[
         "torch",
+        "torchvision",
         "transformers",
         "diffusers",
+        "compel",
         "tqdm",
         "Pillow",
+        "numpy",
+        "matplotlib",
+        "opencv-python",
+        "accelerate",
     ],
     python_requires=">=3.8",
     classifiers=[
