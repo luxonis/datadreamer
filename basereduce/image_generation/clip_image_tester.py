@@ -19,7 +19,7 @@ class ClipImageTester:
         :param image: The image to test.
         :param objects: A list of objects (text) to test against the image.
         :param conf_threshold: Confidence threshold for object detection.
-        :return: True if the image passes the test, False otherwise. Also returns the probabilities of the objects.
+        :return: True if the image passes the test, False otherwise. Also returns the probabilities of the objects and the number of objects that passed the test.
         """
         # Process the inputs for the CLIP model
         inputs = self.clip_processor(
@@ -30,6 +30,8 @@ class ClipImageTester:
         outputs = self.clip(**inputs)
         logits_per_image = outputs.logits_per_image  # image-text similarity score
         probs = logits_per_image.softmax(dim=1)  # label probabilities
+        passed = torch.all(probs > conf_threshold).item()
+        num_passed = torch.sum(probs > conf_threshold).item()
 
         # Check if all objects meet the confidence threshold
-        return torch.all(probs > conf_threshold).item(), probs
+        return passed, probs, num_passed
