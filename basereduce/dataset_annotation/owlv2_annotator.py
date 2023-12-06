@@ -5,6 +5,7 @@ from basereduce.dataset_annotation.image_annotator import BaseAnnotator
 from transformers import Owlv2Processor, Owlv2ForObjectDetection
 from basereduce.dataset_annotation.utils import apply_tta
 
+from basereduce.utils.nms import non_max_suppression
 
 class OWLv2Annotator(BaseAnnotator):
     def __init__(
@@ -69,13 +70,25 @@ class OWLv2Annotator(BaseAnnotator):
         all_scores_cat = torch.cat(all_scores)
         all_labels_cat = torch.cat(all_labels)
 
-        # Apply NMS
-        keep = ops.nms(all_boxes_cat, all_scores_cat, iou_threshold=0.5)
+        one_hot_labels = torch.nn.functional.one_hot(all_labels_cat, num_classes=len(prompts))
 
-        # Select the boxes, scores, and labels that were kept by NMS
-        final_boxes = all_boxes_cat[keep]
-        final_scores = all_scores_cat[keep]
-        final_labels = all_labels_cat[keep]
+        # Apply NMS
+        # transform predictions to shape [N, 5 + num_classes], N is the number of bboxes for nms function
+        all_boxes_cat = torch.cat(
+            (
+                all_boxes_cat,
+                all_scores_cat.unsqueeze(-1),
+                one_hot_labels
+            ),
+            dim=1,
+        )
+
+        # output is  a list of detections, each item is one tensor with shape (num_boxes, 6), 6 is for [xyxy, conf, cls].
+        output = non_max_suppression(all_boxes_cat.unsqueeze(0), conf_thres=conf_threshold, iou_thres=0.2)
+
+        final_boxes = output[0][:, :4]
+        final_scores = output[0][:, 4]
+        final_labels = output[0][:, 5].long()
 
         return final_boxes, final_scores, final_labels
 

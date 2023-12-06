@@ -92,7 +92,7 @@ def parse_args():
     parser.add_argument(
         "--conf_threshold",
         type=float,
-        default=0.1,
+        default=0.15,
         help="Confidence threshold for object detection",
     )
 
