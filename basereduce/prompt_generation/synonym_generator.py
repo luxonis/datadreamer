@@ -4,6 +4,7 @@ import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 import json
 import re
+from tqdm import tqdm
 
 from typing import List, Optional
 import torch
@@ -23,17 +24,19 @@ class SynonymGenerator:
         self.model, self.tokenizer = self._init_lang_model()
 
     def _init_lang_model(self):
+        print("Initializing language model for synonym generation")
         model = AutoModelForCausalLM.from_pretrained(
             "mistralai/Mistral-7B-Instruct-v0.1", torch_dtype=torch.float16
         ).to(self.device)
-        tokenizer = AutoTokenizer.from_pretrained(self.model_name)
+        tokenizer = AutoTokenizer.from_pretrained("mistralai/Mistral-7B-Instruct-v0.1")
         return model, tokenizer
 
     def generate_synonyms_for_list(self, words: List[str]) -> dict:
         synonyms_dict = {}
-        for word in words:
+        for word in tqdm(words, desc="Generating synonyms"):
             synonyms = self.generate_synonyms(word)
             synonyms_dict[word] = synonyms
+        print("Synonyms generated")
         return synonyms_dict
 
     def generate_synonyms(self, word: str) -> List[str]:
@@ -47,13 +50,11 @@ class SynonymGenerator:
     def _generate_synonyms(self, prompt_text: str) -> List[str]:
         encoded_input = self.tokenizer(prompt_text, return_tensors="pt").to(self.device)
         generated_ids = self.model.generate(
-            **encoded_input, max_new_tokens=50, do_sample=True, num_return_sequences=1
+            **encoded_input, max_new_tokens=50, do_sample=True, num_return_sequences=1, pad_token_id=self.tokenizer.eos_token_id
         )
         generated_text = self.tokenizer.decode(
             generated_ids[0], skip_special_tokens=True
         )
-
-        print(generated_text)
 
         instructional_pattern = r"\[INST].*?\[/INST\]\s*"
         # Remove the instructional text to isolate the caption
@@ -70,13 +71,12 @@ class SynonymGenerator:
 
     def _extract_synonyms(self, text: str) -> List[str]:
         # Assuming the output is in the format "Synonyms: word1, word2, word3"
-        # synonyms_text = text.split(':')[-1]  # Get the part after "Synonyms:"
         synonyms = [
             word.strip() for word in text.split(",")
         ]  # Split and strip each synonym
         return synonyms[: self.synonyms_number]
 
-    def save_synonyms(self, synonyms: List[str], save_path: str) -> None:
+    def save_synonyms(self, synonyms, save_path: str) -> None:
         with open(save_path, "w") as f:
             json.dump(synonyms, f)
 

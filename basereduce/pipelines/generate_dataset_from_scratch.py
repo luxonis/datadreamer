@@ -125,7 +125,6 @@ def parse_args():
     )
 
 
-
     parser.add_argument(
         "--device",
         type=str,
@@ -207,6 +206,17 @@ def main():
     )
     prompt_generator.release(empty_cuda_cache=True)
 
+    # Synonym generation
+    if args.enhance_class_names:
+        synonym_generator = SynonymGenerator()
+        synonym_dict = synonym_generator.generate_synonyms_for_list(
+            args.class_names
+        )
+        synonym_generator.release(empty_cuda_cache=True)
+        synonym_generator.save_synonyms(
+            synonym_dict, os.path.join(save_dir, "synonyms.json")
+        )
+
     # Image generation
     image_generator_class = image_generators[args.image_generator]
     image_generator = image_generator_class(seed=args.seed, use_clip_image_tester=args.use_image_tester, image_tester_patience=args.image_tester_patience)
@@ -220,7 +230,6 @@ def main():
         generated_image.save(image_path)
         image_paths.append(image_path)
 
-    # generated_images = list(image_generator.generate_images(prompts))
     image_generator.release(empty_cuda_cache=True)
 
     if args.task == "classification":
@@ -244,16 +253,6 @@ def main():
         scores_list = []
         labels_list = []
 
-        if args.enhance_class_names:
-            synonym_generator = SynonymGenerator()
-            synonym_dict = synonym_generator.generate_synonyms_for_list(
-                args.class_names
-            )
-            synonym_generator.release(empty_cuda_cache=True)
-            class_map = {value: key for key, value in synonym_dict.items()}
-            for key, _ in synonym_dict.items():
-                class_map[key] = key
-
         for i, (image_path, prompt_objs) in enumerate(zip(image_paths, prompt_objects)):
             image = Image.open(image_path)
             boxes, scores, local_labels = annotator.annotate(
@@ -261,6 +260,7 @@ def main():
                 prompt_objs,
                 conf_threshold=args.conf_threshold,
                 use_tta=args.use_tta,
+                synonym_dict=synonym_dict
             )
             # Convert to numpy arrays
             boxes = (

@@ -29,11 +29,26 @@ class OWLv2Annotator(BaseAnnotator):
             "google/owlv2-base-patch16-ensemble", do_pad=False
         )
 
-    def annotate(self, image, prompts, conf_threshold=0.1, use_tta=False):
+    def annotate(self, image, prompts, conf_threshold=0.1, use_tta=False, synonym_dict=None):
         if use_tta:
             augmented_images = apply_tta(image)
         else:
             augmented_images = [image]
+
+        if synonym_dict is not None:
+            prompts_syn = []
+            for prompt in prompts:
+                prompts_syn.append(prompt)
+                prompts_syn.extend(synonym_dict[prompt])
+            # Make a dict to transform synonym ids to original ids
+            synonym_dict_rev = {}
+            for key, value in synonym_dict.items():
+                if key in prompts:
+                    synonym_dict_rev[prompts_syn.index(key)] = prompts.index(key)
+                    for v in value:
+                        synonym_dict_rev[prompts_syn.index(v)] = prompts.index(key)
+            prompts = prompts_syn
+        
 
         all_boxes = []
         all_scores = []
@@ -61,9 +76,12 @@ class OWLv2Annotator(BaseAnnotator):
             if use_tta and len(all_boxes) == 1:
                 boxes[:, [0, 2]] = image.size[0] - boxes[:, [2, 0]]
 
-            all_boxes.append(boxes)
-            all_scores.append(scores)
-            all_labels.append(labels)
+            if synonym_dict is not None:
+                labels = torch.tensor([synonym_dict_rev[label.item()] for label in labels])
+
+            all_boxes.append(boxes.to("cpu"))
+            all_scores.append(scores.to("cpu"))
+            all_labels.append(labels.to("cpu"))
 
         # Convert list of tensors to a single tensor for NMS
         all_boxes_cat = torch.cat(all_boxes)
