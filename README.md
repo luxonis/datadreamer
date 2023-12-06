@@ -1,4 +1,4 @@
-![basereduce Logo](images/dalle-logo.png)
+![basereduce Logo](images/grid_image_3x2_generated_dataset.jpg)
 
 # BaseReduce
 
@@ -92,6 +92,7 @@ save_dir/
 ├── image_2.jpg
 ├── ...
 ├── image_n.jpg
+├── prompts.json
 └── detection_annotations.json/classification_annotations.json
 ```
 
