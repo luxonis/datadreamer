@@ -20,8 +20,19 @@ So, in a nutshell, BaseReduce helps you go from zero to AI hero, building intell
 ## Features
 
 - **Prompt Generation**: Automate the creation of image prompts using powerful language models.
+
+Provided class names: ["horse", "robot"]
+
+Generated prompt: "A photo of a horse and a robot coexisting peacefully in the midst of a serene pasture."
 - **Image Generation**: Generate synthetic datasets with state-of-the-art generative models.
+
+<img src="images/generated_image.jpg" width="512">
+
 - **Dataset Annotation**: Leverage foundation models to automatically label datasets.
+
+<img src="images/annotated_image.jpg" width="512">
+
+
 - **Edge Model Training**: Train efficient small-scale neural networks for edge deployment. (not part of this library)
 
 ## Installation
