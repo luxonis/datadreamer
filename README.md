@@ -1,21 +1,20 @@
-![basereduce Logo](images/grid_image_3x2_generated_dataset.jpg)
+![DataDreamer examples](images/grid_image_3x2_generated_dataset.jpg)
 
-# BaseReduce
+# DataDreamer
+`DataDreamer` is an advanced toolkit engineered to facilitate the development of edge AI models, irrespective of initial data availability. Distinctive features of DataDreamer include:
 
-`basereduce` is a toolkit that allows you to train edge AI models, even if you don't have any data to start with! Here's what makes BaseReduce special:
+- **Synthetic Data Generation**: Eliminate the dependency on extensive datasets for AI training. DataDreamer empowers users to generate synthetic datasets from the ground up, utilizing advanced AI algorithms capable of producing high-quality, diverse images.
 
-- **Train Without Data**: You don't need a huge collection of images or data to train your AI. With BaseReduce, you can create a synthetic dataset from scratch using powerful AI that knows how to generate images.
-  
-- **Extract Knowledge from Base Computer Vision models**: There's a lot of knowledge locked away in big, pre-trained AI models. BaseReduce knows how to tap into these "Foundation models" and transfer their knowledge to your smaller model, making it wise beyond its size.
+- **Knowledge Extraction from Foundational Models**: `DataDreamer` leverages the latent knowledge embedded within sophisticated, pre-trained AI models. This capability allows for the transfer of expansive understanding from these "Foundation models" to smaller, custom-built models, enhancing their capabilities significantly.
 
-- **Small but Mighty Models**: Our goal is to help you create models that are small enough to fit into any device but still perform like the big ones in the special tasks they were trained for.
+- **Efficient and Potent Models**: The primary objective of `DataDreamer` is to enable the creation of compact models that are both size-efficient for integration into any device and robust in performance for specialized tasks.
 
-And why the name BaseReduce? It's simple:
+The rationale behind the name `DataDreamer`:
 
-- **Base**: We start with the basics, the "base" knowledge from large AI models.
-- **Reduce**: We then "reduce" that knowledge into a smaller, more compact form that's easy to handle.
+- **Data**: Emphasizes the central role of data, either existing or synthetically generated, as the cornerstone of AI model training.
+- **Dreamer**: Reflects the innovative and forward-thinking approach of creating something impactful from mere concepts or "dreams," symbolizing the transformation of abstract ideas into concrete, intelligent models.
 
-So, in a nutshell, BaseReduce helps you go from zero to AI hero, building intelligent models efficiently and effectively.
+In essence, `DataDreamer` is designed to transform the AI development process, making it more accessible, efficient, and effective, turning visionary ideas into reality.
 
 ## Features
 
@@ -37,12 +36,12 @@ Generated prompt: "A photo of a horse and a robot coexisting peacefully in the m
 
 ## Installation
 
-To install `basereduce` from source, follow these steps:
+To install `datadreamer` from source, follow these steps:
 
 ```bash
 # Clone the repository
-git clone https://github.com/luxonis/basereduce.git
-cd basereduce
+git clone https://github.com/luxonis/datadreamer.git
+cd datadreamer
 
 # Install the package
 pip install -e .
@@ -57,13 +56,13 @@ To ensure optimal performance and compatibility with the libraries used in this 
 ## Usage
 
 ### Overview
-The `basereduce/pipelines/generate_dataset_from_scratch.py` (`basereduce` command) script is a powerful tool for generating and annotating images with specific objects. It uses advanced models to both create images and accurately annotate them with bounding boxes for designated objects.
+The `datadreamer/pipelines/generate_dataset_from_scratch.py` (`datadreamer` command) script is a powerful tool for generating and annotating images with specific objects. It uses advanced models to both create images and accurately annotate them with bounding boxes for designated objects.
 
 ### Usage
 Run the following command in your terminal to use the script:
 
 ```bash
-basereduce --save_dir <directory> --class_names <objects> --prompts_number <number> [additional options]
+datadreamer --save_dir <directory> --class_names <objects> --prompts_number <number> [additional options]
 ```
 
 ### Main Parameters
@@ -88,7 +87,7 @@ basereduce --save_dir <directory> --class_names <objects> --prompts_number <numb
 
 ### Example
 ```bash
-basereduce --save_dir path/to/save_directory --class_names person moon robot --prompts_number 20 --prompt_generator simple --num_objects_range 2 4 --image_generator sdxl-turbo
+datadreamer --save_dir path/to/save_directory --class_names person moon robot --prompts_number 20 --prompt_generator simple --num_objects_range 2 4 --image_generator sdxl-turbo
 ```
 This command generates images for the specified objects, saving them and their annotations in the given directory. The script allows customization of the generation process through various parameters, adapting to different needs and hardware configurations.
 
@@ -139,10 +138,10 @@ save_dir/
 
 
 ### Note
-Ensure that all dependencies are correctly installed and that the basereduce package is properly set up in your Python environment before running the script.
+Ensure that all dependencies are correctly installed and that the datadreamer package is properly set up in your Python environment before running the script.
 
 ## License
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the Apache License, Version 2.0 - see the LICENSE file for details.
 
 ## Acknowledgements
 
