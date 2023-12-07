@@ -8,11 +8,33 @@ from basereduce.dataset_annotation.utils import apply_tta
 from basereduce.utils.nms import non_max_suppression
 
 class OWLv2Annotator(BaseAnnotator):
+    """
+    A class for image annotation using the OWLv2 model, specializing in object detection.
+
+    Attributes:
+        model (Owlv2ForObjectDetection): The OWLv2 model for object detection.
+        processor (Owlv2Processor): The processor for the OWLv2 model.
+        device (str): The device on which the model will run ('cuda' for GPU, 'cpu' for CPU).
+
+    Methods:
+        _init_model(): Initializes the OWLv2 model.
+        _init_processor(): Initializes the processor for the OWLv2 model.
+        annotate(image, prompts, conf_threshold, use_tta, synonym_dict): Annotates the given image with bounding boxes and labels.
+        release(empty_cuda_cache): Releases resources and optionally empties the CUDA cache.
+    """
+
     def __init__(
         self,
         seed: float = 42,
         device: str = "cuda",
     ) -> None:
+        """
+        Initializes the OWLv2Annotator with a specific seed and device.
+
+        Args:
+            seed (float): Seed for reproducibility. Defaults to 42.
+            device (str): The device to run the model on. Defaults to 'cuda'.
+        """
         super().__init__(seed)
         self.model = self._init_model()
         self.processor = self._init_processor()
@@ -20,16 +42,41 @@ class OWLv2Annotator(BaseAnnotator):
         self.model.to(self.device)
 
     def _init_model(self):
+        """
+        Initializes the OWLv2 model for object detection.
+
+        Returns:
+            Owlv2ForObjectDetection: The initialized OWLv2 model.
+        """
         return Owlv2ForObjectDetection.from_pretrained(
             "google/owlv2-base-patch16-ensemble"
         )
 
     def _init_processor(self):
+        """
+        Initializes the processor for the OWLv2 model.
+
+        Returns:
+            Owlv2Processor: The initialized processor.
+        """
         return Owlv2Processor.from_pretrained(
             "google/owlv2-base-patch16-ensemble", do_pad=False
         )
 
     def annotate(self, image, prompts, conf_threshold=0.1, use_tta=False, synonym_dict=None):
+        """
+        Annotates an image using the OWLv2 model.
+
+        Args:
+            image: The image to be annotated.
+            prompts: Prompts to guide the annotation.
+            conf_threshold (float, optional): Confidence threshold for the annotations. Defaults to 0.1.
+            use_tta (bool, optional): Flag to apply test-time augmentation. Defaults to False.
+            synonym_dict (dict, optional): Dictionary for handling synonyms in labels. Defaults to None.
+
+        Returns:
+            tuple: A tuple containing the final bounding boxes, scores, and labels for the annotations.
+        """
         if use_tta:
             augmented_images = apply_tta(image)
         else:
@@ -111,6 +158,12 @@ class OWLv2Annotator(BaseAnnotator):
         return final_boxes, final_scores, final_labels
 
     def release(self, empty_cuda_cache=False) -> None:
+        """
+        Releases the model and optionally empties the CUDA cache.
+
+        Args:
+            empty_cuda_cache (bool, optional): Whether to empty the CUDA cache. Defaults to False.
+        """
         self.model = self.model.to("cpu")
         if empty_cuda_cache:
             with torch.no_grad():

@@ -8,13 +8,37 @@ from basereduce.image_generation.image_generator import ImageGenerator
 
 
 class StableDiffusionImageGenerator(ImageGenerator):
+    """
+    A subclass of ImageGenerator that uses the Stable Diffusion model for image generation.
+
+    Attributes:
+        base (DiffusionPipeline): The base Stable Diffusion model for initial image generation.
+        refiner (DiffusionPipeline): The refiner Stable Diffusion model for enhancing generated images.
+        base_processor (Compel): Processor for the base model.
+        refiner_processor (Compel): Processor for the refiner model.
+
+    Methods:
+        _init_gen_model(): Initializes the generative models for image generation.
+        _init_processor(): Initializes the processors for the models.
+        generate_image(prompt, negative_prompt, prompt_objects): Generates an image based on the provided prompt.
+        release(empty_cuda_cache): Releases resources and optionally empties the CUDA cache.
+    """
+
     def __init__(self, *args, **kwargs):
+        """
+        Initializes the StableDiffusionImageGenerator with the given arguments.
+        """
         super().__init__(*args, **kwargs)
         self.base, self.refiner = self._init_gen_model()
         self.base_processor, self.refiner_processor = self._init_processor()
 
     def _init_gen_model(self):
-        # Load the model and processor here
+        """
+        Initializes the base and refiner models of Stable Diffusion.
+
+        Returns:
+            tuple: The base and refiner models.
+        """
         base = DiffusionPipeline.from_pretrained(
             "stabilityai/stable-diffusion-xl-base-1.0",
             torch_dtype=torch.float16,
@@ -35,6 +59,12 @@ class StableDiffusionImageGenerator(ImageGenerator):
         return base, refiner
 
     def _init_processor(self):
+        """
+        Initializes the processors for the base and refiner models.
+
+        Returns:
+            tuple: The processors for the base and refiner models.
+        """
         compel = Compel(
             tokenizer=[self.base.tokenizer, self.base.tokenizer_2],
             text_encoder=[self.base.text_encoder, self.base.text_encoder_2],
@@ -55,6 +85,17 @@ class StableDiffusionImageGenerator(ImageGenerator):
         negative_prompt: str,
         prompt_objects: Optional[List[str]] = None,
     ) -> Image.Image:
+        """
+        Generates an image based on the provided prompt, using Stable Diffusion models.
+
+        Args:
+            prompt (str): The positive prompt to guide image generation.
+            negative_prompt (str): The negative prompt to avoid certain features in the image.
+            prompt_objects (Optional[List[str]]): Optional list of objects to be used in CLIP model testing.
+
+        Returns:
+            Image.Image: The generated image.
+        """
         if prompt_objects is not None:
             for obj in prompt_objects:
                 prompt = prompt.replace(obj, f"({obj})1.5", 1)
@@ -90,6 +131,9 @@ class StableDiffusionImageGenerator(ImageGenerator):
         return image
 
     def release(self, empty_cuda_cache=False) -> None:
+        """
+        Releases the models and optionally empties the CUDA cache.
+        """
         self.base = self.base.to("cpu")
         self.refiner = self.refiner.to("cpu")
         if self.use_clip_image_tester:
