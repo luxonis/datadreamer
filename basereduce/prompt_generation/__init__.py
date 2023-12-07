@@ -1,3 +1,0 @@
-from .simple_prompt_generator import SimplePromptGenerator
-from .lm_prompt_generator import LMPromptGenerator
-from .synonym_generator import SynonymGenerator

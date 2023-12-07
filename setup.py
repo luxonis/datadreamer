@@ -1,19 +1,19 @@
 from setuptools import setup, find_packages
 
 setup(
-    name="basereduce",
+    name="datadreamer",
     version="0.1.0",
-    description="A library for knowledge extraction from foundation computer vision models.",
+    description="A library for dataset generation and knowledge extraction from foundation computer vision models.",
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
     author="Luxonis",
     # author_email='your.email@example.com',
-    url="https://github.com/luxonis/basereduce",
+    url="https://github.com/luxonis/datadreamer",
     license="MIT",
     packages=find_packages(exclude=("tests", "docs")),
     entry_points={
         "console_scripts": [
-            "basereduce=basereduce.pipelines.generate_dataset_from_scratch:main",
+            "datadreamer=datadreamer.pipelines.generate_dataset_from_scratch:main",
         ],
     },
     install_requires=[

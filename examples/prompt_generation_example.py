@@ -1,4 +1,4 @@
-from basereduce.prompt_generation import LMPromptGenerator
+from datadreamer.prompt_generation import LMPromptGenerator
 
 if __name__ == "__main__":
     object_names = ["aeroplane", "bicycle", "bird", "boat"]

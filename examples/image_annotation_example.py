@@ -1,5 +1,5 @@
 from PIL import Image
-from basereduce.dataset_annotation import OWLv2Annotator, TaskList, Kosmos2Annotator
+from datadreamer.dataset_annotation import OWLv2Annotator, TaskList, Kosmos2Annotator
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 import numpy as np

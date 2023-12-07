@@ -1,5 +1,5 @@
-from basereduce.image_generation.clip_image_tester import ClipImageTester
-from basereduce.image_generation import (
+from datadreamer.image_generation.clip_image_tester import ClipImageTester
+from datadreamer.image_generation import (
     StableDiffusionImageGenerator,
     StableDiffusionTurboImageGenerator,
 )
