@@ -1,6 +1,5 @@
 from basereduce.prompt_generation import LMPromptGenerator
 
-
 if __name__ == "__main__":
     object_names = ["aeroplane", "bicycle", "bird", "boat"]
     prompt_generator = LMPromptGenerator(class_names=object_names)

@@ -2,6 +2,19 @@ from torchvision import transforms
 
 
 def apply_tta(image):
+    """
+    Apply test-time augmentation (TTA) to the given image.
+
+    Args:
+        image: The image to be augmented.
+
+    Returns:
+        list: A list of augmented images, including the original and transformed versions.
+
+    Note:
+        Currently, only horizontal flip is enabled. Additional transformations like 
+        vertical flip and color jitter are commented out but can be enabled as needed.
+    """
     tta_transforms = [
         # Original image
         transforms.Compose([]),

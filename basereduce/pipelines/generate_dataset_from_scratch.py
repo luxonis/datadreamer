@@ -6,6 +6,7 @@ import numpy as np
 import os
 import json
 import argparse
+from tqdm import tqdm
 
 from basereduce.prompt_generation import (
     SimplePromptGenerator,
@@ -54,6 +55,7 @@ def parse_args():
         default=["aeroplane", "bicycle", "bird", "boat", "person"],
         help="List of object names for prompt generation",
     )
+
     parser.add_argument(
         "--prompts_number", type=int, default=10, help="Number of prompts to generate"
     )
@@ -91,7 +93,7 @@ def parse_args():
     parser.add_argument(
         "--conf_threshold",
         type=float,
-        default=0.1,
+        default=0.15,
         help="Confidence threshold for object detection",
     )
 
@@ -108,6 +110,21 @@ def parse_args():
         default=False,
         help="Whether to enhance class names with synonyms",
     )
+
+    parser.add_argument(
+        "--use_image_tester",
+        type=bool,
+        default=False,
+        help="Whether to use image tester for image generation",
+    )
+
+    parser.add_argument(
+        "--image_tester_patience",
+        type=int,
+        default=1,
+        help="Patience for image tester",
+    )
+
 
     parser.add_argument(
         "--device",
@@ -190,20 +207,31 @@ def main():
     )
     prompt_generator.release(empty_cuda_cache=True)
 
+    # Synonym generation
+    synonym_dict = None
+    if args.enhance_class_names:
+        synonym_generator = SynonymGenerator()
+        synonym_dict = synonym_generator.generate_synonyms_for_list(
+            args.class_names
+        )
+        synonym_generator.release(empty_cuda_cache=True)
+        synonym_generator.save_synonyms(
+            synonym_dict, os.path.join(save_dir, "synonyms.json")
+        )
+
     # Image generation
     image_generator_class = image_generators[args.image_generator]
-    image_generator = image_generator_class(seed=args.seed)
+    image_generator = image_generator_class(seed=args.seed, use_clip_image_tester=args.use_image_tester, image_tester_patience=args.image_tester_patience)
 
     prompts = [p[1] for p in generated_prompts]
     prompt_objects = [p[0] for p in generated_prompts]
 
     image_paths = []
-    for i, generated_image in enumerate(image_generator.generate_images(prompts)):
+    for i, generated_image in enumerate(image_generator.generate_images(prompts, prompt_objects)):
         image_path = os.path.join(save_dir, f"image_{i}.jpg")
         generated_image.save(image_path)
         image_paths.append(image_path)
 
-    # generated_images = list(image_generator.generate_images(prompts))
     image_generator.release(empty_cuda_cache=True)
 
     if args.task == "classification":
@@ -227,23 +255,14 @@ def main():
         scores_list = []
         labels_list = []
 
-        if args.enhance_class_names:
-            synonym_generator = SynonymGenerator()
-            synonym_dict = synonym_generator.generate_synonyms_for_list(
-                args.class_names
-            )
-            synonym_generator.release(empty_cuda_cache=True)
-            class_map = {value: key for key, value in synonym_dict.items()}
-            for key, _ in synonym_dict.items():
-                class_map[key] = key
-
-        for i, (image_path, prompt_objs) in enumerate(zip(image_paths, prompt_objects)):
+        for i, (image_path, prompt_objs) in tqdm(enumerate(zip(image_paths, prompt_objects)), desc="Annotating images", total=len(image_paths)):
             image = Image.open(image_path)
             boxes, scores, local_labels = annotator.annotate(
                 image,
                 prompt_objs,
                 conf_threshold=args.conf_threshold,
                 use_tta=args.use_tta,
+                synonym_dict=synonym_dict
             )
             # Convert to numpy arrays
             boxes = (

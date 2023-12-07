@@ -11,34 +11,18 @@ annotator = OWLv2Annotator(
 )
 
 # Load your image
-image = Image.open("generated_images/Figure_1.png").convert("RGB")
-
-
-# Define prompts to guide the detection
-# prompts = ["Eye", "Text"]
+image = Image.open("../images/generated_image.jpg").convert("RGB")
 
 class_map = {
-    "Austronaut": "astronaut",
-    "Spaceman": "astronaut",
-    "Cosmonaut": "astronaut",
-    "Moonwalker": "astronaut",
+    "Robot": "robot",
     "Horse": "horse",
-    "Stablemate": "horse",
-    "Steed": "horse",
-    "Moon": "moon",
 }
-
-# class_map = {
-#     "Austronaut": "astronaut",
-#     "Horse": "horse",
-#     "Moon": "moon",
-# }
 
 prompts = list(class_map.keys())
 
 # Perform object detection
 boxes, scores, labels = annotator.annotate(
-    image, prompts, conf_threshold=0.2, use_tta=True
+    image, prompts, conf_threshold=0.15, use_tta=True
 )
 
 # Convert to numpy arrays
