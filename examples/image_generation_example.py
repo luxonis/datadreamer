@@ -37,10 +37,11 @@ image_tester = ClipImageTester()
 # Optionally test each image and do something with the results
 for img, prompt, prompt_objs in zip(generated_images, prompts, prompt_objects):
     # Test the image against the prompt objects
-    passed, probs = image_tester.test_image(img, prompt_objs)
+    passed, probs, num_passed = image_tester.test_image(img, prompt_objs)
     print(f"Image passed test for prompt '{prompt}': {passed}")
     print(f"Prompt objects: {prompt_objs}")
     print(f"Object probabilities: {probs}")
+    print(f"Number of objects passed: {num_passed}")
 
     # Show the image
     plt.imshow(img)
