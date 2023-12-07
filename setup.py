@@ -28,6 +28,7 @@ setup(
         "matplotlib",
         "opencv-python",
         "accelerate",
+        "scipy",
     ],
     python_requires=">=3.8",
     classifiers=[

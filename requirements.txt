@@ -9,3 +9,4 @@ numpy
 matplotlib
 opencv-python
 accelerate
+scipy
