@@ -60,8 +60,6 @@ class StableDiffusionTurboImageGenerator(ImageGenerator):
         Returns:
             Image.Image: The generated image.
         """
-        print(prompt)
-
         image = self.base(
             prompt=prompt,
             negative_prompt=negative_prompt,

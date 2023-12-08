@@ -100,8 +100,6 @@ class StableDiffusionImageGenerator(ImageGenerator):
             for obj in prompt_objects:
                 prompt = prompt.replace(obj, f"({obj})1.5", 1)
 
-        print(prompt)
-
         conditioning, pooled = self.base_processor(prompt)
         conditioning_neg, pooled_neg = self.base_processor(negative_prompt)
 

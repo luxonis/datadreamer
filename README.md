@@ -20,9 +20,7 @@ In essence, `DataDreamer` is designed to transform the AI development process, m
 
 - **Prompt Generation**: Automate the creation of image prompts using powerful language models.
 
-Provided class names: ["horse", "robot"]
-
-Generated prompt: "A photo of a horse and a robot coexisting peacefully in the midst of a serene pasture."
+   *Provided class names: ["horse", "robot"]* ->  *Generated prompt: "A photo of a horse and a robot coexisting peacefully in the midst of a serene pasture."*
 - **Image Generation**: Generate synthetic datasets with state-of-the-art generative models.
 
 <img src="images/generated_image.jpg" width="512">
@@ -103,7 +101,7 @@ save_dir/
 ├── ...
 ├── image_n.jpg
 ├── prompts.json
-└── detection_annotations.json/classification_annotations.json
+└── annotations.json
 ```
 
 ### Annotations Format

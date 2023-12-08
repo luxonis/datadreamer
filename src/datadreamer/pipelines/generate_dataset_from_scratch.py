@@ -52,7 +52,7 @@ def parse_args():
         "--class_names",
         type=str,
         nargs="+",
-        default=["aeroplane", "bicycle", "bird", "boat", "person"],
+        default=["bear", "bicycle", "bird", "person"],
         help="List of object names for prompt generation",
     )
 
@@ -151,7 +151,8 @@ def save_det_annotations_to_json(
 ):
     annotations = {}
     for image_path, bboxes, labels_list in zip(image_paths, boxes_list, labels_list):
-        annotations[image_path] = {
+        image_name = os.path.basename(image_path)
+        annotations[image_name] = {
             "boxes": bboxes.tolist(),
             "labels": labels_list.tolist(),
         }
@@ -167,7 +168,8 @@ def save_clf_annotations_to_json(
 ):
     annotations = {}
     for image_path, labels_list in zip(image_paths, labels_list):
-        annotations[image_path] = {
+        image_name = os.path.basename(image_path)
+        annotations[image_name] = {
             "labels": labels_list.tolist(),
         }
     annotations["class_names"] = class_names
