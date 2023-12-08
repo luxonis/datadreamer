@@ -34,6 +34,8 @@ In essence, `DataDreamer` is designed to transform the AI development process, m
 
 - **Edge Model Training**: Train efficient small-scale neural networks for edge deployment. (not part of this library)
 
+[Example](https://github.com/luxonis/datadreamer/blob/main/examples/generate_dataset_and_train_yolo.ipynb)
+
 ## Installation
 
 To install `datadreamer` from source, follow these steps:
