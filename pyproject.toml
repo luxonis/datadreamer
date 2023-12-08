@@ -1,0 +1,42 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "datadreamer"
+version = "0.1.0"
+description = "A library for dataset generation and knowledge extraction from foundation computer vision models."
+readme = "README.md"
+authors = [{ name = "Luxonis", email = "support@luxonis.com"}]
+license = { file = "LICENSE" }
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Topic :: Software Development :: Libraries"
+]
+keywords = ["computer vision", "AI", "machine learning", "generative models"]
+dependencies = [
+    "torch",
+    "torchvision",
+    "transformers",
+    "diffusers",
+    "compel",
+    "tqdm",
+    "Pillow",
+    "numpy",
+    "matplotlib",
+    "opencv-python",
+    "accelerate",
+    "scipy"
+]
+requires-python = ">=3.8"
+
+[project.urls]
+Homepage = "https://github.com/luxonis/datadreamer"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[project.scripts]
+datadreamer = "datadreamer.pipelines.generate_dataset_from_scratch:main"
