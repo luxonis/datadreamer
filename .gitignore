@@ -152,4 +152,6 @@ Thumbs.db
 
 # Others
 node_modules/
-generated_dataset/
+**generated_dataset*/
+**runs/
+**wandb/
