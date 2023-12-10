@@ -27,7 +27,7 @@ In essence, `DataDreamer` is designed to transform the AI development process, m
 
 <img src="images/generated_image.jpg" width="512">
 
-- **Dataset Annotation**: Leverage foundation models to automatically label datasets.
+- **Dataset Annotation**: Leverage foundation models to label datasets automatically.
 
 <img src="images/annotated_image.jpg" width="512">
 
@@ -140,7 +140,7 @@ save_dir/
 
 
 ### Note
-Ensure that all dependencies are correctly installed and that the datadreamer package is properly set up in your Python environment before running the script.
+Please make sure that all dependencies are correctly installed and that the datadreamer package is properly set up in your Python environment before running the script.
 
 ## License
 This project is licensed under the Apache License, Version 2.0 - see the LICENSE file for details.
