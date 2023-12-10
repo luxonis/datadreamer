@@ -24,8 +24,8 @@ def draw_rounded_rectangle(img, pt1, pt2, color, thickness, r, d):
 
 def draw_bboxes_and_labels(image, annotations, class_names):
     font = cv2.FONT_HERSHEY_SIMPLEX
-    font_scale = 0.75  # Increased font size
-    font_thickness = 2
+    font_scale = 1.5  # Increased font size
+    font_thickness = 4
     bbox_thickness = 2
     text_color = (255, 255, 255) # White text
     rectangle_radius = 8
@@ -45,7 +45,7 @@ def draw_bboxes_and_labels(image, annotations, class_names):
         draw_rounded_rectangle(image, (x_min, y_min), (x_max, y_max), (0, 255, 0), bbox_thickness, rectangle_radius, 1)
 
         # Draw text background
-        draw_rounded_rectangle(image, background_top_left, background_bottom_right, (0, 255, 0), -1, rectangle_radius, 1)
+        draw_rounded_rectangle(image, background_top_left, background_bottom_right, (0, 255, 0), 2, rectangle_radius, 1)
 
         # Put the text
         cv2.putText(image, label_text, (text_x, text_y), font, font_scale, text_color, font_thickness)
