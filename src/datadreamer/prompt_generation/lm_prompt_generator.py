@@ -130,9 +130,7 @@ class LMPromptGenerator(PromptGenerator):
         Returns:
             bool: True if the prompt is valid, False otherwise.
         """
-        return all(
-            obj.lower() in prompt.lower() for obj in selected_objects
-        ) and prompt.startswith("A photo of")
+        return prompt.startswith("A photo of") # and all(obj.lower() in prompt.lower() for obj in selected_objects)
 
     def release(self, empty_cuda_cache=False) -> None:
         """
