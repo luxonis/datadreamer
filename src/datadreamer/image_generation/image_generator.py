@@ -9,7 +9,6 @@ import random
 from datadreamer.image_generation.clip_image_tester import ClipImageTester
 
 
-
 class ImageGenerator:
     """
     A class for generating images based on textual prompts, with optional CLIP model testing.
@@ -93,38 +92,40 @@ class ImageGenerator:
         ]
         if prompt_objects is None:
             prompt_objects = [None] * len(prompts)
-        
+
         for prompt, prompt_objs in tqdm(
-                zip(prompts, prompt_objects), desc="Generating images", total=len(prompts)
-            ):
-                if self.use_clip_image_tester:
-                    best_prob = 0
-                    best_image = None
-                    best_num_passed = 0
+            zip(prompts, prompt_objects), desc="Generating images", total=len(prompts)
+        ):
+            if self.use_clip_image_tester:
+                best_prob = 0
+                best_image = None
+                best_num_passed = 0
 
-                    for _ in tqdm(range(self.image_tester_patience), desc="Testing image"):
-                        image = self.generate_image(prompt, self.negative_prompt, prompt_objs)
-                        passed, probs, num_passed = self.clip_image_tester.test_image(
-                            image, prompt_objs
-                        )
-                        # Return the first image that passes the test
-                        if passed:
-                            yield image
-                            break
-                        mean_prob = probs.mean().item()
-                        if num_passed > best_num_passed or (num_passed == best_num_passed and mean_prob > best_prob):
-                            best_image = image
-                            best_prob = mean_prob
-                            best_num_passed = num_passed
+                for _ in tqdm(range(self.image_tester_patience), desc="Testing image"):
+                    image = self.generate_image(
+                        prompt, self.negative_prompt, prompt_objs
+                    )
+                    passed, probs, num_passed = self.clip_image_tester.test_image(
+                        image, prompt_objs
+                    )
+                    # Return the first image that passes the test
                     if passed:
-                        continue
-                    # If no image passed the test, return the image with the highest number of objects that passed the test
-                    yield best_image
-                
-                else:
-                    yield self.generate_image(prompt, self.negative_prompt, prompt_objs)
+                        yield image
+                        break
+                    mean_prob = probs.mean().item()
+                    if num_passed > best_num_passed or (
+                        num_passed == best_num_passed and mean_prob > best_prob
+                    ):
+                        best_image = image
+                        best_prob = mean_prob
+                        best_num_passed = num_passed
+                if passed:
+                    continue
+                # If no image passed the test, return the image with the highest number of objects that passed the test
+                yield best_image
 
-                
+            else:
+                yield self.generate_image(prompt, self.negative_prompt, prompt_objs)
 
     @abstractmethod
     def release(self, empty_cuda_cache=False) -> None:

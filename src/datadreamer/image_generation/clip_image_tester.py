@@ -36,7 +36,7 @@ class ClipImageTester:
             conf_threshold (float): Confidence threshold for considering an object as present.
 
         Returns:
-            tuple: A tuple containing a boolean indicating if the image passes the test, 
+            tuple: A tuple containing a boolean indicating if the image passes the test,
                    the probabilities of the objects, and the number of objects that passed the test.
         """
         # Process the inputs for the CLIP model
@@ -53,7 +53,7 @@ class ClipImageTester:
 
         # Check if all objects meet the confidence threshold
         return passed, probs, num_passed
-    
+
     def release(self, empty_cuda_cache=False) -> None:
         """
         Releases the model and optionally empties the CUDA cache.

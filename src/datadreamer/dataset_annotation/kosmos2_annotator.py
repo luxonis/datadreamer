@@ -5,6 +5,7 @@ import numpy as np
 from datadreamer.dataset_annotation.image_annotator import BaseAnnotator
 from transformers import AutoProcessor, Kosmos2ForConditionalGeneration
 
+
 class Kosmos2Annotator(BaseAnnotator):
     """
     An image annotator class that utilizes the Kosmos2 model for conditional image generation.
@@ -60,7 +61,6 @@ class Kosmos2Annotator(BaseAnnotator):
         return AutoProcessor.from_pretrained("microsoft/kosmos-2-patch14-224")
 
     def annotate(self, image, prompts, conf_threshold=0.1, use_tta=False):
-
         """
         Annotates an image using the Kosmos2 model.
 

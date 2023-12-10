@@ -5,6 +5,7 @@ import numpy as np
 import argparse
 from PIL import Image
 
+
 def read_annotations(annotation_path):
     """
     Reads annotations from a JSON file located at the specified path.
@@ -18,6 +19,7 @@ def read_annotations(annotation_path):
     with open(annotation_path) as f:
         data = json.load(f)
     return data
+
 
 def convert_to_yolo_format(box, image_width, image_height):
     """
@@ -36,6 +38,7 @@ def convert_to_yolo_format(box, image_width, image_height):
     width = (box[2] - box[0]) / image_width
     height = (box[3] - box[1]) / image_height
     return [x_center, y_center, width, height]
+
 
 def process_data(data, image_dir, output_dir, split_ratio):
     """
@@ -56,21 +59,21 @@ def process_data(data, image_dir, output_dir, split_ratio):
     train_images = images[:split_index]
     val_images = images[split_index:]
 
-    for dataset_type, image_set in [('train', train_images), ('val', val_images)]:
-        image_output_dir = os.path.join(output_dir, dataset_type, 'images')
-        label_output_dir = os.path.join(output_dir, dataset_type, 'labels')
+    for dataset_type, image_set in [("train", train_images), ("val", val_images)]:
+        image_output_dir = os.path.join(output_dir, dataset_type, "images")
+        label_output_dir = os.path.join(output_dir, dataset_type, "labels")
 
-        #If the output directories already exist, replace them
+        # If the output directories already exist, replace them
         if os.path.exists(image_output_dir):
             shutil.rmtree(image_output_dir)
         if os.path.exists(label_output_dir):
             shutil.rmtree(label_output_dir)
-        
+
         os.makedirs(image_output_dir)
         os.makedirs(label_output_dir)
 
         for image_name in image_set:
-            if image_name == 'class_names':
+            if image_name == "class_names":
                 continue
             # extract image name from image path
             image_full_path = os.path.join(image_dir, image_name)
@@ -78,13 +81,16 @@ def process_data(data, image_dir, output_dir, split_ratio):
             image = Image.open(image_full_path)
             image_width, image_height = image.size
 
-            label_file = os.path.join(label_output_dir, os.path.splitext(image_name)[0] + '.txt')
-            with open(label_file, 'w') as f:
-                for box, label in zip(annotation['boxes'], annotation['labels']):
+            label_file = os.path.join(
+                label_output_dir, os.path.splitext(image_name)[0] + ".txt"
+            )
+            with open(label_file, "w") as f:
+                for box, label in zip(annotation["boxes"], annotation["labels"]):
                     yolo_box = convert_to_yolo_format(box, image_width, image_height)
                     f.write(f"{label} {' '.join(map(str, yolo_box))}\n")
 
             shutil.copy(image_full_path, os.path.join(image_output_dir, image_name))
+
 
 def create_data_yaml(root_dir, class_names):
     """
@@ -96,12 +102,15 @@ def create_data_yaml(root_dir, class_names):
 
     No return value.
     """
-    yaml_content = f"train: {os.path.abspath(os.path.join(root_dir, 'train'))}\n" \
-                   f"val: {os.path.abspath(os.path.join(root_dir, 'val'))}\n" \
-                   f"nc: {len(class_names)}\n" \
-                   f"names: {class_names}"
-    with open(os.path.join(root_dir, 'data.yaml'), 'w') as f:
+    yaml_content = (
+        f"train: {os.path.abspath(os.path.join(root_dir, 'train'))}\n"
+        f"val: {os.path.abspath(os.path.join(root_dir, 'val'))}\n"
+        f"nc: {len(class_names)}\n"
+        f"names: {class_names}"
+    )
+    with open(os.path.join(root_dir, "data.yaml"), "w") as f:
         f.write(yaml_content)
+
 
 def convert(dataset_dir, output_dir, train_val_split_ratio):
     """
@@ -114,20 +123,35 @@ def convert(dataset_dir, output_dir, train_val_split_ratio):
 
     No return value.
     """
-    annotation_path = os.path.join(dataset_dir, 'annotations.json')
+    annotation_path = os.path.join(dataset_dir, "annotations.json")
     data = read_annotations(annotation_path)
     process_data(data, dataset_dir, output_dir, train_val_split_ratio)
-    create_data_yaml(output_dir, data['class_names'])
+    create_data_yaml(output_dir, data["class_names"])
+
 
 def main():
-    parser = argparse.ArgumentParser(description="Convert dataset to YOLO format with train-val split.")
-    parser.add_argument('save_dir', type=str, help='Directory containing the images and annotations.')
-    parser.add_argument('output_dir', type=str, help='Directory where the processed dataset will be saved.')
-    parser.add_argument('--split_ratio', type=float, default=0.8, help='Train-validation split ratio (default: 0.8)')
+    parser = argparse.ArgumentParser(
+        description="Convert dataset to YOLO format with train-val split."
+    )
+    parser.add_argument(
+        "save_dir", type=str, help="Directory containing the images and annotations."
+    )
+    parser.add_argument(
+        "output_dir",
+        type=str,
+        help="Directory where the processed dataset will be saved.",
+    )
+    parser.add_argument(
+        "--split_ratio",
+        type=float,
+        default=0.8,
+        help="Train-validation split ratio (default: 0.8)",
+    )
 
     args = parser.parse_args()
 
     convert(args.save_dir, args.output_dir, args.split_ratio)
+
 
 if __name__ == "__main__":
     main()

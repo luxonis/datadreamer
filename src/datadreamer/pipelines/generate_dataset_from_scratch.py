@@ -125,7 +125,6 @@ def parse_args():
         help="Patience for image tester",
     )
 
-
     parser.add_argument(
         "--device",
         type=str,
@@ -213,9 +212,7 @@ def main():
     synonym_dict = None
     if args.enhance_class_names:
         synonym_generator = SynonymGenerator()
-        synonym_dict = synonym_generator.generate_synonyms_for_list(
-            args.class_names
-        )
+        synonym_dict = synonym_generator.generate_synonyms_for_list(args.class_names)
         synonym_generator.release(empty_cuda_cache=True)
         synonym_generator.save_synonyms(
             synonym_dict, os.path.join(save_dir, "synonyms.json")
@@ -223,13 +220,19 @@ def main():
 
     # Image generation
     image_generator_class = image_generators[args.image_generator]
-    image_generator = image_generator_class(seed=args.seed, use_clip_image_tester=args.use_image_tester, image_tester_patience=args.image_tester_patience)
+    image_generator = image_generator_class(
+        seed=args.seed,
+        use_clip_image_tester=args.use_image_tester,
+        image_tester_patience=args.image_tester_patience,
+    )
 
     prompts = [p[1] for p in generated_prompts]
     prompt_objects = [p[0] for p in generated_prompts]
 
     image_paths = []
-    for i, generated_image in enumerate(image_generator.generate_images(prompts, prompt_objects)):
+    for i, generated_image in enumerate(
+        image_generator.generate_images(prompts, prompt_objects)
+    ):
         image_path = os.path.join(save_dir, f"image_{i}.jpg")
         generated_image.save(image_path)
         image_paths.append(image_path)
@@ -257,14 +260,18 @@ def main():
         scores_list = []
         labels_list = []
 
-        for i, (image_path, prompt_objs) in tqdm(enumerate(zip(image_paths, prompt_objects)), desc="Annotating images", total=len(image_paths)):
+        for i, (image_path, prompt_objs) in tqdm(
+            enumerate(zip(image_paths, prompt_objects)),
+            desc="Annotating images",
+            total=len(image_paths),
+        ):
             image = Image.open(image_path)
             boxes, scores, local_labels = annotator.annotate(
                 image,
                 args.class_names,
                 conf_threshold=args.conf_threshold,
                 use_tta=args.use_tta,
-                synonym_dict=synonym_dict
+                synonym_dict=synonym_dict,
             )
             # Convert to numpy arrays
             boxes = (
