@@ -261,7 +261,7 @@ def main():
             image = Image.open(image_path)
             boxes, scores, local_labels = annotator.annotate(
                 image,
-                prompt_objs,
+                args.class_names,
                 conf_threshold=args.conf_threshold,
                 use_tta=args.use_tta,
                 synonym_dict=synonym_dict
