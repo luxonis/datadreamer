@@ -88,9 +88,6 @@ class Kosmos2Annotator(BaseAnnotator):
         generated_text = self.processor.batch_decode(
             generated_ids, skip_special_tokens=True
         )[0]
-        processed_text = self.processor.post_process_generation(
-            generated_text, cleanup_and_extract=False
-        )
 
         caption, entities = self.processor.post_process_generation(generated_text)
 
