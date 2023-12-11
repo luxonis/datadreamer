@@ -1,12 +1,12 @@
 from typing import List
-from PIL import Image
+
 import torch
+from PIL import Image
 from transformers import CLIPModel, CLIPProcessor
 
 
 class ClipImageTester:
-    """
-    A class for testing images against a set of textual objects using the CLIP model.
+    """A class for testing images against a set of textual objects using the CLIP model.
 
     Attributes:
         clip (CLIPModel): The CLIP model for image-text similarity evaluation.
@@ -18,17 +18,14 @@ class ClipImageTester:
     """
 
     def __init__(self) -> None:
-        """
-        Initializes the ClipImageTester with the CLIP model and processor.
-        """
+        """Initializes the ClipImageTester with the CLIP model and processor."""
         self.clip = CLIPModel.from_pretrained("openai/clip-vit-base-patch32")
         self.clip_processor = CLIPProcessor.from_pretrained(
             "openai/clip-vit-base-patch32"
         )
 
     def test_image(self, image: Image.Image, objects: List[str], conf_threshold=0.05):
-        """
-        Tests the generated image against a set of objects using the CLIP model.
+        """Tests the generated image against a set of objects using the CLIP model.
 
         Args:
             image (Image.Image): The image to be tested.
@@ -55,8 +52,7 @@ class ClipImageTester:
         return passed, probs, num_passed
 
     def release(self, empty_cuda_cache=False) -> None:
-        """
-        Releases the model and optionally empties the CUDA cache.
+        """Releases the model and optionally empties the CUDA cache.
 
         Args:
             empty_cuda_cache (bool, optional): Whether to empty the CUDA cache. Defaults to False.

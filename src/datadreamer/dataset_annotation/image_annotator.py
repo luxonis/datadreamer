@@ -1,6 +1,5 @@
-from abc import ABC, abstractmethod
-from typing import List, Generic, TypeVar
 import enum
+from abc import ABC, abstractmethod
 
 
 # Enum for different labeling tasks
@@ -13,8 +12,7 @@ class TaskList(enum.Enum):
 
 # Abstract base class for data labeling
 class BaseAnnotator(ABC):
-    """
-    Abstract base class for creating annotators.
+    """Abstract base class for creating annotators.
 
     Attributes:
         seed (float): A seed value to ensure reproducibility in annotation processes.

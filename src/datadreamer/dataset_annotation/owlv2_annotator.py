@@ -1,16 +1,14 @@
 import torch
-import torchvision.ops as ops
+from transformers import Owlv2ForObjectDetection, Owlv2Processor
 
 from datadreamer.dataset_annotation.image_annotator import BaseAnnotator
-from transformers import Owlv2Processor, Owlv2ForObjectDetection
 from datadreamer.dataset_annotation.utils import apply_tta
-
 from datadreamer.utils.nms import non_max_suppression
 
 
 class OWLv2Annotator(BaseAnnotator):
-    """
-    A class for image annotation using the OWLv2 model, specializing in object detection.
+    """A class for image annotation using the OWLv2 model, specializing in object
+    detection.
 
     Attributes:
         model (Owlv2ForObjectDetection): The OWLv2 model for object detection.
@@ -29,8 +27,7 @@ class OWLv2Annotator(BaseAnnotator):
         seed: float = 42,
         device: str = "cuda",
     ) -> None:
-        """
-        Initializes the OWLv2Annotator with a specific seed and device.
+        """Initializes the OWLv2Annotator with a specific seed and device.
 
         Args:
             seed (float): Seed for reproducibility. Defaults to 42.
@@ -43,8 +40,7 @@ class OWLv2Annotator(BaseAnnotator):
         self.model.to(self.device)
 
     def _init_model(self):
-        """
-        Initializes the OWLv2 model for object detection.
+        """Initializes the OWLv2 model for object detection.
 
         Returns:
             Owlv2ForObjectDetection: The initialized OWLv2 model.
@@ -54,8 +50,7 @@ class OWLv2Annotator(BaseAnnotator):
         )
 
     def _init_processor(self):
-        """
-        Initializes the processor for the OWLv2 model.
+        """Initializes the processor for the OWLv2 model.
 
         Returns:
             Owlv2Processor: The initialized processor.
@@ -67,8 +62,7 @@ class OWLv2Annotator(BaseAnnotator):
     def annotate(
         self, image, prompts, conf_threshold=0.1, use_tta=False, synonym_dict=None
     ):
-        """
-        Annotates an image using the OWLv2 model.
+        """Annotates an image using the OWLv2 model.
 
         Args:
             image: The image to be annotated.
@@ -162,8 +156,7 @@ class OWLv2Annotator(BaseAnnotator):
         return final_boxes, final_scores, final_labels
 
     def release(self, empty_cuda_cache=False) -> None:
-        """
-        Releases the model and optionally empties the CUDA cache.
+        """Releases the model and optionally empties the CUDA cache.
 
         Args:
             empty_cuda_cache (bool, optional): Whether to empty the CUDA cache. Defaults to False.

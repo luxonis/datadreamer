@@ -1,14 +1,14 @@
+import argparse
 import json
 import os
 import shutil
+
 import numpy as np
-import argparse
 from PIL import Image
 
 
 def read_annotations(annotation_path):
-    """
-    Reads annotations from a JSON file located at the specified path.
+    """Reads annotations from a JSON file located at the specified path.
 
     Args:
     - annotation_path (str): The path to the JSON file containing annotations.
@@ -22,8 +22,7 @@ def read_annotations(annotation_path):
 
 
 def convert_to_yolo_format(box, image_width, image_height):
-    """
-    Converts bounding box coordinates to YOLO format.
+    """Converts bounding box coordinates to YOLO format.
 
     Args:
     - box (list of float): A list containing the bounding box coordinates [x_min, y_min, x_max, y_max].
@@ -41,8 +40,8 @@ def convert_to_yolo_format(box, image_width, image_height):
 
 
 def process_data(data, image_dir, output_dir, split_ratio):
-    """
-    Processes the data by dividing it into training and validation sets, and saves the images and labels in YOLO format.
+    """Processes the data by dividing it into training and validation sets, and saves
+    the images and labels in YOLO format.
 
     Args:
     - data (dict): The dictionary containing image annotations.
@@ -93,8 +92,7 @@ def process_data(data, image_dir, output_dir, split_ratio):
 
 
 def create_data_yaml(root_dir, class_names):
-    """
-    Creates a YAML file for dataset configuration, specifying paths and class names.
+    """Creates a YAML file for dataset configuration, specifying paths and class names.
 
     Args:
     - root_dir (str): The root directory where the dataset is located.
@@ -113,8 +111,8 @@ def create_data_yaml(root_dir, class_names):
 
 
 def convert(dataset_dir, output_dir, train_val_split_ratio):
-    """
-    Converts a dataset into a format suitable for training with YOLO, including creating training and validation splits.
+    """Converts a dataset into a format suitable for training with YOLO, including
+    creating training and validation splits.
 
     Args:
     - dataset_dir (str): The directory where the source dataset is located.

@@ -1,9 +1,8 @@
-from datadreamer.image_generation.clip_image_tester import ClipImageTester
+import matplotlib.pyplot as plt
 from datadreamer.image_generation import (
-    StableDiffusionImageGenerator,
     StableDiffusionTurboImageGenerator,
 )
-import matplotlib.pyplot as plt
+from datadreamer.image_generation.clip_image_tester import ClipImageTester
 
 # Define some prompts for image generation
 prompts = [

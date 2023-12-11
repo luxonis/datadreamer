@@ -1,8 +1,8 @@
-from PIL import Image
-from datadreamer.dataset_annotation import OWLv2Annotator, TaskList, Kosmos2Annotator
-import matplotlib.pyplot as plt
 import matplotlib.patches as patches
+import matplotlib.pyplot as plt
 import numpy as np
+from datadreamer.dataset_annotation import OWLv2Annotator
+from PIL import Image
 
 # Initialize the OWLv2Annotator
 annotator = OWLv2Annotator(

@@ -1,16 +1,16 @@
 import random
-from transformers import AutoModelForCausalLM, AutoTokenizer
-import torch
-from tqdm import tqdm
 import re
 from typing import List, Optional
+
+import torch
+from tqdm import tqdm
+from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from datadreamer.prompt_generation.prompt_generator import PromptGenerator
 
 
 class LMPromptGenerator(PromptGenerator):
-    """
-    A language model-based prompt generator class, extending PromptGenerator.
+    """A language model-based prompt generator class, extending PromptGenerator.
 
     Attributes:
         device (str): Device to run the language model on ('cuda' for GPU, 'cpu' for CPU).
@@ -34,16 +34,13 @@ class LMPromptGenerator(PromptGenerator):
         seed: Optional[float] = 42,
         device: str = "cuda",
     ) -> None:
-        """
-        Initializes the LMPromptGenerator with class names and other settings.
-        """
+        """Initializes the LMPromptGenerator with class names and other settings."""
         super().__init__(class_names, prompts_number, num_objects_range, seed)
         self.device = device
         self.model, self.tokenizer = self._init_lang_model()
 
     def _init_lang_model(self):
-        """
-        Initializes the language model and tokenizer for prompt generation.
+        """Initializes the language model and tokenizer for prompt generation.
 
         Returns:
             tuple: The initialized language model and tokenizer.
@@ -57,8 +54,7 @@ class LMPromptGenerator(PromptGenerator):
         return model, tokenizer
 
     def generate_prompts(self) -> List[str]:
-        """
-        Generates a list of text prompts based on the class names.
+        """Generates a list of text prompts based on the class names.
 
         Returns:
             List[str]: A list of generated prompts.
@@ -78,8 +74,7 @@ class LMPromptGenerator(PromptGenerator):
         return prompts
 
     def _create_lm_prompt_text(self, selected_objects: List[str]) -> str:
-        """
-        Creates a language model text prompt based on selected objects.
+        """Creates a language model text prompt based on selected objects.
 
         Args:
             selected_objects (List[str]): Objects to include in the prompt.
@@ -90,8 +85,7 @@ class LMPromptGenerator(PromptGenerator):
         return f"[INST] Generate a short and consice caption for an image. Follow this template: 'A photo of {', '.join(selected_objects)}', where the objects interact in a meaningful way within a scene, complete with a short scene description. [/INST]"
 
     def generate_prompt(self, prompt_text: str) -> str:
-        """
-        Generates a single prompt using the language model.
+        """Generates a single prompt using the language model.
 
         Args:
             prompt_text (str): The text prompt for the language model.
@@ -120,8 +114,7 @@ class LMPromptGenerator(PromptGenerator):
         return decoded_prompt
 
     def _test_prompt(self, prompt: str, selected_objects: List[str]) -> bool:
-        """
-        Tests if the generated prompt is valid based on selected objects.
+        """Tests if the generated prompt is valid based on selected objects.
 
         Args:
             prompt (str): The generated prompt.
@@ -135,9 +128,7 @@ class LMPromptGenerator(PromptGenerator):
         )  # and all(obj.lower() in prompt.lower() for obj in selected_objects)
 
     def release(self, empty_cuda_cache=False) -> None:
-        """
-        Releases the model and optionally empties the CUDA cache.
-        """
+        """Releases the model and optionally empties the CUDA cache."""
         self.model = self.model.to("cpu")
         if empty_cuda_cache:
             with torch.no_grad():

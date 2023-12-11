@@ -1,24 +1,23 @@
-import matplotlib.pyplot as plt
-import matplotlib.patches as patches
-import torch
-from PIL import Image
-import numpy as np
-import os
-import json
 import argparse
+import json
+import os
+
+import matplotlib.patches as patches
+import matplotlib.pyplot as plt
+import numpy as np
+from PIL import Image
 from tqdm import tqdm
 
+from datadreamer.dataset_annotation import OWLv2Annotator
+from datadreamer.image_generation import (
+    StableDiffusionImageGenerator,
+    StableDiffusionTurboImageGenerator,
+)
 from datadreamer.prompt_generation import (
-    SimplePromptGenerator,
     LMPromptGenerator,
+    SimplePromptGenerator,
     SynonymGenerator,
 )
-from datadreamer.image_generation import (
-    StableDiffusionTurboImageGenerator,
-    StableDiffusionImageGenerator,
-)
-from datadreamer.dataset_annotation import OWLv2Annotator
-
 
 prompt_generators = {"simple": SimplePromptGenerator, "lm": LMPromptGenerator}
 

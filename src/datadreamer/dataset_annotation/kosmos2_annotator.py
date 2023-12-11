@@ -1,14 +1,13 @@
-import torch
-import torchvision.ops as ops
 import numpy as np
+import torch
+from transformers import AutoProcessor, Kosmos2ForConditionalGeneration
 
 from datadreamer.dataset_annotation.image_annotator import BaseAnnotator
-from transformers import AutoProcessor, Kosmos2ForConditionalGeneration
 
 
 class Kosmos2Annotator(BaseAnnotator):
-    """
-    An image annotator class that utilizes the Kosmos2 model for conditional image generation.
+    """An image annotator class that utilizes the Kosmos2 model for conditional image
+    generation.
 
     Attributes:
         model (Kosmos2ForConditionalGeneration): The Kosmos2 model for conditional image generation.
@@ -27,8 +26,7 @@ class Kosmos2Annotator(BaseAnnotator):
         seed: float,
         device: str = "cuda",
     ) -> None:
-        """
-        Initializes the Kosmos2Annotator with a given seed and device.
+        """Initializes the Kosmos2Annotator with a given seed and device.
 
         Args:
             seed (float): Seed for reproducibility.
@@ -41,8 +39,7 @@ class Kosmos2Annotator(BaseAnnotator):
         self.model.to(self.device)
 
     def _init_model(self):
-        """
-        Initializes the Kosmos2 model.
+        """Initializes the Kosmos2 model.
 
         Returns:
             Kosmos2ForConditionalGeneration: The initialized Kosmos2 model.
@@ -52,8 +49,7 @@ class Kosmos2Annotator(BaseAnnotator):
         )
 
     def _init_processor(self):
-        """
-        Initializes the processor for the Kosmos2 model.
+        """Initializes the processor for the Kosmos2 model.
 
         Returns:
             AutoProcessor: The initialized processor.
@@ -61,8 +57,7 @@ class Kosmos2Annotator(BaseAnnotator):
         return AutoProcessor.from_pretrained("microsoft/kosmos-2-patch14-224")
 
     def annotate(self, image, prompts, conf_threshold=0.1, use_tta=False):
-        """
-        Annotates an image using the Kosmos2 model.
+        """Annotates an image using the Kosmos2 model.
 
         Args:
             image: The image to be annotated.
@@ -122,8 +117,7 @@ class Kosmos2Annotator(BaseAnnotator):
         return final_boxes, final_scores, final_labels
 
     def release(self, empty_cuda_cache=False) -> None:
-        """
-        Releases the model and optionally empties the CUDA cache.
+        """Releases the model and optionally empties the CUDA cache.
 
         Args:
             empty_cuda_cache (bool, optional): Whether to empty the CUDA cache. Defaults to False.

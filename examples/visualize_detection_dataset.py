@@ -1,7 +1,8 @@
+import argparse
 import json
 import os
+
 import cv2
-import argparse
 
 
 def draw_rounded_rectangle(img, pt1, pt2, color, thickness, r, d):

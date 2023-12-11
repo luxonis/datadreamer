@@ -1,15 +1,16 @@
-from PIL import Image
-import torch
-from diffusers import DiffusionPipeline
-from compel import Compel, ReturnedEmbeddingsType
 from typing import List, Optional
+
+import torch
+from compel import Compel, ReturnedEmbeddingsType
+from diffusers import DiffusionPipeline
+from PIL import Image
 
 from datadreamer.image_generation.image_generator import ImageGenerator
 
 
 class StableDiffusionImageGenerator(ImageGenerator):
-    """
-    A subclass of ImageGenerator that uses the Stable Diffusion model for image generation.
+    """A subclass of ImageGenerator that uses the Stable Diffusion model for image
+    generation.
 
     Attributes:
         base (DiffusionPipeline): The base Stable Diffusion model for initial image generation.
@@ -25,16 +26,13 @@ class StableDiffusionImageGenerator(ImageGenerator):
     """
 
     def __init__(self, *args, **kwargs):
-        """
-        Initializes the StableDiffusionImageGenerator with the given arguments.
-        """
+        """Initializes the StableDiffusionImageGenerator with the given arguments."""
         super().__init__(*args, **kwargs)
         self.base, self.refiner = self._init_gen_model()
         self.base_processor, self.refiner_processor = self._init_processor()
 
     def _init_gen_model(self):
-        """
-        Initializes the base and refiner models of Stable Diffusion.
+        """Initializes the base and refiner models of Stable Diffusion.
 
         Returns:
             tuple: The base and refiner models.
@@ -59,8 +57,7 @@ class StableDiffusionImageGenerator(ImageGenerator):
         return base, refiner
 
     def _init_processor(self):
-        """
-        Initializes the processors for the base and refiner models.
+        """Initializes the processors for the base and refiner models.
 
         Returns:
             tuple: The processors for the base and refiner models.
@@ -85,8 +82,8 @@ class StableDiffusionImageGenerator(ImageGenerator):
         negative_prompt: str,
         prompt_objects: Optional[List[str]] = None,
     ) -> Image.Image:
-        """
-        Generates an image based on the provided prompt, using Stable Diffusion models.
+        """Generates an image based on the provided prompt, using Stable Diffusion
+        models.
 
         Args:
             prompt (str): The positive prompt to guide image generation.
@@ -129,9 +126,7 @@ class StableDiffusionImageGenerator(ImageGenerator):
         return image
 
     def release(self, empty_cuda_cache=False) -> None:
-        """
-        Releases the models and optionally empties the CUDA cache.
-        """
+        """Releases the models and optionally empties the CUDA cache."""
         self.base = self.base.to("cpu")
         self.refiner = self.refiner.to("cpu")
         if self.use_clip_image_tester:

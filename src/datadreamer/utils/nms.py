@@ -5,11 +5,11 @@
 
 import os
 import time
-import numpy as np
+
 import cv2
+import numpy as np
 import torch
 import torchvision
-
 
 # Settings
 torch.set_printoptions(linewidth=320, precision=5, profile="long")
@@ -23,7 +23,8 @@ os.environ["NUMEXPR_MAX_THREADS"] = str(min(os.cpu_count(), 8))  # NumExpr max t
 
 
 def xywh2xyxy(x):
-    """Convert boxes with shape [n, 4] from [x, y, w, h] to [x1, y1, x2, y2] where x1y1 is top-left, x2y2=bottom-right."""
+    """Convert boxes with shape [n, 4] from [x, y, w, h] to [x1, y1, x2, y2] where x1y1
+    is top-left, x2y2=bottom-right."""
     y = x.clone() if isinstance(x, torch.Tensor) else np.copy(x)
     y[:, 0] = x[:, 0] - x[:, 2] / 2  # top left x
     y[:, 1] = x[:, 1] - x[:, 3] / 2  # top left y

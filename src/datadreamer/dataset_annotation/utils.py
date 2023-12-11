@@ -2,8 +2,7 @@ from torchvision import transforms
 
 
 def apply_tta(image):
-    """
-    Apply test-time augmentation (TTA) to the given image.
+    """Apply test-time augmentation (TTA) to the given image.
 
     Args:
         image: The image to be augmented.
