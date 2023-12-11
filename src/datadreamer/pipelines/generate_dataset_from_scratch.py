@@ -148,11 +148,11 @@ def save_det_annotations_to_json(
     file_name="annotations.json",
 ):
     annotations = {}
-    for image_path, bboxes, labels_list in zip(image_paths, boxes_list, labels_list):
+    for image_path, bboxes, labels in zip(image_paths, boxes_list, labels_list):
         image_name = os.path.basename(image_path)
         annotations[image_name] = {
             "boxes": bboxes.tolist(),
-            "labels": labels_list.tolist(),
+            "labels": labels.tolist(),
         }
     annotations["class_names"] = class_names
 
@@ -165,10 +165,10 @@ def save_clf_annotations_to_json(
     image_paths, labels_list, class_names, save_dir, file_name="annotations.json"
 ):
     annotations = {}
-    for image_path, labels_list in zip(image_paths, labels_list):
+    for image_path, labels in zip(image_paths, labels_list):
         image_name = os.path.basename(image_path)
         annotations[image_name] = {
-            "labels": labels_list.tolist(),
+            "labels": labels.tolist(),
         }
     annotations["class_names"] = class_names
 
@@ -241,7 +241,7 @@ def main():
     if args.task == "classification":
         # Classification annotation
         labels_list = []
-        for i, (image_path, prompt_objs) in enumerate(zip(image_paths, prompt_objects)):
+        for prompt_objs in prompt_objects:
             labels = []
             for obj in prompt_objs:
                 labels.append(args.class_names.index(obj))
