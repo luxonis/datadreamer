@@ -14,7 +14,7 @@ def main():
         for name, deps in pyproject["project"]["optional-dependencies"].items():
             f.write(f"\n# {name}\n")
             for dep in deps:
-                if dep.startswith("luxonis-train"):
+                if dep.startswith("datadreamer"):
                     continue
                 f.write(dep + "\n")
 
