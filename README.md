@@ -103,7 +103,7 @@ datadreamer --save_dir <directory> --class_names <objects> --prompts_number <num
 - `--use_image_tester`: Use image tester for image generation. Default is False.
 - `--image_tester_patience`: Patience level for image tester. Default is 1.
 - `--device`: Choose between `cuda` and `cpu`. Default is cuda.
-- `--seed`: Set a random seed for image generation. Default is 42.
+- `--seed`: Set a random seed for image and prompt generation. Default is 42.
 
 ### Example
 
