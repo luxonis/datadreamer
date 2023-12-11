@@ -7,36 +7,66 @@ name = "datadreamer"
 version = "0.1.0"
 description = "A library for dataset generation and knowledge extraction from foundation computer vision models."
 readme = "README.md"
-authors = [{ name = "Luxonis", email = "support@luxonis.com"}]
-license = { file = "LICENSE" }
-classifiers = [
-    "Development Status :: 3 - Alpha",
-    "Intended Audience :: Developers",
-    "Programming Language :: Python :: 3",
-    "Topic :: Software Development :: Libraries"
-]
-keywords = ["computer vision", "AI", "machine learning", "generative models"]
-dependencies = [
-    "torch",
-    "torchvision",
-    "transformers",
-    "diffusers",
-    "compel",
-    "tqdm",
-    "Pillow",
-    "numpy",
-    "matplotlib",
-    "opencv-python",
-    "accelerate",
-    "scipy"
-]
 requires-python = ">=3.8"
+license = { file = "LICENSE" }
+maintainers = [{ name = "Luxonis", email = "support@luxonis.com"}]
+keywords = ["computer vision", "AI", "machine learning", "generative models"]
+classifiers = [
+    "License :: Apache License 2.0",
+    "Development Status :: 3 - Alpha",
+    "Programming Language :: Python :: 3.8",
+    "Intended Audience :: Developers",
+    "Topic :: Software Development :: Libraries",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Scientific/Engineering :: Image Processing",
+    "Topic :: Scientific/Engineering :: Image Recognition",
+]
+dependencies = [
+    "torch>=2.0.0",
+    "torchvision>=0.16.0",
+    "transformers>=4.0.0",
+    "diffusers>=0.24.0",
+    "compel>=2.0.0",
+    "tqdm>=4.0.0",
+    "Pillow>=10.0.0",
+    "numpy>=1.22.0",
+    "matplotlib>=3.6.0",
+    "opencv-python>=4.7.0",
+    "accelerate>=0.25.0",
+    "scipy>=1.10.0",
+]
+[project.optional-dependencies]
+dev = [
+    "datadreamer",
+    "pre-commit>=3.2.1",
+    "toml>=0.10.2",
+]
 
 [project.urls]
 Homepage = "https://github.com/luxonis/datadreamer"
 
+[project.scripts]
+datadreamer = "datadreamer.pipelines.generate_dataset_from_scratch:main"
+
 [tool.setuptools.packages.find]
 where = ["src"]
 
-[project.scripts]
-datadreamer = "datadreamer.pipelines.generate_dataset_from_scratch:main"
+[tool.ruff]
+target-version = "py38"
+
+[tool.ruff.lint]
+ignore = ["F403", "B028", "B905", "D1"]
+select = ["E4", "E7", "E9", "F", "W", "B", "I"]
+
+[tool.ruff.pydocstyle]
+convention = "google"
+
+[tool.docformatter]
+black = true
+
+[tool.mypy]
+python_version = "3.8"
+ignore_missing_imports = true
+
+[tool.pyright]
+typeCheckingMode = "basic"
