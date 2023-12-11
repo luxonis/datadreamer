@@ -1,19 +1,15 @@
-from typing import List, Optional
-import random
-import torch
-from transformers import AutoModelForCausalLM, AutoTokenizer
 import json
 import re
-from tqdm import tqdm
-
 from typing import List, Optional
+
 import torch
+from tqdm import tqdm
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 
 class SynonymGenerator:
-    """
-    Synonym generator that generates synonyms for a list of words using a language model.
+    """Synonym generator that generates synonyms for a list of words using a language
+    model.
 
     Args:
         synonyms_number (int): Number of synonyms to generate for each word.
@@ -33,18 +29,14 @@ class SynonymGenerator:
         seed: Optional[float] = 42,
         device: str = "cuda",
     ) -> None:
-        """
-        Initializes the SynonymGenerator with parameters.
-        """
+        """Initializes the SynonymGenerator with parameters."""
         self.synonyms_number = synonyms_number
         self.seed = seed
         self.device = device
         self.model, self.tokenizer = self._init_lang_model()
 
     def _init_lang_model(self):
-        """
-        Initializes the language model and tokenizer for synonym generation.
-        """
+        """Initializes the language model and tokenizer for synonym generation."""
         print("Initializing language model for synonym generation")
         model = AutoModelForCausalLM.from_pretrained(
             "mistralai/Mistral-7B-Instruct-v0.1", torch_dtype=torch.float16
@@ -53,8 +45,7 @@ class SynonymGenerator:
         return model, tokenizer
 
     def generate_synonyms_for_list(self, words: List[str]) -> dict:
-        """
-        Generates synonyms for a list of words and returns them in a dictionary.
+        """Generates synonyms for a list of words and returns them in a dictionary.
 
         Args:
             words (List[str]): List of words for which synonyms are generated.
@@ -70,8 +61,7 @@ class SynonymGenerator:
         return synonyms_dict
 
     def generate_synonyms(self, word: str) -> List[str]:
-        """
-        Generates synonyms for a single word and returns them in a list.
+        """Generates synonyms for a single word and returns them in a list.
 
         Args:
             word (str): The word for which synonyms are generated.
@@ -84,8 +74,7 @@ class SynonymGenerator:
         return generated_synonyms
 
     def _create_prompt_text(self, word: str) -> str:
-        """
-        Creates a prompt text for generating synonyms for a given word.
+        """Creates a prompt text for generating synonyms for a given word.
 
         Args:
             word (str): The word for which synonyms are generated.
@@ -96,8 +85,7 @@ class SynonymGenerator:
         return f"[INST] List {self.synonyms_number} most common synonyms for the word '{word}'. Write only synonyms separated by commas. [/INST]"
 
     def _generate_synonyms(self, prompt_text: str) -> List[str]:
-        """
-        Generates synonyms based on a given prompt text.
+        """Generates synonyms based on a given prompt text.
 
         Args:
             prompt_text (str): The prompt text for generating synonyms.
@@ -131,8 +119,7 @@ class SynonymGenerator:
         return synonyms
 
     def _extract_synonyms(self, text: str) -> List[str]:
-        """
-        Extracts synonyms from a text containing synonyms.
+        """Extracts synonyms from a text containing synonyms.
 
         Args:
             text (str): The text containing synonyms.
@@ -146,8 +133,7 @@ class SynonymGenerator:
         return synonyms[: self.synonyms_number]
 
     def save_synonyms(self, synonyms, save_path: str) -> None:
-        """
-        Saves the generated synonyms to a JSON file.
+        """Saves the generated synonyms to a JSON file.
 
         Args:
             synonyms: The synonyms to save (typically a dictionary).
@@ -157,8 +143,7 @@ class SynonymGenerator:
             json.dump(synonyms, f)
 
     def release(self, empty_cuda_cache=False) -> None:
-        """
-        Releases resources and optionally empties the CUDA cache.
+        """Releases resources and optionally empties the CUDA cache.
 
         Args:
             empty_cuda_cache (bool): Whether to empty the CUDA cache (default is False).

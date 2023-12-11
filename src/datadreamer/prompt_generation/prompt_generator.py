@@ -1,16 +1,14 @@
 import json
 import random
-import torch
+from abc import ABC, abstractmethod
 from typing import List, Optional
 
-
-from abc import ABC, abstractmethod
+import torch
 
 
 # Abstract base class for prompt generation
 class PromptGenerator(ABC):
-    """
-    Abstract base class for prompt generation.
+    """Abstract base class for prompt generation.
 
     Attributes:
         class_names (List[str]): List of class names or objects for prompt generation.
@@ -29,23 +27,20 @@ class PromptGenerator(ABC):
         self,
         class_names: List[str],
         prompts_number: int = 10,
-        num_objects_range: Optional[List[int]] = [1, 3],
+        num_objects_range: Optional[List[int]] = None,
         seed: Optional[float] = None,
     ) -> None:
-        """
-        Initializes the PromptGenerator with class names and other settings.
-        """
+        """Initializes the PromptGenerator with class names and other settings."""
         self.class_names = class_names
         self.prompts_number = prompts_number
-        self.num_objects_range = num_objects_range
+        self.num_objects_range = num_objects_range or [1, 3]
         self.seed = seed
         if seed is not None:
             self.set_seed(seed)
 
     @staticmethod
     def set_seed(seed: int):
-        """
-        Sets the random seed for consistent prompt generation.
+        """Sets the random seed for consistent prompt generation.
 
         Args:
             seed (int): The random seed.
@@ -55,8 +50,7 @@ class PromptGenerator(ABC):
         torch.cuda.manual_seed_all(seed)
 
     def save_prompts(self, prompts: List[str], save_path: str) -> None:
-        """
-        Saves generated prompts to a JSON file.
+        """Saves generated prompts to a JSON file.
 
         Args:
             prompts (List[str]): List of generated prompts.
@@ -67,8 +61,7 @@ class PromptGenerator(ABC):
 
     @abstractmethod
     def generate_prompts(self) -> List[str]:
-        """
-        Abstract method to generate prompts (must be implemented in subclasses).
+        """Abstract method to generate prompts (must be implemented in subclasses).
 
         Returns:
             List[str]: A list of generated prompts.
@@ -77,7 +70,5 @@ class PromptGenerator(ABC):
 
     @abstractmethod
     def release(self, empty_cuda_cache=False) -> None:
-        """
-        Abstract method to release resources (must be implemented in subclasses).
-        """
+        """Abstract method to release resources (must be implemented in subclasses)."""
         pass

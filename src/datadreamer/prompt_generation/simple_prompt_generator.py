@@ -1,12 +1,11 @@
 import random
-from typing import List, Optional
+from typing import List
 
 from datadreamer.prompt_generation.prompt_generator import PromptGenerator
 
 
 class SimplePromptGenerator(PromptGenerator):
-    """
-    Prompt generator that creates simple prompts for text generation tasks.
+    """Prompt generator that creates simple prompts for text generation tasks.
 
     Args:
         class_names (List[str]): List of class names or objects for prompt generation.
@@ -25,14 +24,11 @@ class SimplePromptGenerator(PromptGenerator):
         *args,
         **kwargs,
     ) -> None:
-        """
-        Initializes the SimplePromptGenerator with class names and other settings.
-        """
+        """Initializes the SimplePromptGenerator with class names and other settings."""
         super().__init__(*args, **kwargs)
 
     def generate_prompts(self) -> List[str]:
-        """
-        Generates a list of simple prompts.
+        """Generates a list of simple prompts.
 
         Returns:
             List[str]: A list of generated prompts in the form of "A photo of a {selected_objects}".
@@ -47,8 +43,7 @@ class SimplePromptGenerator(PromptGenerator):
         return prompts
 
     def generate_prompt(self, selected_objects: List[str]) -> str:
-        """
-        Generates a single simple prompt based on selected objects.
+        """Generates a single simple prompt based on selected objects.
 
         Args:
             selected_objects (List[str]): List of selected objects to include in the prompt.
@@ -59,9 +54,7 @@ class SimplePromptGenerator(PromptGenerator):
         return f"A photo of a {', a '.join(selected_objects)}"
 
     def release(self, empty_cuda_cache=False) -> None:
-        """
-        Releases resources (no action is taken in this implementation).
-        """
+        """Releases resources (no action is taken in this implementation)."""
         pass
 
 

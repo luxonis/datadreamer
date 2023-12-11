@@ -1,8 +1,10 @@
-![DataDreamer examples](images/grid_image_3x2_generated_dataset.jpg)
+# DataDreamer
 
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/luxonis/datadreamer/blob/main/examples/generate_dataset_and_train_yolo.ipynb)
 
-# DataDreamer
+![DataDreamer examples](images/grid_image_3x2_generated_dataset.jpg)
+
 `DataDreamer` is an advanced toolkit engineered to facilitate the development of edge AI models, irrespective of initial data availability. Distinctive features of DataDreamer include:
 
 - **Synthetic Data Generation**: Eliminate the dependency on extensive datasets for AI training. DataDreamer empowers users to generate synthetic datasets from the ground up, utilizing advanced AI algorithms capable of producing high-quality, diverse images.
@@ -18,11 +20,28 @@ The rationale behind the name `DataDreamer`:
 
 In essence, `DataDreamer` is designed to transform the AI development process, making it more accessible, efficient, and effective, turning visionary ideas into reality.
 
+## Table of Contents
+
+- [Features](#features)
+- [Installation](#installation)
+- [Hardware Requirements](#hardware-requirements)
+- [Usage](#usage)
+  - [Main Parameters](#main-parameters)
+  - [Additional Parameters](#additional-parameters)
+  - [Example](#example)
+  - [Output](#output)
+  - [Annotations Format](#annotations-format)
+  - [Note](#note)
+- [Limitations](#limitations)
+- [License](#license)
+- [Acknowledgements](#acknowledgements)
+
 ## Features
 
 - **Prompt Generation**: Automate the creation of image prompts using powerful language models.
 
-   *Provided class names: ["horse", "robot"]* ->  *Generated prompt: "A photo of a horse and a robot coexisting peacefully in the midst of a serene pasture."*
+  *Provided class names: \["horse", "robot"\]* ->  *Generated prompt: "A photo of a horse and a robot coexisting peacefully in the midst of a serene pasture."*
+
 - **Image Generation**: Generate synthetic datasets with state-of-the-art generative models.
 
 <img src="images/generated_image.jpg" width="512">
@@ -30,7 +49,6 @@ In essence, `DataDreamer` is designed to transform the AI development process, m
 - **Dataset Annotation**: Leverage foundation models to label datasets automatically.
 
 <img src="images/annotated_image.jpg" width="512">
-
 
 - **Edge Model Training**: Train efficient small-scale neural networks for edge deployment. (not part of this library)
 
@@ -50,6 +68,7 @@ pip install -e .
 ```
 
 ## Hardware Requirements
+
 To ensure optimal performance and compatibility with the libraries used in this project, the following hardware specifications are recommended:
 
 - `GPU`: A CUDA-compatible GPU with a minimum of 16 GB memory. This is essential for libraries like `torch`, `torchvision`, `transformers`, and `diffusers`, which leverage CUDA for accelerated computing in machine learning and image processing tasks.
@@ -57,10 +76,8 @@ To ensure optimal performance and compatibility with the libraries used in this 
 
 ## Usage
 
-### Overview
 The `datadreamer/pipelines/generate_dataset_from_scratch.py` (`datadreamer` command) script is a powerful tool for generating and annotating images with specific objects. It uses advanced models to both create images and accurately annotate them with bounding boxes for designated objects.
 
-### Usage
 Run the following command in your terminal to use the script:
 
 ```bash
@@ -68,6 +85,7 @@ datadreamer --save_dir <directory> --class_names <objects> --prompts_number <num
 ```
 
 ### Main Parameters
+
 - `--save_dir` (required): Path to the directory for saving generated images and annotations.
 - `--class_names` (required): Space-separated list of object names for image generation and annotation. Example: person moon robot.
 - `--prompts_number` (optional): Number of prompts to generate for each object. Defaults to 10.
@@ -88,12 +106,15 @@ datadreamer --save_dir <directory> --class_names <objects> --prompts_number <num
 - `--seed`: Set a random seed for image generation. Default is 42.
 
 ### Example
+
 ```bash
 datadreamer --save_dir path/to/save_directory --class_names person moon robot --prompts_number 20 --prompt_generator simple --num_objects_range 2 4 --image_generator sdxl-turbo
 ```
+
 This command generates images for the specified objects, saving them and their annotations in the given directory. The script allows customization of the generation process through various parameters, adapting to different needs and hardware configurations.
 
 ### Output
+
 The dataset comprises two primary components: images and their corresponding annotations, stored as JSON files.
 
 ```bash
@@ -109,10 +130,12 @@ save_dir/
 ```
 
 ### Annotations Format
+
 1. Detection Annotations (detection_annotations.json):
 
 - Each entry corresponds to an image and contains bounding boxes and labels for objects in the image.
 - Format:
+
 ```bash
 {
   "image_path": {
@@ -123,10 +146,12 @@ save_dir/
   "class_names": ["class1", "class2", ...]
 }
 ```
+
 2. Classification Annotations (classification_annotations.json):
 
 - Each entry corresponds to an image and contains labels for the image.
 - Format:
+
 ```bash
 {
   "image_path": {
@@ -137,12 +162,12 @@ save_dir/
 }
 ```
 
-
-
 ### Note
+
 Please make sure that all dependencies are correctly installed and that the datadreamer package is properly set up in your Python environment before running the script.
 
 ## Limitations
+
 While the datadreamer library leverages advanced Generative models to synthesize datasets and Foundation models for annotation, there are inherent limitations to consider:
 
 - `Incomplete Object Representation`: Occasionally, the generative models might not include all desired objects in the synthetic images. This could result from the complexity of the scene or limitations within the model's learned patterns.
@@ -152,7 +177,8 @@ While the datadreamer library leverages advanced Generative models to synthesize
 Despite these limitations, the datasets created by datadreamer provide a valuable foundation for developing and training models, especially for edge computing scenarios where data availability is often a challenge. The synthetic and annotated data should be seen as a stepping stone, granting a significant head start in the model development process.
 
 ## License
-This project is licensed under the Apache License, Version 2.0 - see the LICENSE file for details.
+
+This project is licensed under the [Apache License, Version 2.0](https://opensource.org/license/apache-2-0/) - see the [LICENSE](LICENSE) file for details.
 
 ## Acknowledgements
 

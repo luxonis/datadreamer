@@ -1,17 +1,17 @@
-from abc import ABC, abstractmethod
-from typing import Optional, Union, List
-import enum
-from PIL import Image
-import torch
-from tqdm import tqdm
 import random
+from abc import abstractmethod
+from typing import List, Optional, Union
+
+import torch
+from PIL import Image
+from tqdm import tqdm
 
 from datadreamer.image_generation.clip_image_tester import ClipImageTester
 
 
 class ImageGenerator:
-    """
-    A class for generating images based on textual prompts, with optional CLIP model testing.
+    """A class for generating images based on textual prompts, with optional CLIP model
+    testing.
 
     Attributes:
         prompt_prefix (str): Optional prefix to add to every prompt.
@@ -43,9 +43,7 @@ class ImageGenerator:
         image_tester_patience: Optional[int] = 1,
         seed: Optional[float] = 42,
     ) -> None:
-        """
-        Initializes the ImageGenerator with the specified settings.
-        """
+        """Initializes the ImageGenerator with the specified settings."""
         self.prompt_prefix = prompt_prefix
         self.prompt_suffix = prompt_suffix
         self.negative_prompt = negative_prompt
@@ -59,8 +57,7 @@ class ImageGenerator:
 
     @staticmethod
     def set_seed(seed: int):
-        """
-        Sets the seed for random number generators in Python and PyTorch.
+        """Sets the seed for random number generators in Python and PyTorch.
 
         Args:
             seed (int): The seed value to set.
@@ -74,8 +71,7 @@ class ImageGenerator:
         prompts: Union[str, List[str]],
         prompt_objects: Optional[List[List[str]]] = None,
     ):
-        """
-        Generates images based on the provided prompts and optional object prompts.
+        """Generates images based on the provided prompts and optional object prompts.
 
         Args:
             prompts (Union[str, List[str]]): Single prompt or a list of prompts to guide the image generation.
@@ -129,9 +125,7 @@ class ImageGenerator:
 
     @abstractmethod
     def release(self, empty_cuda_cache=False) -> None:
-        """
-        Releases resources and optionally empties the CUDA cache.
-        """
+        """Releases resources and optionally empties the CUDA cache."""
         pass
 
     @abstractmethod
@@ -141,8 +135,7 @@ class ImageGenerator:
         negative_prompt: str,
         prompt_objects: Optional[List[str]] = None,
     ) -> Image.Image:
-        """
-        Generates a single image based on the provided prompt.
+        """Generates a single image based on the provided prompt.
 
         Args:
             prompt (str): The positive prompt to guide image generation.
