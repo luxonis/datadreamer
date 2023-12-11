@@ -20,6 +20,22 @@ The rationale behind the name `DataDreamer`:
 
 In essence, `DataDreamer` is designed to transform the AI development process, making it more accessible, efficient, and effective, turning visionary ideas into reality.
 
+## Table of Contents
+
+- [Features](#features)
+- [Installation](#installation)
+- [Hardware Requirements](#hardware-requirements)
+- [Usage](#usage)
+  - [Main Parameters](#main-parameters)
+  - [Additional Parameters](#additional-parameters)
+  - [Example](#example)
+  - [Output](#output)
+  - [Annotations Format](#annotations-format)
+  - [Note](#note)
+- [Limitations](#limitations)
+- [License](#license)
+- [Acknowledgements](#acknowledgements)
+
 ## Features
 
 - **Prompt Generation**: Automate the creation of image prompts using powerful language models.
@@ -60,11 +76,7 @@ To ensure optimal performance and compatibility with the libraries used in this 
 
 ## Usage
 
-### Overview
-
 The `datadreamer/pipelines/generate_dataset_from_scratch.py` (`datadreamer` command) script is a powerful tool for generating and annotating images with specific objects. It uses advanced models to both create images and accurately annotate them with bounding boxes for designated objects.
-
-### Usage
 
 Run the following command in your terminal to use the script:
 
@@ -124,7 +136,7 @@ save_dir/
 - Each entry corresponds to an image and contains bounding boxes and labels for objects in the image.
 - Format:
 
-```bash
+```json
 {
   "image_path": {
     "boxes": [[x_min, y_min, x_max, y_max], ...],
@@ -140,7 +152,7 @@ save_dir/
 - Each entry corresponds to an image and contains labels for the image.
 - Format:
 
-```bash
+```json
 {
   "image_path": {
     "labels": [label_index, ...]
@@ -166,7 +178,7 @@ Despite these limitations, the datasets created by datadreamer provide a valuabl
 
 ## License
 
-This project is licensed under the Apache License, Version 2.0 - see the LICENSE file for details.
+This project is licensed under the [Apache License, Version 2.0](https://opensource.org/license/apache-2-0/) - see the [LICENSE.md](LICENSE.md) file for details.
 
 ## Acknowledgements
 
