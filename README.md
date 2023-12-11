@@ -1,8 +1,9 @@
-![DataDreamer examples](images/grid_image_3x2_generated_dataset.jpg)
+# DataDreamer
 
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/)
 
-# DataDreamer
+![DataDreamer examples](images/grid_image_3x2_generated_dataset.jpg)
 
 `DataDreamer` is an advanced toolkit engineered to facilitate the development of edge AI models, irrespective of initial data availability. Distinctive features of DataDreamer include:
 
