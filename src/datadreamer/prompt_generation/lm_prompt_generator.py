@@ -30,11 +30,12 @@ class LMPromptGenerator(PromptGenerator):
         self,
         class_names: List[str],
         prompts_number: int = 10,
-        num_objects_range: Optional[List[int]] = [1, 3],
+        num_objects_range: Optional[List[int]] = None,
         seed: Optional[float] = 42,
         device: str = "cuda",
     ) -> None:
         """Initializes the LMPromptGenerator with class names and other settings."""
+        num_objects_range = num_objects_range or [1, 3]
         super().__init__(class_names, prompts_number, num_objects_range, seed)
         self.device = device
         self.model, self.tokenizer = self._init_lang_model()

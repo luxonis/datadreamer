@@ -27,13 +27,13 @@ class PromptGenerator(ABC):
         self,
         class_names: List[str],
         prompts_number: int = 10,
-        num_objects_range: Optional[List[int]] = [1, 3],
+        num_objects_range: Optional[List[int]] = None,
         seed: Optional[float] = None,
     ) -> None:
         """Initializes the PromptGenerator with class names and other settings."""
         self.class_names = class_names
         self.prompts_number = prompts_number
-        self.num_objects_range = num_objects_range
+        self.num_objects_range = num_objects_range or [1, 3]
         self.seed = seed
         if seed is not None:
             self.set_seed(seed)
