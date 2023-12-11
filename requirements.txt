@@ -12,6 +12,5 @@ accelerate>=0.25.0
 scipy>=1.10.0
 
 # dev
-datadreamer
 pre-commit>=3.2.1
 toml>=0.10.2
