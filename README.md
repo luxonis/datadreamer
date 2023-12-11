@@ -136,7 +136,7 @@ save_dir/
 - Each entry corresponds to an image and contains bounding boxes and labels for objects in the image.
 - Format:
 
-```json
+```bash
 {
   "image_path": {
     "boxes": [[x_min, y_min, x_max, y_max], ...],
@@ -152,7 +152,7 @@ save_dir/
 - Each entry corresponds to an image and contains labels for the image.
 - Format:
 
-```json
+```bash
 {
   "image_path": {
     "labels": [label_index, ...]
