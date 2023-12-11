@@ -26,6 +26,7 @@ class SynonymGenerator:
         save_synonyms(synonyms, save_path): Saves the generated synonyms to a JSON file.
         release(empty_cuda_cache): Releases resources (no action is taken in this implementation).
     """
+
     def __init__(
         self,
         synonyms_number: int = 5,
@@ -106,7 +107,11 @@ class SynonymGenerator:
         """
         encoded_input = self.tokenizer(prompt_text, return_tensors="pt").to(self.device)
         generated_ids = self.model.generate(
-            **encoded_input, max_new_tokens=50, do_sample=True, num_return_sequences=1, pad_token_id=self.tokenizer.eos_token_id
+            **encoded_input,
+            max_new_tokens=50,
+            do_sample=True,
+            num_return_sequences=1,
+            pad_token_id=self.tokenizer.eos_token_id,
         )
         generated_text = self.tokenizer.decode(
             generated_ids[0], skip_special_tokens=True

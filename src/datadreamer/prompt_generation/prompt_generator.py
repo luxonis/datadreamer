@@ -24,6 +24,7 @@ class PromptGenerator(ABC):
         generate_prompts(): Abstract method to generate prompts (must be implemented in subclasses).
         release(empty_cuda_cache): Abstract method to release resources (must be implemented in subclasses).
     """
+
     def __init__(
         self,
         class_names: List[str],

@@ -25,6 +25,7 @@ class BaseAnnotator(ABC):
         annotate(): Abstract method to be implemented by subclasses. It should contain
                     the logic for performing annotation based on the task definition.
     """
+
     def __init__(
         self, seed: float, task_definition: TaskList = TaskList.OBJECT_DETECTION
     ) -> None:

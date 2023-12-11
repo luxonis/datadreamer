@@ -7,6 +7,7 @@ from datadreamer.dataset_annotation.utils import apply_tta
 
 from datadreamer.utils.nms import non_max_suppression
 
+
 class OWLv2Annotator(BaseAnnotator):
     """
     A class for image annotation using the OWLv2 model, specializing in object detection.
@@ -63,7 +64,9 @@ class OWLv2Annotator(BaseAnnotator):
             "google/owlv2-base-patch16-ensemble", do_pad=False
         )
 
-    def annotate(self, image, prompts, conf_threshold=0.1, use_tta=False, synonym_dict=None):
+    def annotate(
+        self, image, prompts, conf_threshold=0.1, use_tta=False, synonym_dict=None
+    ):
         """
         Annotates an image using the OWLv2 model.
 
@@ -95,7 +98,6 @@ class OWLv2Annotator(BaseAnnotator):
                     for v in value:
                         synonym_dict_rev[prompts_syn.index(v)] = prompts.index(key)
             prompts = prompts_syn
-        
 
         all_boxes = []
         all_scores = []
@@ -124,7 +126,9 @@ class OWLv2Annotator(BaseAnnotator):
                 boxes[:, [0, 2]] = image.size[0] - boxes[:, [2, 0]]
 
             if synonym_dict is not None:
-                labels = torch.tensor([synonym_dict_rev[label.item()] for label in labels])
+                labels = torch.tensor(
+                    [synonym_dict_rev[label.item()] for label in labels]
+                )
 
             all_boxes.append(boxes.to("cpu"))
             all_scores.append(scores.to("cpu"))
@@ -135,21 +139,21 @@ class OWLv2Annotator(BaseAnnotator):
         all_scores_cat = torch.cat(all_scores)
         all_labels_cat = torch.cat(all_labels)
 
-        one_hot_labels = torch.nn.functional.one_hot(all_labels_cat, num_classes=len(prompts))
+        one_hot_labels = torch.nn.functional.one_hot(
+            all_labels_cat, num_classes=len(prompts)
+        )
 
         # Apply NMS
         # transform predictions to shape [N, 5 + num_classes], N is the number of bboxes for nms function
         all_boxes_cat = torch.cat(
-            (
-                all_boxes_cat,
-                all_scores_cat.unsqueeze(-1),
-                one_hot_labels
-            ),
+            (all_boxes_cat, all_scores_cat.unsqueeze(-1), one_hot_labels),
             dim=1,
         )
 
         # output is  a list of detections, each item is one tensor with shape (num_boxes, 6), 6 is for [xyxy, conf, cls].
-        output = non_max_suppression(all_boxes_cat.unsqueeze(0), conf_thres=conf_threshold, iou_thres=0.2)
+        output = non_max_suppression(
+            all_boxes_cat.unsqueeze(0), conf_thres=conf_threshold, iou_thres=0.2
+        )
 
         final_boxes = output[0][:, :4]
         final_scores = output[0][:, 4]
