@@ -178,7 +178,7 @@ Despite these limitations, the datasets created by datadreamer provide a valuabl
 
 ## License
 
-This project is licensed under the [Apache License, Version 2.0](https://opensource.org/license/apache-2-0/) - see the [LICENSE.md](LICENSE.md) file for details.
+This project is licensed under the [Apache License, Version 2.0](https://opensource.org/license/apache-2-0/) - see the [LICENSE](LICENSE) file for details.
 
 ## Acknowledgements
 
