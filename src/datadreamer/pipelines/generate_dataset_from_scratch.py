@@ -297,9 +297,7 @@ def main():
             fig, ax = plt.subplots(1)
             ax.imshow(image)
             for box, score, label in zip(boxes, scores, local_labels):
-                labels.append(
-                    label
-                )
+                labels.append(label)
                 x1, y1, x2, y2 = box
                 rect = patches.Rectangle(
                     (x1, y1),
