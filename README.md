@@ -223,6 +223,8 @@ Despite these limitations, the datasets created by datadreamer provide a valuabl
 
 This project is licensed under the [Apache License, Version 2.0](https://opensource.org/license/apache-2-0/) - see the [LICENSE](LICENSE) file for details.
 
+The above license does not cover the models. Please see the license of each model in the table above.
+
 <a name="acknowledgements"></a>
 
 ## Acknowledgements
