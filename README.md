@@ -62,8 +62,6 @@ To install with pip:
 pip install datadreamer
 ```
 
-
-
 To install `datadreamer` from source, follow these steps:
 
 ```bash
