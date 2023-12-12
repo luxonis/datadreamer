@@ -259,8 +259,8 @@ def main():
         scores_list = []
         labels_list = []
 
-        for i, (image_path, prompt_objs) in tqdm(
-            enumerate(zip(image_paths, prompt_objects)),
+        for i, image_path in tqdm(
+            enumerate(image_paths),
             desc="Annotating images",
             total=len(image_paths),
         ):
@@ -297,11 +297,7 @@ def main():
             fig, ax = plt.subplots(1)
             ax.imshow(image)
             for box, score, label in zip(boxes, scores, local_labels):
-                labels.append(
-                    args.class_names.index(prompt_objs[label])
-                    if isinstance(label, np.int64)
-                    else label
-                )
+                labels.append(label)
                 x1, y1, x2, y2 = box
                 rect = patches.Rectangle(
                     (x1, y1),
@@ -312,9 +308,7 @@ def main():
                     facecolor="none",
                 )
                 ax.add_patch(rect)
-                label_text = (
-                    prompt_objs[label] if isinstance(label, np.int64) else label
-                )
+                label_text = args.class_names[label]
                 plt.text(
                     x1,
                     y1,

@@ -96,6 +96,7 @@ class ImageGenerator:
                 best_prob = 0
                 best_image = None
                 best_num_passed = 0
+                passed = False
 
                 for _ in tqdm(range(self.image_tester_patience), desc="Testing image"):
                     image = self.generate_image(
@@ -115,10 +116,9 @@ class ImageGenerator:
                         best_image = image
                         best_prob = mean_prob
                         best_num_passed = num_passed
-                if passed:
-                    continue
                 # If no image passed the test, return the image with the highest number of objects that passed the test
-                yield best_image
+                if not passed:
+                    yield best_image
 
             else:
                 yield self.generate_image(prompt, self.negative_prompt, prompt_objs)
