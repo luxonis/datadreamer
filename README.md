@@ -28,6 +28,7 @@ In essence, `DataDreamer` is designed to transform the AI development process, m
 - [Usage](#usage)
   - [Main Parameters](#main-parameters)
   - [Additional Parameters](#additional-parameters)
+  - [Avaliable models](#avaliable-models)
   - [Example](#example)
   - [Output](#output)
   - [Annotations Format](#annotations-format)
@@ -36,6 +37,7 @@ In essence, `DataDreamer` is designed to transform the AI development process, m
 - [License](#license)
 - [Acknowledgements](#acknowledgements)
 
+<a name="features"></a>
 ## Features
 
 - **Prompt Generation**: Automate the creation of image prompts using powerful language models.
@@ -54,6 +56,7 @@ In essence, `DataDreamer` is designed to transform the AI development process, m
 
 [Example](https://github.com/luxonis/datadreamer/blob/main/examples/generate_dataset_and_train_yolo.ipynb)
 
+<a name="installation"></a>
 ## Installation
 
 To install with pip:
@@ -73,13 +76,15 @@ cd datadreamer
 pip install .
 ```
 
+<a name="hardware-requirements"></a>
 ## Hardware Requirements
 
 To ensure optimal performance and compatibility with the libraries used in this project, the following hardware specifications are recommended:
 
 - `GPU`: A CUDA-compatible GPU with a minimum of 16 GB memory. This is essential for libraries like `torch`, `torchvision`, `transformers`, and `diffusers`, which leverage CUDA for accelerated computing in machine learning and image processing tasks.
 - `RAM`: At least 16 GB of system RAM, although more (32 GB or above) is beneficial for handling large datasets and intensive computations.
-
+  
+<a name="usage"></a>
 ## Usage
 
 The `datadreamer/pipelines/generate_dataset_from_scratch.py` (`datadreamer` command) script is a powerful tool for generating and annotating images with specific objects. It uses advanced models to both create images and accurately annotate them with bounding boxes for designated objects.
@@ -90,12 +95,14 @@ Run the following command in your terminal to use the script:
 datadreamer --save_dir <directory> --class_names <objects> --prompts_number <number> [additional options]
 ```
 
+<a name="main-parameters"></a>
 ### Main Parameters
 
 - `--save_dir` (required): Path to the directory for saving generated images and annotations.
 - `--class_names` (required): Space-separated list of object names for image generation and annotation. Example: person moon robot.
 - `--prompts_number` (optional): Number of prompts to generate for each object. Defaults to 10.
 
+<a name="additional-parameters"></a>
 ### Additional Parameters
 
 - `--task`: Choose between `detection` and `classification`. Default is `detection`.
@@ -111,6 +118,18 @@ datadreamer --save_dir <directory> --class_names <objects> --prompts_number <num
 - `--device`: Choose between `cuda` and `cpu`. Default is cuda.
 - `--seed`: Set a random seed for image and prompt generation. Default is 42.
 
+<a name="available-models"></a>
+### Avaliable models
+
+| Model Category     | Model Names                                                                  | Description/Notes                                   |
+|--------------------|------------------------------------------------------------------------------|-----------------------------------------------------|
+| Prompt Generation  | [Mistral-7B-Instruct-v0.1](https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.1) | Semantically rich prompts                           |
+|                    | Simple random generator                                                      | Joins randomly chosen object names                  |
+| Image Generation   | [SDXL-1.0](https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0) | Slow and accurate (1024x1024 images)                |
+|                    | [SDXL-Turbo](https://huggingface.co/stabilityai/sdxl-turbo)                  | Fast and less accurate (512x512 images)             |
+| Image Annotation   | [OWlv2](https://huggingface.co/google/owlv2-large-patch14-ensemble)          | Open-Vocabulary object detector                     |
+
+<a name="example"></a>
 ### Example
 
 ```bash
@@ -119,6 +138,7 @@ datadreamer --save_dir path/to/save_directory --class_names person moon robot --
 
 This command generates images for the specified objects, saving them and their annotations in the given directory. The script allows customization of the generation process through various parameters, adapting to different needs and hardware configurations.
 
+<a name="output"></a>
 ### Output
 
 The dataset comprises two primary components: images and their corresponding annotations, stored as JSON files.
@@ -135,6 +155,7 @@ save_dir/
 └── annotations.json
 ```
 
+<a name="annotations-format"></a>
 ### Annotations Format
 
 1. Detection Annotations (detection_annotations.json):
@@ -168,10 +189,12 @@ save_dir/
 }
 ```
 
+<a name="note"></a>
 ### Note
 
 Please make sure that all dependencies are correctly installed and that the datadreamer package is properly set up in your Python environment before running the script.
 
+<a name="limitations"></a>
 ## Limitations
 
 While the datadreamer library leverages advanced Generative models to synthesize datasets and Foundation models for annotation, there are inherent limitations to consider:
@@ -182,10 +205,12 @@ While the datadreamer library leverages advanced Generative models to synthesize
 
 Despite these limitations, the datasets created by datadreamer provide a valuable foundation for developing and training models, especially for edge computing scenarios where data availability is often a challenge. The synthetic and annotated data should be seen as a stepping stone, granting a significant head start in the model development process.
 
+<a name="license"></a>
 ## License
 
 This project is licensed under the [Apache License, Version 2.0](https://opensource.org/license/apache-2-0/) - see the [LICENSE](LICENSE) file for details.
 
+<a name="acknowledgements"></a>
 ## Acknowledgements
 
 This library was made possible by the use of several open-source projects, including Transformers, Diffusers, and others listed in the requirements.txt.
