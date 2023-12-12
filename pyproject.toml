@@ -12,7 +12,7 @@ license = { file = "LICENSE" }
 maintainers = [{ name = "Luxonis", email = "support@luxonis.com"}]
 keywords = ["computer vision", "AI", "machine learning", "generative models"]
 classifiers = [
-    "License :: Apache License 2.0",
+    "License :: OSI Approved :: Apache Software License",
     "Development Status :: 3 - Alpha",
     "Programming Language :: Python :: 3.8",
     "Intended Audience :: Developers",
