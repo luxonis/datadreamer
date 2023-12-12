@@ -1,7 +1,7 @@
 ---
 name: Bug report
 about: Create a report to help us improve
-title: "[BUT_TITLE]"
+title: "[BUG_TITLE]"
 labels: bug
 assignees: sokovninn, tersekmatija
 
