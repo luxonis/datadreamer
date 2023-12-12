@@ -132,10 +132,10 @@ def main():
         description="Convert dataset to YOLO format with train-val split."
     )
     parser.add_argument(
-        "save_dir", type=str, help="Directory containing the images and annotations."
+        "--save_dir", type=str, help="Directory containing the images and annotations."
     )
     parser.add_argument(
-        "output_dir",
+        "--output_dir",
         type=str,
         help="Directory where the processed dataset will be saved.",
     )
