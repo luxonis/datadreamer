@@ -56,6 +56,14 @@ In essence, `DataDreamer` is designed to transform the AI development process, m
 
 ## Installation
 
+To install with pip:
+
+```bash
+pip install datadreamer
+```
+
+
+
 To install `datadreamer` from source, follow these steps:
 
 ```bash
@@ -64,7 +72,7 @@ git clone https://github.com/luxonis/datadreamer.git
 cd datadreamer
 
 # Install the package
-pip install -e .
+pip install .
 ```
 
 ## Hardware Requirements
