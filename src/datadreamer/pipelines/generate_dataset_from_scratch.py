@@ -98,7 +98,7 @@ def parse_args():
 
     parser.add_argument(
         "--use_tta",
-        default=True,
+        default=False,
         action="store_true",
         help="Whether to use test time augmentation for object detection",
     )
