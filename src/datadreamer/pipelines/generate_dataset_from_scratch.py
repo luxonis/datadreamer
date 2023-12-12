@@ -98,22 +98,22 @@ def parse_args():
 
     parser.add_argument(
         "--use_tta",
-        type=bool,
         default=True,
+        action="store_true",
         help="Whether to use test time augmentation for object detection",
     )
 
     parser.add_argument(
         "--enhance_class_names",
-        type=bool,
         default=False,
+        action="store_true",
         help="Whether to enhance class names with synonyms",
     )
 
     parser.add_argument(
         "--use_image_tester",
-        type=bool,
         default=False,
+        action="store_true",
         help="Whether to use image tester for image generation",
     )
 
