@@ -28,7 +28,7 @@ In essence, `DataDreamer` is designed to transform the AI development process, m
 - [Usage](#usage)
   - [Main Parameters](#main-parameters)
   - [Additional Parameters](#additional-parameters)
-  - [Avaliable models](#avaliable-models)
+  - [Available models](#available-models)
   - [Example](#example)
   - [Output](#output)
   - [Annotations Format](#annotations-format)
@@ -119,7 +119,7 @@ datadreamer --save_dir <directory> --class_names <objects> --prompts_number <num
 - `--seed`: Set a random seed for image and prompt generation. Default is 42.
 
 <a name="available-models"></a>
-### Avaliable models
+### Available models
 
 | Model Category     | Model Names                                                                  | Description/Notes                                   |
 |--------------------|------------------------------------------------------------------------------|-----------------------------------------------------|
