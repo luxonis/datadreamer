@@ -1,12 +1,11 @@
-______________________________________________________________________
-
+---
 name: Bug report
 about: Create a report to help us improve
-title: "\[BUG_TITLE\]"
+title: "[BUT_TITLE]"
 labels: bug
 assignees: sokovninn, tersekmatija
 
-______________________________________________________________________
+---
 
 **Describe the bug**
 A clear and concise description of what the bug is.
@@ -19,14 +18,13 @@ If applicable, add screenshots to help explain your problem.
 
 **Environment (please complete the following information):**
 
-- OS: \[e.g. iOS\]
+- OS: \[e.g. Linux Ubuntu 22.04\]
 - Package version: \[e.g. 0.1.0\]
 
 **To Reproduce**
 Please provide a minimal reproducible example. This would include:
 
-- Config file
-- Script to generate the dataset in case the issue cannot be reproduced using one of our [example](../../examples) datasets
+- Used arguments
 - Sript to run the pipeline
 
 **Additional context**
