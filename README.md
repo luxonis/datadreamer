@@ -134,7 +134,7 @@ datadreamer --save_dir <directory> --class_names <objects> --prompts_number <num
 |                   | Simple random generator                                                               | Joins randomly chosen object names      |
 | Image Generation  | [SDXL-1.0](https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0)           | Slow and accurate (1024x1024 images)    |
 |                   | [SDXL-Turbo](https://huggingface.co/stabilityai/sdxl-turbo)                           | Fast and less accurate (512x512 images) |
-| Image Annotation  | [OWlv2](https://huggingface.co/google/owlv2-large-patch14-ensemble)                   | Open-Vocabulary object detector         |
+| Image Annotation  | [OWLv2](https://huggingface.co/google/owlv2-large-patch14-ensemble)                   | Open-Vocabulary object detector         |
 
 <a name="example"></a>
 
