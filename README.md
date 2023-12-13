@@ -141,7 +141,7 @@ datadreamer --save_dir <directory> --class_names <objects> --prompts_number <num
 ### Example
 
 ```bash
-datadreamer --save_dir path/to/save_directory --class_names person moon robot --prompts_number 20 --prompt_generator simple --num_objects_range 2 4 --image_generator sdxl-turbo
+datadreamer --save_dir path/to/save_directory --class_names person moon robot --prompts_number 20 --prompt_generator simple --num_objects_range 1 3 --image_generator sdxl-turbo
 ```
 
 This command generates images for the specified objects, saving them and their annotations in the given directory. The script allows customization of the generation process through various parameters, adapting to different needs and hardware configurations.
