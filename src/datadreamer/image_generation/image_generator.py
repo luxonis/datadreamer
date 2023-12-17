@@ -21,6 +21,7 @@ class ImageGenerator:
         image_tester_patience (int): The number of attempts to generate an image that passes CLIP testing.
         seed (float): Seed for reproducibility.
         clip_image_tester (ClipImageTester): Instance of ClipImageTester if use_clip_image_tester is True.
+        device (str): The device on which the model will run ('cuda' for GPU, 'cpu' for CPU).
 
     Methods:
         set_seed(seed): Sets the seed for random number generators.
@@ -42,6 +43,7 @@ class ImageGenerator:
         use_clip_image_tester: Optional[bool] = False,
         image_tester_patience: Optional[int] = 1,
         seed: Optional[float] = 42,
+        device: str = "cuda",
     ) -> None:
         """Initializes the ImageGenerator with the specified settings."""
         self.prompt_prefix = prompt_prefix
@@ -50,8 +52,9 @@ class ImageGenerator:
         self.seed = seed
         self.use_clip_image_tester = use_clip_image_tester
         self.image_tester_patience = image_tester_patience
+        self.device = device
         if self.use_clip_image_tester:
-            self.clip_image_tester = ClipImageTester()
+            self.clip_image_tester = ClipImageTester(self.device)
         if seed is not None:
             self.set_seed(seed)
 

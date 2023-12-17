@@ -39,7 +39,7 @@ class SynonymGenerator:
         """Initializes the language model and tokenizer for synonym generation."""
         print("Initializing language model for synonym generation")
         model = AutoModelForCausalLM.from_pretrained(
-            "mistralai/Mistral-7B-Instruct-v0.1", torch_dtype=torch.float16
+            "mistralai/Mistral-7B-Instruct-v0.1", torch_dtype=torch.float16 if self.device != "cpu" else torch.float32
         ).to(self.device)
         tokenizer = AutoTokenizer.from_pretrained("mistralai/Mistral-7B-Instruct-v0.1")
         return model, tokenizer
@@ -156,9 +156,7 @@ class SynonymGenerator:
 
 if __name__ == "__main__":
     # Example usage
-    generator = SynonymGenerator(
-        "mistralai/Mistral-7B-Instruct-v0.1", synonyms_number=3
-    )
+    generator = SynonymGenerator(synonyms_number=3, device="cpu")
     synonyms = generator.generate_synonyms_for_list(
         ["astronaut", "cat", "dog", "person", "horse"]
     )

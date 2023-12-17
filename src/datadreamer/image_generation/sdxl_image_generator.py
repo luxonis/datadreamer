@@ -43,7 +43,10 @@ class StableDiffusionImageGenerator(ImageGenerator):
             variant="fp16",
             use_safetensors=True,
         )
-        base.enable_model_cpu_offload()
+        if self.device != "cpu":
+            base.enable_model_cpu_offload()
+        else:
+            base.to("cpu")
         refiner = DiffusionPipeline.from_pretrained(
             "stabilityai/stable-diffusion-xl-refiner-1.0",
             text_encoder_2=base.text_encoder_2,
@@ -52,7 +55,10 @@ class StableDiffusionImageGenerator(ImageGenerator):
             use_safetensors=True,
             variant="fp16",
         )
-        refiner.enable_model_cpu_offload()
+        if self.device != "cpu":
+            refiner.enable_model_cpu_offload()
+        else:
+            refiner.to("cpu")
 
         return base, refiner
 

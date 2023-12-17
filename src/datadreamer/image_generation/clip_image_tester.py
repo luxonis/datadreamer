@@ -11,18 +11,21 @@ class ClipImageTester:
     Attributes:
         clip (CLIPModel): The CLIP model for image-text similarity evaluation.
         clip_processor (CLIPProcessor): The processor for preparing inputs to the CLIP model.
+        device (str): The device on which the model will run ('cuda' for GPU, 'cpu' for CPU).
 
     Methods:
         test_image(image, objects, conf_threshold): Tests the given image against a list of objects.
         release(empty_cuda_cache): Releases resources and optionally empties the CUDA cache.
     """
 
-    def __init__(self) -> None:
+    def __init__(self, device: str = "cuda") -> None:
         """Initializes the ClipImageTester with the CLIP model and processor."""
         self.clip = CLIPModel.from_pretrained("openai/clip-vit-base-patch32")
         self.clip_processor = CLIPProcessor.from_pretrained(
             "openai/clip-vit-base-patch32"
         )
+        self.device = device
+        self.clip.to(self.device)
 
     def test_image(self, image: Image.Image, objects: List[str], conf_threshold=0.05):
         """Tests the generated image against a set of objects using the CLIP model.
@@ -39,10 +42,10 @@ class ClipImageTester:
         # Process the inputs for the CLIP model
         inputs = self.clip_processor(
             text=objects, images=image, return_tensors="pt", padding=True
-        )
+        ).to(self.device)
 
         # Get similarity scores from the CLIP model
-        outputs = self.clip(**inputs)
+        outputs = self.clip(**inputs).detach().cpu()
         logits_per_image = outputs.logits_per_image  # image-text similarity score
         probs = logits_per_image.softmax(dim=1)  # label probabilities
         passed = torch.all(probs > conf_threshold).item()

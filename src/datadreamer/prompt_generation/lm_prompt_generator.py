@@ -36,8 +36,7 @@ class LMPromptGenerator(PromptGenerator):
     ) -> None:
         """Initializes the LMPromptGenerator with class names and other settings."""
         num_objects_range = num_objects_range or [1, 3]
-        super().__init__(class_names, prompts_number, num_objects_range, seed)
-        self.device = device
+        super().__init__(class_names, prompts_number, num_objects_range, seed, device)
         self.model, self.tokenizer = self._init_lang_model()
 
     def _init_lang_model(self):
@@ -48,7 +47,7 @@ class LMPromptGenerator(PromptGenerator):
         """
         print("Loading language model...")
         model = AutoModelForCausalLM.from_pretrained(
-            "mistralai/Mistral-7B-Instruct-v0.1", torch_dtype=torch.float16
+            "mistralai/Mistral-7B-Instruct-v0.1", torch_dtype=torch.float16 if self.device != "cpu" else torch.float32
         ).to(self.device)
         tokenizer = AutoTokenizer.from_pretrained("mistralai/Mistral-7B-Instruct-v0.1")
         print("Done!")
@@ -139,7 +138,7 @@ class LMPromptGenerator(PromptGenerator):
 if __name__ == "__main__":
     # Example usage of the class
     object_names = ["aeroplane", "bicycle", "bird", "boat"]
-    prompt_generator = LMPromptGenerator(class_names=object_names)
+    prompt_generator = LMPromptGenerator(class_names=object_names, prompts_number=4, device="cpu")
     generated_prompts = prompt_generator.generate_prompts()
     for prompt in generated_prompts:
         print(prompt)

@@ -38,7 +38,11 @@ class StableDiffusionTurboImageGenerator(ImageGenerator):
             variant="fp16",
             use_safetensors=True,
         )
-        base.enable_model_cpu_offload()
+        # base.enable_model_cpu_offload()
+        if self.device != "cpu":
+            base.enable_model_cpu_offload()
+        else:
+            base.to("cpu")
 
         return base
 
