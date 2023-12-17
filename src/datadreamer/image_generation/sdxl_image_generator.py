@@ -37,29 +37,41 @@ class StableDiffusionImageGenerator(ImageGenerator):
         Returns:
             tuple: The base and refiner models.
         """
-        base = DiffusionPipeline.from_pretrained(
-            "stabilityai/stable-diffusion-xl-base-1.0",
-            torch_dtype=torch.float16,
-            variant="fp16",
-            use_safetensors=True,
-        )
-        if self.device != "cpu":
-            base.enable_model_cpu_offload()
-        else:
+        if self.device == "cpu":
+            base = DiffusionPipeline.from_pretrained(
+                "stabilityai/stable-diffusion-xl-base-1.0",
+                # variant="fp16",
+                torch_dtype=torch.float32,
+                use_safetensors=True,
+            )
             base.to("cpu")
-        refiner = DiffusionPipeline.from_pretrained(
-            "stabilityai/stable-diffusion-xl-refiner-1.0",
-            text_encoder_2=base.text_encoder_2,
-            vae=base.vae,
-            torch_dtype=torch.float16,
-            use_safetensors=True,
-            variant="fp16",
-        )
-        if self.device != "cpu":
-            refiner.enable_model_cpu_offload()
-        else:
+            refiner = DiffusionPipeline.from_pretrained(
+                "stabilityai/stable-diffusion-xl-refiner-1.0",
+                text_encoder_2=base.text_encoder_2,
+                vae=base.vae,
+                torch_dtype=torch.float32,
+                use_safetensors=True,
+                # variant="fp16",
+            )
             refiner.to("cpu")
-
+        else:
+            base = DiffusionPipeline.from_pretrained(
+                "stabilityai/stable-diffusion-xl-base-1.0",
+                torch_dtype=torch.float16,
+                variant="fp16",
+                use_safetensors=True,
+            )
+            base.enable_model_cpu_offload()
+            refiner = DiffusionPipeline.from_pretrained(
+                "stabilityai/stable-diffusion-xl-refiner-1.0",
+                text_encoder_2=base.text_encoder_2,
+                vae=base.vae,
+                torch_dtype=torch.float16,
+                use_safetensors=True,
+                variant="fp16",
+            )
+            refiner.enable_model_cpu_offload()
+        
         return base, refiner
 
     def _init_processor(self):
@@ -140,3 +152,29 @@ class StableDiffusionImageGenerator(ImageGenerator):
         if empty_cuda_cache:
             with torch.no_grad():
                 torch.cuda.empty_cache()
+
+
+if __name__ == "__main__":
+    import os
+    # Create the generator
+    image_generator = StableDiffusionImageGenerator(
+        seed=42,
+        use_clip_image_tester=False,
+        image_tester_patience=1,
+        device="cpu",
+    )
+    prompts = [
+        'A photo of a bicycle pedaling alongside an aeroplane taking off, showcasing the harmony between human-powered and mechanical transportation.',
+        'A photo of bicycles along a scenic mountain path, where the riders seem to have taken a moment to appreciate the stunning views.',
+    ]
+    prompt_objects = [['aeroplane', 'boat', 'bicycle'], ['bicycle']]
+
+    image_paths = []
+    for i, generated_image in enumerate(
+        image_generator.generate_images(prompts, prompt_objects)
+    ):
+        image_path = os.path.join("./", f"image_{i}.jpg")
+        generated_image.save(image_path)
+        image_paths.append(image_path)
+
+    image_generator.release(empty_cuda_cache=True)

@@ -200,6 +200,7 @@ def main():
         prompts_number=args.prompts_number,
         num_objects_range=args.num_objects_range,
         seed=args.seed,
+        device=args.device,
     )
     generated_prompts = prompt_generator.generate_prompts()
     prompt_generator.save_prompts(
@@ -210,7 +211,7 @@ def main():
     # Synonym generation
     synonym_dict = None
     if args.enhance_class_names:
-        synonym_generator = SynonymGenerator()
+        synonym_generator = SynonymGenerator(device=args.device)
         synonym_dict = synonym_generator.generate_synonyms_for_list(args.class_names)
         synonym_generator.release(empty_cuda_cache=True)
         synonym_generator.save_synonyms(
@@ -223,6 +224,7 @@ def main():
         seed=args.seed,
         use_clip_image_tester=args.use_image_tester,
         image_tester_patience=args.image_tester_patience,
+        device=args.device,
     )
 
     prompts = [p[1] for p in generated_prompts]

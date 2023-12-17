@@ -32,17 +32,22 @@ class StableDiffusionTurboImageGenerator(ImageGenerator):
         Returns:
             AutoPipelineForText2Image: The initialized Stable Diffusion Turbo model.
         """
-        base = AutoPipelineForText2Image.from_pretrained(
-            "stabilityai/sdxl-turbo",
-            torch_dtype=torch.float16,
-            variant="fp16",
-            use_safetensors=True,
-        )
-        # base.enable_model_cpu_offload()
-        if self.device != "cpu":
-            base.enable_model_cpu_offload()
-        else:
+        if self.device == "cpu":
+            base = AutoPipelineForText2Image.from_pretrained(
+                "stabilityai/sdxl-turbo",
+                # variant="fp16",
+                torch_dtype=torch.float32,
+                use_safetensors=True,
+            )
             base.to("cpu")
+        else:
+            base = AutoPipelineForText2Image.from_pretrained(
+                "stabilityai/sdxl-turbo",
+                torch_dtype=torch.float16,
+                variant="fp16",
+                use_safetensors=True,
+            )
+            base.enable_model_cpu_offload()
 
         return base
 
@@ -80,3 +85,28 @@ class StableDiffusionTurboImageGenerator(ImageGenerator):
         if empty_cuda_cache:
             with torch.no_grad():
                 torch.cuda.empty_cache()
+
+
+if __name__ == "__main__":
+    import os
+    # Create the generator
+    image_generator = StableDiffusionTurboImageGenerator(
+        seed=42,
+        use_clip_image_tester=False,
+        image_tester_patience=1,
+        device="cpu",
+    )
+    prompts = [
+        'A photo of a bicycle pedaling alongside an aeroplane taking off, showcasing the harmony between human-powered and mechanical transportation.',
+    ]
+    prompt_objects = [['aeroplane', 'boat', 'bicycle']]
+
+    image_paths = []
+    for i, generated_image in enumerate(
+        image_generator.generate_images(prompts, prompt_objects)
+    ):
+        image_path = os.path.join("./", f"image_turbo_{i}.jpg")
+        generated_image.save(image_path)
+        image_paths.append(image_path)
+
+    image_generator.release(empty_cuda_cache=True)
