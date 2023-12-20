@@ -40,7 +40,10 @@ class SynonymGenerator:
         print("Initializing language model for synonym generation")
         if self.device == "cpu":
             model = AutoModelForCausalLM.from_pretrained(
-                "mistralai/Mistral-7B-Instruct-v0.1", torch_dtype="auto", device_map="auto", low_cpu_mem_usage=True
+                "mistralai/Mistral-7B-Instruct-v0.1",
+                torch_dtype="auto",
+                device_map="auto",
+                low_cpu_mem_usage=True,
             )
         else:
             model = AutoModelForCausalLM.from_pretrained(

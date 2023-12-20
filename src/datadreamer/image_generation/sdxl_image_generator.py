@@ -71,7 +71,7 @@ class StableDiffusionImageGenerator(ImageGenerator):
                 variant="fp16",
             )
             refiner.enable_model_cpu_offload()
-        
+
         return base, refiner
 
     def _init_processor(self):
@@ -156,6 +156,7 @@ class StableDiffusionImageGenerator(ImageGenerator):
 
 if __name__ == "__main__":
     import os
+
     # Create the generator
     image_generator = StableDiffusionImageGenerator(
         seed=42,
@@ -164,10 +165,10 @@ if __name__ == "__main__":
         device="cpu",
     )
     prompts = [
-        'A photo of a bicycle pedaling alongside an aeroplane taking off, showcasing the harmony between human-powered and mechanical transportation.',
-        'A photo of bicycles along a scenic mountain path, where the riders seem to have taken a moment to appreciate the stunning views.',
+        "A photo of a bicycle pedaling alongside an aeroplane taking off, showcasing the harmony between human-powered and mechanical transportation.",
+        "A photo of bicycles along a scenic mountain path, where the riders seem to have taken a moment to appreciate the stunning views.",
     ]
-    prompt_objects = [['aeroplane', 'boat', 'bicycle'], ['bicycle']]
+    prompt_objects = [["aeroplane", "boat", "bicycle"], ["bicycle"]]
 
     image_paths = []
     for i, generated_image in enumerate(

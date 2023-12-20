@@ -48,14 +48,17 @@ class LMPromptGenerator(PromptGenerator):
         if self.device == "cpu":
             print("Loading language model on CPU...")
             model = AutoModelForCausalLM.from_pretrained(
-                "mistralai/Mistral-7B-Instruct-v0.1", torch_dtype="auto", device_map="auto", low_cpu_mem_usage=True
+                "mistralai/Mistral-7B-Instruct-v0.1",
+                torch_dtype="auto",
+                device_map="auto",
+                low_cpu_mem_usage=True,
             )
         else:
             print("Loading language model on GPU...")
             model = AutoModelForCausalLM.from_pretrained(
                 "mistralai/Mistral-7B-Instruct-v0.1", torch_dtype=torch.float16
             )
-        
+
         tokenizer = AutoTokenizer.from_pretrained("mistralai/Mistral-7B-Instruct-v0.1")
         print("Done!")
         return model.to(self.device), tokenizer
@@ -145,7 +148,9 @@ class LMPromptGenerator(PromptGenerator):
 if __name__ == "__main__":
     # Example usage of the class
     object_names = ["aeroplane", "bicycle", "bird", "boat"]
-    prompt_generator = LMPromptGenerator(class_names=object_names, prompts_number=2, device="cpu")
+    prompt_generator = LMPromptGenerator(
+        class_names=object_names, prompts_number=2, device="cpu"
+    )
     generated_prompts = prompt_generator.generate_prompts()
     for prompt in generated_prompts:
         print(prompt)

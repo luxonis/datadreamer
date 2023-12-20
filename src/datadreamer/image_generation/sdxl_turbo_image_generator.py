@@ -89,6 +89,7 @@ class StableDiffusionTurboImageGenerator(ImageGenerator):
 
 if __name__ == "__main__":
     import os
+
     # Create the generator
     image_generator = StableDiffusionTurboImageGenerator(
         seed=42,
@@ -97,9 +98,9 @@ if __name__ == "__main__":
         device="cpu",
     )
     prompts = [
-        'A photo of a bicycle pedaling alongside an aeroplane taking off, showcasing the harmony between human-powered and mechanical transportation.',
+        "A photo of a bicycle pedaling alongside an aeroplane taking off, showcasing the harmony between human-powered and mechanical transportation.",
     ]
-    prompt_objects = [['aeroplane', 'boat', 'bicycle']]
+    prompt_objects = [["aeroplane", "boat", "bicycle"]]
 
     image_paths = []
     for i, generated_image in enumerate(
