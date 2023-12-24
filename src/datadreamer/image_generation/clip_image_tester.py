@@ -46,9 +46,7 @@ class ClipImageTester:
 
         # Get similarity scores from the CLIP model
         outputs = self.clip(**inputs)
-        logits_per_image = (
-            outputs.logits_per_image
-        )  # image-text similarity score
+        logits_per_image = outputs.logits_per_image  # image-text similarity score
         probs = logits_per_image.softmax(dim=1)  # label probabilities
         passed = torch.all(probs > conf_threshold).item()
         num_passed = torch.sum(probs > conf_threshold).item()
