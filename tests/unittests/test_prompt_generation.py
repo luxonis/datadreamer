@@ -27,7 +27,7 @@ def test_simple_prompt_generator():
 
 def test_lm_prompt_generator():
     object_names = ["aeroplane", "bicycle", "bird", "boat"]
-    prompt_generator = LMPromptGenerator(class_names=object_names)
+    prompt_generator = LMPromptGenerator(class_names=object_names, prompts_number=2)
     prompts = prompt_generator.generate_prompts()
     # Check that the some prompts were generated
     assert len(prompts) > 0
