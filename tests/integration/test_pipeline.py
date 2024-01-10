@@ -5,8 +5,8 @@ import subprocess
 
 
 def test_detection_pipeline():
-    device = "cuda" if torch.cuda.is_available() else "cpu"
-    cmd = f"datadreamer --save_dir data-det/ --class_names alien mars cat --prompts_number 2 --prompt_generator simple --num_objects_range 1 2 --image_generator sdxl-turbo --device {device}"
+    device = "cpu" # "cuda" if torch.cuda.is_available() else "cpu"
+    cmd = f"datadreamer --save_dir data/data-det/ --class_names alien mars cat --prompts_number 2 --prompt_generator simple --num_objects_range 1 2 --image_generator sdxl-turbo --device {device}"
     
     result = subprocess.run(cmd, shell=True)
     assert result.returncode == 0, "Command failed to run"
@@ -21,8 +21,8 @@ def test_detection_pipeline():
 
 
 def test_classification_pipeline():
-    device = "cuda" if torch.cuda.is_available() else "cpu"
-    cmd = f"datadreamer --task classification --save_dir data-cls/ --class_names alien mars cat --prompts_number 2 --prompt_generator simple --num_objects_range 1 2 --image_generator sdxl-turbo --device {device}"
+    device = "cpu" # "cuda" if torch.cuda.is_available() else "cpu"
+    cmd = f"datadreamer --task classification --save_dir data/data-cls/ --class_names alien mars cat --prompts_number 2 --prompt_generator simple --num_objects_range 1 2 --image_generator sdxl-turbo --device {device}"
     
     result = subprocess.run(cmd, shell=True)
     assert result.returncode == 0, "Command failed to run"

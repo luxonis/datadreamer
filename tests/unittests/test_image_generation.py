@@ -12,7 +12,7 @@ def test_clip_image_tester():
 
 
 def test_sdxl_image_generator():
-    device = "cuda" if torch.cuda.is_available() else "cpu"
+    device = "cpu" #  "cuda" if torch.cuda.is_available() else "cpu"
     # image_generator = StableDiffusionImageGenerator(device=device)
     image_generator = StableDiffusionImageGenerator()
     for generated_image in image_generator.generate_images(["A photo of a cat, dog"], [["cat", "dog"]]):
@@ -22,7 +22,7 @@ def test_sdxl_image_generator():
 
 
 def test_sdxl_turbo_image_generator():
-    device = "cuda" if torch.cuda.is_available() else "cpu"
+    device = "cpu" # "cuda" if torch.cuda.is_available() else "cpu"
     # image_generator = StableDiffusionTurboImageGenerator(device=device)
     image_generator = StableDiffusionTurboImageGenerator()
     for generated_image in image_generator.generate_images(["A photo of a cat, dog"], [["cat", "dog"]]):
