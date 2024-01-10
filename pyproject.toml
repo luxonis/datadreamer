@@ -25,9 +25,7 @@ classifiers = [
 
 [tool.setuptools.dynamic]
 dependencies = { file = ["requirements.txt"] }
-
-[tool.setuptools.dynamic.optional-dependencies]
-dev = { file = ["requirements-dev.txt"] }
+optional-dependencies = { dev = { file = ["requirements-dev.txt"] } }
 
 [project.urls]
 Homepage = "https://github.com/luxonis/datadreamer"
