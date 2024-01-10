@@ -48,7 +48,7 @@ datadreamer --class_names person moon robot
 - **Prompt Generation**: Automate the creation of image prompts using powerful language models.
 
   *Provided class names: \["horse", "robot"\]*
-  
+
   *Generated prompt: "A photo of a horse and a robot coexisting peacefully in the midst of a serene pasture."*
 
 - **Image Generation**: Generate synthetic datasets with state-of-the-art generative models.
