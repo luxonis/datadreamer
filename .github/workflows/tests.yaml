@@ -1,8 +1,14 @@
 name: Tests
 
 on:
+  push:
+      branches: [ master, main ]
+      paths:
+        - 'src/datadreamer/**/**.py'
+        - 'tests/**/**.py'
+        - .github/workflows/tests.yaml
   pull_request:
-    branches: [ dev, main, add-tests ]
+    branches: [ dev, main ]
     paths:
       - 'src/datadreamer/**/**.py'
       - 'tests/**/**.py'
@@ -36,14 +42,19 @@ jobs:
         sudo apt update
         sudo apt install -y pandoc
         pip install -e .[dev]
+        pip install pytest coverage-badge
 
     - name: Install dependencies [Windows]
       if: matrix.os == 'windows-latest'
-      run: pip install -e .[dev]
+      run: |
+        pip install -e .[dev]
+        pip install pytest coverage-badge
 
     - name: Install dependencies [macOS]
       if: matrix.os == 'macOS-latest'
-      run: pip install -e .[dev]
+      run: |
+        pip install -e .[dev]
+        pip install pytest coverage-badge
 
     - name: Run tests with coverage [Ubuntu]
       if: matrix.os == 'ubuntu-latest' && matrix.version == '3.10'

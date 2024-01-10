@@ -4,7 +4,8 @@ import torch
 
 def test_owlv2_annotator():
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    pass
+    assert device in ["cuda", "cpu"]
+
 
 
 if __name__ == "__main__":
