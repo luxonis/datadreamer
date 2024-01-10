@@ -2,7 +2,7 @@ name: Tests
 
 on:
   push:
-      branches: [ master, main ]
+      branches: [ add-tests ]
       paths:
         - 'src/datadreamer/**/**.py'
         - 'tests/**/**.py'
