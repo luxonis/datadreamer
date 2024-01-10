@@ -5,6 +5,17 @@
 
 ![DataDreamer examples](https://github.com/luxonis/datadreamer/blob/main/images/grid_image_3x2_generated_dataset.jpg)
 
+## Quickstart
+
+To generate your dataset with custom classes, you need to execute only two commands:
+
+```bash
+pip install datadreamer
+datadreamer --class_names person moon robot
+```
+
+## Overview
+
 `DataDreamer` is an advanced toolkit engineered to facilitate the development of edge AI models, irrespective of initial data availability. Distinctive features of DataDreamer include:
 
 - **Synthetic Data Generation**: Eliminate the dependency on extensive datasets for AI training. DataDreamer empowers users to generate synthetic datasets from the ground up, utilizing advanced AI algorithms capable of producing high-quality, diverse images.
@@ -12,13 +23,6 @@
 - **Knowledge Extraction from Foundational Models**: `DataDreamer` leverages the latent knowledge embedded within sophisticated, pre-trained AI models. This capability allows for the transfer of expansive understanding from these "Foundation models" to smaller, custom-built models, enhancing their capabilities significantly.
 
 - **Efficient and Potent Models**: The primary objective of `DataDreamer` is to enable the creation of compact models that are both size-efficient for integration into any device and robust in performance for specialized tasks.
-
-The rationale behind the name `DataDreamer`:
-
-- **Data**: Emphasizes the central role of data, either existing or synthetically generated, as the cornerstone of AI model training.
-- **Dreamer**: Reflects the innovative and forward-thinking approach of creating something impactful from mere concepts or "dreams," symbolizing the transformation of abstract ideas into concrete, intelligent models.
-
-In essence, `DataDreamer` is designed to transform the AI development process, making it more accessible, efficient, and effective, turning visionary ideas into reality.
 
 ## Table of Contents
 
@@ -43,7 +47,9 @@ In essence, `DataDreamer` is designed to transform the AI development process, m
 
 - **Prompt Generation**: Automate the creation of image prompts using powerful language models.
 
-  *Provided class names: \["horse", "robot"\]* ->  *Generated prompt: "A photo of a horse and a robot coexisting peacefully in the midst of a serene pasture."*
+  *Provided class names: \["horse", "robot"\]*
+  
+  *Generated prompt: "A photo of a horse and a robot coexisting peacefully in the midst of a serene pasture."*
 
 - **Image Generation**: Generate synthetic datasets with state-of-the-art generative models.
 
@@ -55,8 +61,6 @@ In essence, `DataDreamer` is designed to transform the AI development process, m
 
 - **Edge Model Training**: Train efficient small-scale neural networks for edge deployment. (not part of this library)
 
-[Example](https://github.com/luxonis/datadreamer/blob/main/examples/generate_dataset_and_train_yolo.ipynb)
-
 <a name="installation"></a>
 
 ## Installation
@@ -65,17 +69,6 @@ To install with pip:
 
 ```bash
 pip install datadreamer
-```
-
-To install `datadreamer` from source, follow these steps:
-
-```bash
-# Clone the repository
-git clone https://github.com/luxonis/datadreamer.git
-cd datadreamer
-
-# Install the package
-pip install .
 ```
 
 <a name="hardware-requirements"></a>
@@ -233,3 +226,4 @@ This library was made possible by the use of several open-source projects, inclu
 
 [SD-XL 1.0 License](https://github.com/Stability-AI/generative-models/blob/main/model_licenses/LICENSE-SDXL1.0)
 [SDXL-Turbo License](https://github.com/Stability-AI/generative-models/blob/main/model_licenses/LICENSE-SDXL-Turbo)
+
