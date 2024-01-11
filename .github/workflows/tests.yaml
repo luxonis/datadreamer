@@ -42,23 +42,23 @@ jobs:
         sudo apt update
         sudo apt install -y pandoc
         pip install -e .[dev]
-        pip install pytest coverage-badge
+        pip install coverage-badge>=1.1.0 pytest-cov>=4.1.0
 
     - name: Install dependencies [Windows]
       if: matrix.os == 'windows-latest'
       run: |
         pip install -e .[dev]
-        pip install pytest coverage-badge
+        pip install coverage-badge>=1.1.0 pytest-cov>=4.1.0
 
     - name: Install dependencies [macOS]
       if: matrix.os == 'macOS-latest'
       run: |
         pip install -e .[dev]
-        pip install pytest coverage-badge
+        pip install coverage-badge>=1.1.0 pytest-cov>=4.1.0
 
     - name: Run tests with coverage [Ubuntu]
       if: matrix.os == 'ubuntu-latest' && matrix.version == '3.10'
-      run: pytest tests --cov=datadreamer --cov-report xml --junit-xml pytest.xml
+      run: pytest tests --cov=src --cov-report xml --junit-xml pytest.xml
 
     - name: Run tests [Windows, macOS]
       if: matrix.os != 'ubuntu-latest' || matrix.version != '3.10'

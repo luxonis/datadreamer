@@ -5,10 +5,9 @@ import requests
 from datadreamer.dataset_annotation.owlv2_annotator import OWLv2Annotator
 
 
-def test_owlv2_annotator():
+def _check_owlv2_annotator(device: str):
     url = "https://ultralytics.com/images/bus.jpg"
     im = Image.open(requests.get(url, stream=True).raw)
-    device = "cuda" if torch.cuda.is_available() else "cpu"
     annotator = OWLv2Annotator(device=device)
     final_boxes, final_scores, final_labels = annotator.annotate(im, ["bus", "people"])
     # Assert that the boxes, scores and labels are tensors
@@ -29,5 +28,10 @@ def test_owlv2_annotator():
     assert torch.all(final_labels >= 0)
 
 
-if __name__ == "__main__":
-    pytest.main()
+@pytest.mark.skipif(not torch.cuda.is_available(), reason="Test requires GPU")
+def test_cuda_owlv2_annotator():
+    _check_owlv2_annotator("cuda")
+
+
+def test_cou_owlv2_annotator():
+    _check_owlv2_annotator("cpu")

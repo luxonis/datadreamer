@@ -2,6 +2,7 @@ import pytest
 import torch
 from PIL import Image
 import requests
+from typing import Union, Type
 from datadreamer.image_generation.sdxl_image_generator import (
     StableDiffusionImageGenerator,
 )
@@ -11,10 +12,9 @@ from datadreamer.image_generation.sdxl_turbo_image_generator import (
 from datadreamer.image_generation.clip_image_tester import ClipImageTester
 
 
-def test_clip_image_tester():
+def _check_clip_image_tester(device: str):
     url = "https://ultralytics.com/images/bus.jpg"
     im = Image.open(requests.get(url, stream=True).raw)
-    device = "cuda" if torch.cuda.is_available() else "cpu"
     tester = ClipImageTester(device=device)
     passed, probs, num_passed = tester.test_image(im, ["bus"])
     # Check that the image passed the test
@@ -29,10 +29,18 @@ def test_clip_image_tester():
     tester.release(empty_cuda_cache=True if device != "cpu" else False)
 
 
-def test_sdxl_image_generator():
-    device = "cuda" if torch.cuda.is_available() else "cpu"
-    # image_generator = StableDiffusionImageGenerator(device=device)
-    image_generator = StableDiffusionImageGenerator()
+@pytest.mark.skipif(not torch.cuda.is_available(), reason="Test requires GPU")
+def test_cuda_clip_image_tester():
+    _check_clip_image_tester("cuda")
+
+
+def test_cpu_clip_image_tester():
+    _check_clip_image_tester("cpu")
+
+
+def _check_image_generator(image_generator_class: Type[Union[StableDiffusionImageGenerator, StableDiffusionTurboImageGenerator]], device: str):
+    image_generator = image_generator_class(device=device)
+    # Generate images and check each of them
     for generated_image in image_generator.generate_images(
         ["A photo of a cat, dog"], [["cat", "dog"]]
     ):
@@ -42,18 +50,19 @@ def test_sdxl_image_generator():
     image_generator.release(empty_cuda_cache=True if device != "cpu" else False)
 
 
-def test_sdxl_turbo_image_generator():
-    device = "cuda" if torch.cuda.is_available() else "cpu"
-    # image_generator = StableDiffusionTurboImageGenerator(device=device)
-    image_generator = StableDiffusionTurboImageGenerator()
-    for generated_image in image_generator.generate_images(
-        ["A photo of a cat, dog"], [["cat", "dog"]]
-    ):
-        assert generated_image is not None
-        assert isinstance(generated_image, Image.Image)
-    # Release the generator
-    image_generator.release(empty_cuda_cache=True if device != "cpu" else False)
+@pytest.mark.skipif(not torch.cuda.is_available(), reason="Test requires GPU")
+def test_cuda_sdxl_image_generator():
+    _check_image_generator(StableDiffusionImageGenerator, "cuda")
 
 
-if __name__ == "__main__":
-    pytest.main()
+def test_cpu_sdxl_image_generator():
+    _check_image_generator(StableDiffusionImageGenerator, "cpu")
+
+
+@pytest.mark.skipif(not torch.cuda.is_available(), reason="Test requires GPU")
+def test_cuda_sdxl_turbo_image_generator():
+    _check_image_generator(StableDiffusionTurboImageGenerator, "cuda")
+
+
+def test_cpu_sdxl_turbo_image_generator():
+    _check_image_generator(StableDiffusionTurboImageGenerator, "cpu")

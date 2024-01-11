@@ -2,8 +2,13 @@ from datadreamer.prompt_generation.lm_prompt_generator import LMPromptGenerator
 from datadreamer.prompt_generation.simple_prompt_generator import SimplePromptGenerator
 import pytest
 import torch
+import psutil
 
 from datadreamer.prompt_generation.synonym_generator import SynonymGenerator
+
+
+# Get the total memory in GB
+total_memory = psutil.virtual_memory().total / (1024 ** 3)
 
 
 def test_simple_prompt_generator():
@@ -26,8 +31,7 @@ def test_simple_prompt_generator():
         assert prompt_text == f"A photo of a {', a '.join(selected_objects)}"
 
 
-def test_lm_prompt_generator():
-    device = "cuda" if torch.cuda.is_available() else "cpu"
+def _check_lm_prompt_generator(device: str):
     object_names = ["aeroplane", "bicycle", "bird", "boat"]
     prompt_generator = LMPromptGenerator(
         class_names=object_names, prompts_number=2, device=device
@@ -52,14 +56,19 @@ def test_lm_prompt_generator():
     prompt_generator.release(empty_cuda_cache=True if device != "cpu" else False)
 
 
-def test_synonym_generator():
-    device = "cuda" if torch.cuda.is_available() else "cpu"
+@pytest.mark.skipif(total_memory < 16 or not torch.cuda.is_available(), reason="Test requires at least 16GB of RAM and CUDA support")
+def test_cuda_lm_prompt_generator():
+    _check_lm_prompt_generator("cuda")
+
+
+@pytest.mark.skipif(total_memory < 28, reason="Test requires at least 28GB of RAM for running on CPU")
+def test_cpu_lm_prompt_generator():
+    _check_lm_prompt_generator("cpu")
+
+
+def _check_synonym_generator(device: str):
     synonyms_num = 3
-    generator = SynonymGenerator(
-        "mistralai/Mistral-7B-Instruct-v0.1",
-        synonyms_number=synonyms_num,
-        device=device,
-    )
+    generator = SynonymGenerator(synonyms_number=synonyms_num, device=device)
     synonyms = generator.generate_synonyms_for_list(["astronaut", "cat", "dog"])
     # Check that the some synonyms were generated
     assert len(synonyms) > 0
@@ -75,5 +84,11 @@ def test_synonym_generator():
     generator.release(empty_cuda_cache=True if device != "cpu" else False)
 
 
-if __name__ == "__main__":
-    pytest.main()
+@pytest.mark.skipif(total_memory < 16 or not torch.cuda.is_available(), reason="Test requires at least 16GB of RAM and CUDA support")
+def test_cuda_synonym_generator():
+    _check_synonym_generator("cuda")
+    
+
+@pytest.mark.skipif(total_memory < 28, reason="Test requires at least 28GB of RAM for running on CPU")
+def test_cpu_synonym_generator():
+    _check_synonym_generator("cpu")
