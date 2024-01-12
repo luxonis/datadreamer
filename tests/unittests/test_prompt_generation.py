@@ -87,7 +87,7 @@ def _check_synonym_generator(device: str):
 @pytest.mark.skipif(total_memory < 16 or not torch.cuda.is_available(), reason="Test requires at least 16GB of RAM and CUDA support")
 def test_cuda_synonym_generator():
     _check_synonym_generator("cuda")
-    
+
 
 @pytest.mark.skipif(total_memory < 28, reason="Test requires at least 28GB of RAM for running on CPU")
 def test_cpu_synonym_generator():
