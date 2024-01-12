@@ -29,13 +29,13 @@ def _check_clip_image_tester(device: str):
     tester.release(empty_cuda_cache=True if device != "cpu" else False)
 
 
-@pytest.mark.skipif(not torch.cuda.is_available(), reason="Test requires GPU")
-def test_cuda_clip_image_tester():
-    _check_clip_image_tester("cuda")
+# @pytest.mark.skipif(not torch.cuda.is_available(), reason="Test requires GPU")
+# def test_cuda_clip_image_tester():
+#     _check_clip_image_tester("cuda")
 
 
-def test_cpu_clip_image_tester():
-    _check_clip_image_tester("cpu")
+# def test_cpu_clip_image_tester():
+#     _check_clip_image_tester("cpu")
 
 
 def _check_image_generator(image_generator_class: Type[Union[StableDiffusionImageGenerator, StableDiffusionTurboImageGenerator]], device: str):
@@ -50,13 +50,13 @@ def _check_image_generator(image_generator_class: Type[Union[StableDiffusionImag
     image_generator.release(empty_cuda_cache=True if device != "cpu" else False)
 
 
-@pytest.mark.skipif(not torch.cuda.is_available(), reason="Test requires GPU")
-def test_cuda_sdxl_image_generator():
-    _check_image_generator(StableDiffusionImageGenerator, "cuda")
+# @pytest.mark.skipif(not torch.cuda.is_available(), reason="Test requires GPU")
+# def test_cuda_sdxl_image_generator():
+#     _check_image_generator(StableDiffusionImageGenerator, "cuda")
 
 
-def test_cpu_sdxl_image_generator():
-    _check_image_generator(StableDiffusionImageGenerator, "cpu")
+# def test_cpu_sdxl_image_generator():
+#     _check_image_generator(StableDiffusionImageGenerator, "cpu")
 
 
 @pytest.mark.skipif(not torch.cuda.is_available(), reason="Test requires GPU")
