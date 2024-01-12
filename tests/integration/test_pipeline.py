@@ -378,7 +378,6 @@ def test_cuda_simple_sdxl_turbo_classification_pipeline():
     _check_detection_pipeline(cmd, target_folder)
 
 
-
 # def test_cpu_simple_sdxl_classification_pipeline():
 #     # Define target folder
 #     target_folder = "data/data-cls-cpu-simple-sdxl/"
