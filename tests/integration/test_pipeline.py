@@ -260,80 +260,80 @@ def test_cuda_simple_sdxl_turbo_detection_pipeline():
 # =========================================================
 # DETECTION - LLM
 # =========================================================
-# @pytest.mark.skipif(total_memory < 28, reason="Test requires at least 28GB of RAM for running on CPU")
-# def test_cpu_lm_sdxl_turbo_detection_pipeline():
-#     # Define target folder
-#     target_folder = "data/data-det-cpu-lm-sdxl-turbo/"
-#     # Define the command to run the datadreamer
-#     cmd = (
-#         f"datadreamer --save_dir {target_folder} "
-#         f"--class_names alien mars cat "
-#         f"--prompts_number 1 "
-#         f"--prompt_generator lm "
-#         f"--num_objects_range 1 2 "
-#         f"--image_generator sdxl-turbo "
-#         f"--use_image_tester "
-#         f"--device cpu"
-#     )
-#     # Check the run of the pipeline
-#     _check_detection_pipeline(cmd, target_folder)
+@pytest.mark.skipif(total_memory < 28, reason="Test requires at least 28GB of RAM for running on CPU")
+def test_cpu_lm_sdxl_turbo_detection_pipeline():
+    # Define target folder
+    target_folder = "data/data-det-cpu-lm-sdxl-turbo/"
+    # Define the command to run the datadreamer
+    cmd = (
+        f"datadreamer --save_dir {target_folder} "
+        f"--class_names alien mars cat "
+        f"--prompts_number 1 "
+        f"--prompt_generator lm "
+        f"--num_objects_range 1 2 "
+        f"--image_generator sdxl-turbo "
+        f"--use_image_tester "
+        f"--device cpu"
+    )
+    # Check the run of the pipeline
+    _check_detection_pipeline(cmd, target_folder)
 
 
-# @pytest.mark.skipif(total_memory < 16 or not torch.cuda.is_available(), reason="Test requires at least 16GB of RAM and CUDA support")
-# def test_cuda_lm_sdxl_turbo_detection_pipeline():
-#     # Define target folder
-#     target_folder = "data/data-det-cuda-lm-sdxl-turbo/"
-#     # Define the command to run the datadreamer
-#     cmd = (
-#         f"datadreamer --save_dir {target_folder} "
-#         f"--class_names alien mars cat "
-#         f"--prompts_number 1 "
-#         f"--prompt_generator lm "
-#         f"--num_objects_range 1 2 "
-#         f"--image_generator sdxl-turbo "
-#         f"--use_image_tester "
-#         f"--device cuda"
-#     )
-#     # Check the run of the pipeline
-#     _check_detection_pipeline(cmd, target_folder)
+@pytest.mark.skipif(total_memory < 16 or not torch.cuda.is_available(), reason="Test requires at least 16GB of RAM and CUDA support")
+def test_cuda_lm_sdxl_turbo_detection_pipeline():
+    # Define target folder
+    target_folder = "data/data-det-cuda-lm-sdxl-turbo/"
+    # Define the command to run the datadreamer
+    cmd = (
+        f"datadreamer --save_dir {target_folder} "
+        f"--class_names alien mars cat "
+        f"--prompts_number 1 "
+        f"--prompt_generator lm "
+        f"--num_objects_range 1 2 "
+        f"--image_generator sdxl-turbo "
+        f"--use_image_tester "
+        f"--device cuda"
+    )
+    # Check the run of the pipeline
+    _check_detection_pipeline(cmd, target_folder)
 
 
-# @pytest.mark.skipif(total_memory < 28, reason="Test requires at least 28GB of RAM for running on CPU")
-# def test_cpu_lm_sdxl_detection_pipeline():
-#     # Define target folder
-#     target_folder = "data/data-det-cpu-lm-sdxl/"
-#     # Define the command to run the datadreamer
-#     cmd = (
-#         f"datadreamer --save_dir {target_folder} "
-#         f"--class_names alien mars cat "
-#         f"--prompts_number 1 "
-#         f"--prompt_generator lm "
-#         f"--num_objects_range 1 2 "
-#         f"--image_generator sdxl "
-#         f"--use_image_tester "
-#         f"--device cpu"
-#     )
-#     # Check the run of the pipeline
-#     _check_detection_pipeline(cmd, target_folder)
+@pytest.mark.skipif(total_memory < 28, reason="Test requires at least 28GB of RAM for running on CPU")
+def test_cpu_lm_sdxl_detection_pipeline():
+    # Define target folder
+    target_folder = "data/data-det-cpu-lm-sdxl/"
+    # Define the command to run the datadreamer
+    cmd = (
+        f"datadreamer --save_dir {target_folder} "
+        f"--class_names alien mars cat "
+        f"--prompts_number 1 "
+        f"--prompt_generator lm "
+        f"--num_objects_range 1 2 "
+        f"--image_generator sdxl "
+        f"--use_image_tester "
+        f"--device cpu"
+    )
+    # Check the run of the pipeline
+    _check_detection_pipeline(cmd, target_folder)
 
 
-# @pytest.mark.skipif(total_memory < 16 or not torch.cuda.is_available(), reason="Test requires at least 16GB of RAM and CUDA support")
-# def test_cuda_lm_sdxl_detection_pipeline():
-#     # Define target folder
-#     target_folder = "data/data-det-cuda-lm-sdxl/"
-#     # Define the command to run the datadreamer
-#     cmd = (
-#         f"datadreamer --save_dir {target_folder} "
-#         f"--class_names alien mars cat "
-#         f"--prompts_number 1 "
-#         f"--prompt_generator lm "
-#         f"--num_objects_range 1 2 "
-#         f"--image_generator sdxl "
-#         f"--use_image_tester "
-#         f"--device cuda"
-#     )
-#     # Check the run of the pipeline
-#     _check_detection_pipeline(cmd, target_folder)
+@pytest.mark.skipif(total_memory < 16 or not torch.cuda.is_available(), reason="Test requires at least 16GB of RAM and CUDA support")
+def test_cuda_lm_sdxl_detection_pipeline():
+    # Define target folder
+    target_folder = "data/data-det-cuda-lm-sdxl/"
+    # Define the command to run the datadreamer
+    cmd = (
+        f"datadreamer --save_dir {target_folder} "
+        f"--class_names alien mars cat "
+        f"--prompts_number 1 "
+        f"--prompt_generator lm "
+        f"--num_objects_range 1 2 "
+        f"--image_generator sdxl "
+        f"--use_image_tester "
+        f"--device cuda"
+    )
+    # Check the run of the pipeline
+    _check_detection_pipeline(cmd, target_folder)
 
 
 # =========================================================
@@ -421,68 +421,68 @@ def test_cuda_simple_sdxl_turbo_classification_pipeline():
 # =========================================================
 # CLASSIFICATION - LLM
 # =========================================================
-# @pytest.mark.skipif(total_memory < 28, reason="Test requires at least 28GB of RAM for running on CPU")
-# def test_cpu_lm_sdxl_turbo_classification_pipeline():
-#     # Define target folder
-#     target_folder = "data/data-cls-cpu-lm-sdxl-turbo/"
-#     # Define the command to run the datadreamer
-#     cmd = (
-#         f"datadreamer --task classification "
-#         f"--save_dir {target_folder} "
-#         f"--class_names alien mars cat "
-#         f"--prompts_number 1 "
-#         f"--prompt_generator lm "
-#         f"--num_objects_range 1 2 "
-#         f"--image_generator sdxl-turbo "
-#         f"--use_image_tester "
-#         f"--device cpu"
-#     )
-#     # Check the run of the pipeline
-#     _check_detection_pipeline(cmd, target_folder)
+@pytest.mark.skipif(total_memory < 28, reason="Test requires at least 28GB of RAM for running on CPU")
+def test_cpu_lm_sdxl_turbo_classification_pipeline():
+    # Define target folder
+    target_folder = "data/data-cls-cpu-lm-sdxl-turbo/"
+    # Define the command to run the datadreamer
+    cmd = (
+        f"datadreamer --task classification "
+        f"--save_dir {target_folder} "
+        f"--class_names alien mars cat "
+        f"--prompts_number 1 "
+        f"--prompt_generator lm "
+        f"--num_objects_range 1 2 "
+        f"--image_generator sdxl-turbo "
+        f"--use_image_tester "
+        f"--device cpu"
+    )
+    # Check the run of the pipeline
+    _check_detection_pipeline(cmd, target_folder)
 
 
-# @pytest.mark.skipif(total_memory < 16 or not torch.cuda.is_available(), reason="Test requires at least 16GB of RAM and CUDA support")
-# def test_cuda_lm_sdxl_turbo_classification_pipeline():
-#     # Define target folder
-#     target_folder = "data/data-cls-cuda-lm-sdxl-turbo/"
-#     # Define the command to run the datadreamer
-#     cmd = (
-#         f"datadreamer --task classification "
-#         f"--save_dir {target_folder} "
-#         f"--class_names alien mars cat "
-#         f"--prompts_number 1 "
-#         f"--prompt_generator lm "
-#         f"--num_objects_range 1 2 "
-#         f"--image_generator sdxl-turbo "
-#         f"--use_image_tester "
-#         f"--device cuda"
-#     )
-#     # Check the run of the pipeline
-#     _check_detection_pipeline(cmd, target_folder)
+@pytest.mark.skipif(total_memory < 16 or not torch.cuda.is_available(), reason="Test requires at least 16GB of RAM and CUDA support")
+def test_cuda_lm_sdxl_turbo_classification_pipeline():
+    # Define target folder
+    target_folder = "data/data-cls-cuda-lm-sdxl-turbo/"
+    # Define the command to run the datadreamer
+    cmd = (
+        f"datadreamer --task classification "
+        f"--save_dir {target_folder} "
+        f"--class_names alien mars cat "
+        f"--prompts_number 1 "
+        f"--prompt_generator lm "
+        f"--num_objects_range 1 2 "
+        f"--image_generator sdxl-turbo "
+        f"--use_image_tester "
+        f"--device cuda"
+    )
+    # Check the run of the pipeline
+    _check_detection_pipeline(cmd, target_folder)
 
 
-# @pytest.mark.skipif(total_memory < 28, reason="Test requires at least 28GB of RAM for running on CPU")
-# def test_cpu_lm_sdxl_classification_pipeline():
-#     # Define target folder
-#     target_folder = "data/data-cls-cpu-lm-sdxl/"
-#     # Define the command to run the datadreamer
-#     cmd = (
-#         f"datadreamer --task classification "
-#         f"--save_dir {target_folder} "
-#         f"--class_names alien mars cat "
-#         f"--prompts_number 1 "
-#         f"--prompt_generator lm "
-#         f"--num_objects_range 1 2 "
-#         f"--image_generator sdxl "
-#         f"--use_image_tester "
-#         f"--device cpu"
-#     )
-#     # Check the run of the pipeline
-#     _check_detection_pipeline(cmd, target_folder)
+@pytest.mark.skipif(total_memory < 28, reason="Test requires at least 28GB of RAM for running on CPU")
+def test_cpu_lm_sdxl_classification_pipeline():
+    # Define target folder
+    target_folder = "data/data-cls-cpu-lm-sdxl/"
+    # Define the command to run the datadreamer
+    cmd = (
+        f"datadreamer --task classification "
+        f"--save_dir {target_folder} "
+        f"--class_names alien mars cat "
+        f"--prompts_number 1 "
+        f"--prompt_generator lm "
+        f"--num_objects_range 1 2 "
+        f"--image_generator sdxl "
+        f"--use_image_tester "
+        f"--device cpu"
+    )
+    # Check the run of the pipeline
+    _check_detection_pipeline(cmd, target_folder)
 
 
-# @pytest.mark.skipif(total_memory < 16 or not torch.cuda.is_available(), reason="Test requires at least 16GB of RAM and CUDA support")
-# def test_cuda_lm_sdxl_classification_pipeline():
+@pytest.mark.skipif(total_memory < 16 or not torch.cuda.is_available(), reason="Test requires at least 16GB of RAM and CUDA support")
+def test_cuda_lm_sdxl_classification_pipeline():
     # Define target folder
     target_folder = "data/data-cls-cuda-lm-sdxl/"
     # Define the command to run the datadreamer
