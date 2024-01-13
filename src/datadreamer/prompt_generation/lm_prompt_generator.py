@@ -36,8 +36,7 @@ class LMPromptGenerator(PromptGenerator):
     ) -> None:
         """Initializes the LMPromptGenerator with class names and other settings."""
         num_objects_range = num_objects_range or [1, 3]
-        super().__init__(class_names, prompts_number, num_objects_range, seed)
-        self.device = device
+        super().__init__(class_names, prompts_number, num_objects_range, seed, device)
         self.model, self.tokenizer = self._init_lang_model()
 
     def _init_lang_model(self):
@@ -46,13 +45,23 @@ class LMPromptGenerator(PromptGenerator):
         Returns:
             tuple: The initialized language model and tokenizer.
         """
-        print("Loading language model...")
-        model = AutoModelForCausalLM.from_pretrained(
-            "mistralai/Mistral-7B-Instruct-v0.1", torch_dtype=torch.float16
-        ).to(self.device)
+        if self.device == "cpu":
+            print("Loading language model on CPU...")
+            model = AutoModelForCausalLM.from_pretrained(
+                "mistralai/Mistral-7B-Instruct-v0.1",
+                torch_dtype="auto",
+                device_map="auto",
+                low_cpu_mem_usage=True,
+            )
+        else:
+            print("Loading language model on GPU...")
+            model = AutoModelForCausalLM.from_pretrained(
+                "mistralai/Mistral-7B-Instruct-v0.1", torch_dtype=torch.float16
+            )
+
         tokenizer = AutoTokenizer.from_pretrained("mistralai/Mistral-7B-Instruct-v0.1")
         print("Done!")
-        return model, tokenizer
+        return model.to(self.device), tokenizer
 
     def generate_prompts(self) -> List[str]:
         """Generates a list of text prompts based on the class names.
@@ -139,7 +148,9 @@ class LMPromptGenerator(PromptGenerator):
 if __name__ == "__main__":
     # Example usage of the class
     object_names = ["aeroplane", "bicycle", "bird", "boat"]
-    prompt_generator = LMPromptGenerator(class_names=object_names)
+    prompt_generator = LMPromptGenerator(
+        class_names=object_names, prompts_number=2, device="cpu"
+    )
     generated_prompts = prompt_generator.generate_prompts()
     for prompt in generated_prompts:
         print(prompt)

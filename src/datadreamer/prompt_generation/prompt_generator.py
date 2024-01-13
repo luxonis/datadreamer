@@ -29,6 +29,7 @@ class PromptGenerator(ABC):
         prompts_number: int = 10,
         num_objects_range: Optional[List[int]] = None,
         seed: Optional[float] = None,
+        device: str = "cuda",
     ) -> None:
         """Initializes the PromptGenerator with class names and other settings."""
         self.class_names = class_names
@@ -37,6 +38,7 @@ class PromptGenerator(ABC):
         self.seed = seed
         if seed is not None:
             self.set_seed(seed)
+        self.device = device
 
     @staticmethod
     def set_seed(seed: int):
