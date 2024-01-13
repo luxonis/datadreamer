@@ -36,11 +36,18 @@ def _check_clip_image_tester(device: str):
     tester.release(empty_cuda_cache=True if device != "cpu" else False)
 
 
-@pytest.mark.skipif(not torch.cuda.is_available(), reason="Test requires GPU")
+@pytest.mark.skipif(
+    not torch.cuda.is_available() or total_disk_space < 15,
+    reason="Test requires GPU and 15GB of HDD",
+)
 def test_cuda_clip_image_tester():
     _check_clip_image_tester("cuda")
 
 
+@pytest.mark.skipif(
+    total_disk_space < 15,
+    reason="Test requires at least 15GB of HDD",
+)
 def test_cpu_clip_image_tester():
     _check_clip_image_tester("cpu")
 
@@ -63,16 +70,16 @@ def _check_image_generator(
 
 
 @pytest.mark.skipif(
-    not torch.cuda.is_available() or total_disk_space < 25,
-    reason="Test requires GPU and 25GB of HDD",
+    not torch.cuda.is_available() or total_memory < 16 or total_disk_space < 25,
+    reason="Test requires GPU, at least 16GB of RAM and 25GB of HDD",
 )
 def test_cuda_sdxl_image_generator():
     _check_image_generator(StableDiffusionImageGenerator, "cuda")
 
 
 @pytest.mark.skipif(
-    total_disk_space < 25,
-    reason="Test requires at least 25GB of HDD",
+    total_memory < 16 or total_disk_space < 25,
+    reason="Test requires at least 16GB of RAM and 25GB of HDD",
 )
 def test_cpu_sdxl_image_generator():
     _check_image_generator(StableDiffusionImageGenerator, "cpu")

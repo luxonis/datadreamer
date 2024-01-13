@@ -1,8 +1,12 @@
+import psutil
 import pytest
 import requests
 import torch
 from datadreamer.dataset_annotation.owlv2_annotator import OWLv2Annotator
 from PIL import Image
+
+# Get the total disk space in GB
+total_disk_space = psutil.disk_usage("/").total / (1024**3)
 
 
 def _check_owlv2_annotator(device: str):
@@ -28,10 +32,17 @@ def _check_owlv2_annotator(device: str):
     assert torch.all(final_labels >= 0)
 
 
-@pytest.mark.skipif(not torch.cuda.is_available(), reason="Test requires GPU")
+@pytest.mark.skipif(
+    not torch.cuda.is_available() or total_disk_space < 15,
+    reason="Test requires GPU and 15GB of HDD",
+)
 def test_cuda_owlv2_annotator():
     _check_owlv2_annotator("cuda")
 
 
+@pytest.mark.skipif(
+    total_disk_space < 15,
+    reason="Test requires at least 15GB of HDD",
+)
 def test_cou_owlv2_annotator():
     _check_owlv2_annotator("cpu")
