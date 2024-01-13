@@ -7,6 +7,8 @@ from datadreamer.prompt_generation.synonym_generator import SynonymGenerator
 
 # Get the total memory in GB
 total_memory = psutil.virtual_memory().total / (1024**3)
+# Get the total disk space in GB
+total_disk_space = psutil.disk_usage("/").total / (1024**3)
 
 
 def test_simple_prompt_generator():
@@ -55,15 +57,16 @@ def _check_lm_prompt_generator(device: str):
 
 
 @pytest.mark.skipif(
-    total_memory < 16 or not torch.cuda.is_available(),
-    reason="Test requires at least 16GB of RAM and CUDA support",
+    total_memory < 16 or not torch.cuda.is_available() or total_disk_space < 35,
+    reason="Test requires at least 16GB of RAM, 35GB of HDD and CUDA support",
 )
 def test_cuda_lm_prompt_generator():
     _check_lm_prompt_generator("cuda")
 
 
 @pytest.mark.skipif(
-    total_memory < 28, reason="Test requires at least 28GB of RAM for running on CPU"
+    total_memory < 32 or total_disk_space < 35,
+    reason="Test requires at least 28GB of RAM and 35GB of HDD for running on CPU",
 )
 def test_cpu_lm_prompt_generator():
     _check_lm_prompt_generator("cpu")
@@ -88,15 +91,16 @@ def _check_synonym_generator(device: str):
 
 
 @pytest.mark.skipif(
-    total_memory < 16 or not torch.cuda.is_available(),
-    reason="Test requires at least 16GB of RAM and CUDA support",
+    total_memory < 16 or not torch.cuda.is_available() or total_disk_space < 35,
+    reason="Test requires at least 16GB of RAM, 35GB of HDD and CUDA support",
 )
 def test_cuda_synonym_generator():
     _check_synonym_generator("cuda")
 
 
 @pytest.mark.skipif(
-    total_memory < 28, reason="Test requires at least 28GB of RAM for running on CPU"
+    total_memory < 32 or total_disk_space < 35,
+    reason="Test requires at least 28GB of RAM and 35GB of HDD for running on CPU",
 )
 def test_cpu_synonym_generator():
     _check_synonym_generator("cpu")

@@ -62,11 +62,18 @@ def _check_image_generator(
     image_generator.release(empty_cuda_cache=True if device != "cpu" else False)
 
 
-@pytest.mark.skipif(not torch.cuda.is_available(), reason="Test requires GPU")
+@pytest.mark.skipif(
+    not torch.cuda.is_available() or total_disk_space < 25,
+    reason="Test requires GPU and 25GB of HDD",
+)
 def test_cuda_sdxl_image_generator():
     _check_image_generator(StableDiffusionImageGenerator, "cuda")
 
 
+@pytest.mark.skipif(
+    total_disk_space < 25,
+    reason="Test requires at least 25GB of HDD",
+)
 def test_cpu_sdxl_image_generator():
     _check_image_generator(StableDiffusionImageGenerator, "cpu")
 
