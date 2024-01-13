@@ -1,8 +1,8 @@
 import pytest
-import torch
-from PIL import Image
 import requests
+import torch
 from datadreamer.dataset_annotation.owlv2_annotator import OWLv2Annotator
+from PIL import Image
 
 
 def _check_owlv2_annotator(device: str):

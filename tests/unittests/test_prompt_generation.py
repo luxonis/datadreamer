@@ -1,11 +1,9 @@
-from datadreamer.prompt_generation.lm_prompt_generator import LMPromptGenerator
-from datadreamer.prompt_generation.simple_prompt_generator import SimplePromptGenerator
+import psutil
 import pytest
 import torch
-import psutil
-
+from datadreamer.prompt_generation.lm_prompt_generator import LMPromptGenerator
+from datadreamer.prompt_generation.simple_prompt_generator import SimplePromptGenerator
 from datadreamer.prompt_generation.synonym_generator import SynonymGenerator
-
 
 # Get the total memory in GB
 total_memory = psutil.virtual_memory().total / (1024**3)

@@ -1,9 +1,9 @@
-import pytest
-import torch
 import os
 import subprocess
-import psutil
 
+import psutil
+import pytest
+import torch
 
 # Get the total memory in GB
 total_memory = psutil.virtual_memory().total / (1024**3)
