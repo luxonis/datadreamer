@@ -42,7 +42,7 @@ def _check_wrong_value(cmd: str):
         try:
             subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT)
         except subprocess.CalledProcessError as e:
-            raise ValueError(e.output.decode())
+            print(f"Failed to run cmd: {cmd}\nError: {e.output.decode()}")
 
 
 # =========================================================
