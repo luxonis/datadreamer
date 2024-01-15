@@ -2,8 +2,9 @@ import psutil
 import pytest
 import requests
 import torch
-from datadreamer.dataset_annotation.owlv2_annotator import OWLv2Annotator
 from PIL import Image
+
+from datadreamer.dataset_annotation.owlv2_annotator import OWLv2Annotator
 
 # Get the total disk space in GB
 total_disk_space = psutil.disk_usage("/").total / (1024**3)

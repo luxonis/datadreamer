@@ -4,6 +4,8 @@ import psutil
 import pytest
 import requests
 import torch
+from PIL import Image
+
 from datadreamer.image_generation.clip_image_tester import ClipImageTester
 from datadreamer.image_generation.sdxl_image_generator import (
     StableDiffusionImageGenerator,
@@ -11,7 +13,6 @@ from datadreamer.image_generation.sdxl_image_generator import (
 from datadreamer.image_generation.sdxl_turbo_image_generator import (
     StableDiffusionTurboImageGenerator,
 )
-from PIL import Image
 
 # Get the total memory in GB
 total_memory = psutil.virtual_memory().total / (1024**3)
