@@ -1,6 +1,7 @@
 import psutil
 import pytest
 import torch
+
 from datadreamer.prompt_generation.lm_prompt_generator import LMPromptGenerator
 from datadreamer.prompt_generation.simple_prompt_generator import SimplePromptGenerator
 from datadreamer.prompt_generation.synonym_generator import SynonymGenerator
