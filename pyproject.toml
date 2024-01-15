@@ -11,6 +11,7 @@ requires-python = ">=3.8"
 license = { file = "LICENSE" }
 maintainers = [{ name = "Luxonis", email = "support@luxonis.com"}]
 keywords = ["computer vision", "AI", "machine learning", "generative models"]
+dynamic = ["dependencies", "optional-dependencies"]
 classifiers = [
     "License :: OSI Approved :: Apache Software License",
     "Development Status :: 3 - Alpha",
@@ -21,26 +22,10 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Image Processing",
     "Topic :: Scientific/Engineering :: Image Recognition",
 ]
-dependencies = [
-    "torch>=2.0.0",
-    "torchvision>=0.16.0",
-    "transformers>=4.0.0",
-    "diffusers>=0.24.0",
-    "compel>=2.0.0",
-    "tqdm>=4.0.0",
-    "Pillow>=9.0.0",
-    "numpy>=1.22.0",
-    "matplotlib>=3.6.0",
-    "opencv-python>=4.7.0",
-    "accelerate>=0.25.0",
-    "scipy>=1.10.0",
-]
-[project.optional-dependencies]
-dev = [
-    "datadreamer",
-    "pre-commit>=3.2.1",
-    "toml>=0.10.2",
-]
+
+[tool.setuptools.dynamic]
+dependencies = { file = ["requirements.txt"] }
+optional-dependencies = { dev = { file = ["requirements-dev.txt"] } }
 
 [project.urls]
 Homepage = "https://github.com/luxonis/datadreamer"
@@ -49,7 +34,7 @@ Homepage = "https://github.com/luxonis/datadreamer"
 datadreamer = "datadreamer.pipelines.generate_dataset_from_scratch:main"
 
 [tool.setuptools.packages.find]
-where = ["src"]
+where = ["."]
 
 [tool.ruff]
 target-version = "py38"

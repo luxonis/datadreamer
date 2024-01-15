@@ -1,8 +1,9 @@
 import matplotlib.patches as patches
 import matplotlib.pyplot as plt
 import numpy as np
-from datadreamer.dataset_annotation import OWLv2Annotator
 from PIL import Image
+
+from datadreamer.dataset_annotation import OWLv2Annotator
 
 # Initialize the OWLv2Annotator
 annotator = OWLv2Annotator(
