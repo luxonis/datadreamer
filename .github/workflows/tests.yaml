@@ -1,0 +1,120 @@
+name: Tests
+
+on:
+  pull_request:
+    branches: [ dev, main ]
+    paths:
+      - 'datadreamer/**/**.py'
+      - 'tests/**/**.py'
+      - .github/workflows/tests.yaml
+
+jobs:
+  run_tests:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macOS-latest]
+        version: ['3.10', '3.11']
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        ref: ${{ github.head_ref }}
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.version }}
+        cache: pip
+
+    - name: Install dependencies [Ubuntu]
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        sudo apt update
+        sudo apt install -y pandoc
+        pip install -e .[dev]
+        pip install coverage-badge>=1.1.0 pytest-cov>=4.1.0
+
+    - name: Install dependencies [Windows]
+      if: matrix.os == 'windows-latest'
+      run: |
+        pip install -e .[dev]
+        pip install coverage-badge>=1.1.0 pytest-cov>=4.1.0
+
+    - name: Install dependencies [macOS]
+      if: matrix.os == 'macOS-latest'
+      run: |
+        pip install -e .[dev]
+        pip install coverage-badge>=1.1.0 pytest-cov>=4.1.0
+
+    - name: Run tests with coverage [Ubuntu]
+      if: matrix.os == 'ubuntu-latest' && matrix.version == '3.10'
+      run: pytest tests --cov=datadreamer --cov-report xml --junit-xml pytest.xml
+
+    - name: Run tests [Windows, macOS]
+      if: matrix.os != 'ubuntu-latest' || matrix.version != '3.10'
+      run: pytest tests --junit-xml pytest.xml
+
+    - name: Generate coverage badge [Ubuntu]
+      if: matrix.os == 'ubuntu-latest' && matrix.version == '3.10'
+      run: coverage-badge -o media/coverage_badge.svg -f
+
+    - name: Generate coverage report [Ubuntu]
+      if: matrix.os == 'ubuntu-latest' && matrix.version == '3.10'
+      uses: orgoro/coverage@v3.1
+      with:
+        coverageFile: coverage.xml
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Commit coverage badge [Ubuntu]
+      if: matrix.os == 'ubuntu-latest' && matrix.version == '3.10'
+      run: |
+        git config --global user.name 'GitHub Actions'
+        git config --global user.email 'actions@github.com'
+        git diff --quiet media/coverage_badge.svg || {
+          git add media/coverage_badge.svg
+          git commit -m "[Automated] Updated coverage badge"
+        }
+
+    - name: Push changes [Ubuntu]
+      if: matrix.os == 'ubuntu-latest' && matrix.version == '3.10'
+      uses: ad-m/github-push-action@master
+      with:
+        branch: ${{ github.head_ref }}
+
+    - name: Upload Test Results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: Test Results [${{ matrix.os }}] (Python ${{ matrix.version }})
+        path: pytest.xml
+        retention-days: 10
+        if-no-files-found: error
+
+  publish-test-results:
+    name: "Publish Tests Results"
+    needs: run_tests
+    runs-on: ubuntu-latest
+    permissions:
+      checks: write
+      pull-requests: write
+    if: always()
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+
+      - name: Download Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Publish Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        with:
+          files: "artifacts/**/*.xml"

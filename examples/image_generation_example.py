@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+
 from datadreamer.image_generation import (
     StableDiffusionTurboImageGenerator,
 )
