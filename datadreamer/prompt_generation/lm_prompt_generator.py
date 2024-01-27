@@ -57,11 +57,11 @@ class LMPromptGenerator(PromptGenerator):
             print("Loading language model on GPU...")
             model = AutoModelForCausalLM.from_pretrained(
                 "mistralai/Mistral-7B-Instruct-v0.1", torch_dtype=torch.float16
-            )
+            ).to(self.device)
 
         tokenizer = AutoTokenizer.from_pretrained("mistralai/Mistral-7B-Instruct-v0.1")
         print("Done!")
-        return model.to(self.device), tokenizer
+        return model, tokenizer
 
     def generate_prompts(self) -> List[str]:
         """Generates a list of text prompts based on the class names.

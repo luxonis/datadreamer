@@ -48,10 +48,10 @@ class SynonymGenerator:
         else:
             model = AutoModelForCausalLM.from_pretrained(
                 "mistralai/Mistral-7B-Instruct-v0.1", torch_dtype=torch.float16
-            )
+            ).to(self.device)
 
         tokenizer = AutoTokenizer.from_pretrained("mistralai/Mistral-7B-Instruct-v0.1")
-        return model.to(self.device), tokenizer
+        return model, tokenizer
 
     def generate_synonyms_for_list(self, words: List[str]) -> dict:
         """Generates synonyms for a list of words and returns them in a dictionary.
