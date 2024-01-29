@@ -18,9 +18,10 @@ from datadreamer.prompt_generation import (
     LMPromptGenerator,
     SimplePromptGenerator,
     SynonymGenerator,
+    TinyLlamaLMPromptGenerator,
 )
 
-prompt_generators = {"simple": SimplePromptGenerator, "lm": LMPromptGenerator}
+prompt_generators = {"simple": SimplePromptGenerator, "lm": LMPromptGenerator, 'tiny': TinyLlamaLMPromptGenerator}
 
 image_generators = {
     "sdxl": StableDiffusionImageGenerator,
@@ -72,7 +73,7 @@ def parse_args():
         "--prompt_generator",
         type=str,
         default="simple",
-        choices=["simple", "lm"],
+        choices=["simple", "lm", "tiny"],
         help="Prompt generator to use: simple or language model",
     )
     parser.add_argument(

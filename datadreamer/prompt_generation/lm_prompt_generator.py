@@ -92,7 +92,7 @@ class LMPromptGenerator(PromptGenerator):
         Returns:
             str: A text prompt for the language model.
         """
-        return f"[INST] Generate a short and consice caption for an image. Follow this template: 'A photo of {', '.join(selected_objects)}', where the objects interact in a meaningful way within a scene, complete with a short scene description. [/INST]"
+        return f"[INST] Generate a short and concise caption for an image. Follow this template: 'A photo of {', '.join(selected_objects)}', where the objects interact in a meaningful way within a scene, complete with a short scene description. [/INST]"
 
     def generate_prompt(self, prompt_text: str) -> str:
         """Generates a single prompt using the language model.
@@ -133,8 +133,8 @@ class LMPromptGenerator(PromptGenerator):
         Returns:
             bool: True if the prompt is valid, False otherwise.
         """
-        return prompt.startswith(
-            "A photo of"
+        return prompt.lower().startswith(
+            "a photo of"
         )  # and all(obj.lower() in prompt.lower() for obj in selected_objects)
 
     def release(self, empty_cuda_cache=False) -> None:
