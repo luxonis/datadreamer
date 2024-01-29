@@ -51,6 +51,7 @@ class LMPromptGenerator(PromptGenerator):
                 "mistralai/Mistral-7B-Instruct-v0.1",
                 torch_dtype="auto",
                 device_map="auto",
+                max_memory={0: "0GIB"},  # {gpu_id: memory_fraction
                 low_cpu_mem_usage=True,
             )
         else:
