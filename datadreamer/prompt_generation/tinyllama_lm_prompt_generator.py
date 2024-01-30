@@ -1,9 +1,7 @@
-import random
 import re
 from typing import List, Optional
 
 import torch
-from tqdm import tqdm
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from datadreamer.prompt_generation.lm_prompt_generator import LMPromptGenerator
@@ -48,7 +46,8 @@ class TinyLlamaLMPromptGenerator(LMPromptGenerator):
             model = AutoModelForCausalLM.from_pretrained(
                 "TinyLlama/TinyLlama-1.1B-Chat-v1.0",
                 torch_dtype="auto",
-                low_cpu_mem_usage=True
+                device_map="cpu",
+                low_cpu_mem_usage=True,
             )
         else:
             print("Loading language model on GPU...")
@@ -56,16 +55,28 @@ class TinyLlamaLMPromptGenerator(LMPromptGenerator):
                 "TinyLlama/TinyLlama-1.1B-Chat-v1.0", torch_dtype=torch.float16
             )
 
-        tokenizer = AutoTokenizer.from_pretrained("TinyLlama/TinyLlama-1.1B-Chat-v1.0", trust_remote_code=True)
+        tokenizer = AutoTokenizer.from_pretrained(
+            "TinyLlama/TinyLlama-1.1B-Chat-v1.0", trust_remote_code=True
+        )
         print("Done!")
         return model.to(self.device), tokenizer
 
     def remove_incomplete_sentence(self, text):
         # Define the regex pattern to capture up to the last sentence-ending punctuation
-        pattern = r'^(.*[.!?])'
-        # pattern = r'^(.*[.!?;:])'
+        pattern = r"^(.*[.!?])"
         match = re.search(pattern, text)
         return match.group(0) if match else text
+
+    def remove_caption_sentences(self, text):
+        # Pattern to find sentences that start with "Caption reads: "
+        # \s* matches any whitespace characters at the beginning of the string (including none)
+        # re.IGNORECASE makes the search case-insensitive
+        # [^\.!?]* matches any sequence of characters that are not a period, exclamation mark, or question mark
+        # [\.\!?] matches a period, exclamation mark, or question mark, indicating the end of a sentence
+        pattern = re.compile(r"\s*Caption reads: [^\.!?]*[\.\!?]", re.IGNORECASE)
+        # Replace the matched sentences with an empty string
+        cleaned_text = re.sub(pattern, "", text)
+        return cleaned_text
 
     def _create_lm_prompt_text(self, selected_objects: List[str]) -> str:
         """Creates a language model text prompt based on selected objects.
@@ -77,7 +88,6 @@ class TinyLlamaLMPromptGenerator(LMPromptGenerator):
             str: A text prompt for the language model.
         """
         return f"<|system|>\nYou are a chatbot who describes content of images!</s>\n<|user|>\nGenerate a short and concise caption for an image. Follow this template: 'A photo of {', '.join(selected_objects)}', where the objects interact in a meaningful way within a scene, complete with a short scene description. The caption must be short in length and start with the words: 'A photo of '! Do not use the phrase 'Caption reads'.</s>\n<|assistant|>\n"
-    
 
     def generate_prompt(self, prompt_text: str) -> str:
         """Generates a single prompt using the language model.
@@ -110,7 +120,9 @@ class TinyLlamaLMPromptGenerator(LMPromptGenerator):
             .replace("'", "")
         )
 
-        return self.remove_incomplete_sentence(decoded_prompt)
+        return self.remove_caption_sentences(
+            self.remove_incomplete_sentence(decoded_prompt)
+        )
 
 
 if __name__ == "__main__":

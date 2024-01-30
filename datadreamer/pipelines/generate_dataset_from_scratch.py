@@ -21,7 +21,11 @@ from datadreamer.prompt_generation import (
     TinyLlamaLMPromptGenerator,
 )
 
-prompt_generators = {"simple": SimplePromptGenerator, "lm": LMPromptGenerator, 'tiny': TinyLlamaLMPromptGenerator}
+prompt_generators = {
+    "simple": SimplePromptGenerator,
+    "lm": LMPromptGenerator,
+    "tiny": TinyLlamaLMPromptGenerator,
+}
 
 image_generators = {
     "sdxl": StableDiffusionImageGenerator,
