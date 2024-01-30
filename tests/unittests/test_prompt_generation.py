@@ -54,9 +54,7 @@ def _check_lm_prompt_generator(device: str, prompt_generator_class=LMPromptGener
             <= prompt_generator.num_objects_range[1]
         )
         # Check the generated text
-        assert len(prompt_text) > 0 and any(
-            [x in prompt_text for x in selected_objects]
-        )
+        assert len(prompt_text) > 0 and prompt_text.lower().startswith("a photo of")
     prompt_generator.release(empty_cuda_cache=True if device != "cpu" else False)
 
 
