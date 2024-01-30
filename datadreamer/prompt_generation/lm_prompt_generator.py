@@ -50,19 +50,20 @@ class LMPromptGenerator(PromptGenerator):
             model = AutoModelForCausalLM.from_pretrained(
                 "mistralai/Mistral-7B-Instruct-v0.1",
                 torch_dtype="auto",
-                device_map="auto",
-                max_memory={0: "0.0GB"},  # {gpu_id: memory_fraction
+                # device_map="auto",
+                device_map="cpu",
+                # max_memory={0: "0.0GB"},  # {gpu_id: memory_fraction
                 low_cpu_mem_usage=True,
             )
         else:
             print("Loading language model on GPU...")
             model = AutoModelForCausalLM.from_pretrained(
                 "mistralai/Mistral-7B-Instruct-v0.1", torch_dtype=torch.float16
-            ).to(self.device)
+            )
 
         tokenizer = AutoTokenizer.from_pretrained("mistralai/Mistral-7B-Instruct-v0.1")
         print("Done!")
-        return model, tokenizer
+        return model.to(self.device), tokenizer
 
     def generate_prompts(self) -> List[str]:
         """Generates a list of text prompts based on the class names.

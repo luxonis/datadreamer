@@ -42,16 +42,17 @@ class SynonymGenerator:
             model = AutoModelForCausalLM.from_pretrained(
                 "mistralai/Mistral-7B-Instruct-v0.1",
                 torch_dtype="auto",
-                device_map="auto",
+                # device_map="auto",
+                device_map="cpu",
                 low_cpu_mem_usage=True,
             )
         else:
             model = AutoModelForCausalLM.from_pretrained(
                 "mistralai/Mistral-7B-Instruct-v0.1", torch_dtype=torch.float16
-            ).to(self.device)
+            )
 
         tokenizer = AutoTokenizer.from_pretrained("mistralai/Mistral-7B-Instruct-v0.1")
-        return model, tokenizer
+        return model.to(self.device), tokenizer
 
     def generate_synonyms_for_list(self, words: List[str]) -> dict:
         """Generates synonyms for a list of words and returns them in a dictionary.
