@@ -61,13 +61,13 @@ class TinyLlamaLMPromptGenerator(LMPromptGenerator):
         print("Done!")
         return model.to(self.device), tokenizer
 
-    def remove_incomplete_sentence(self, text):
+    def _remove_incomplete_sentence(self, text):
         # Define the regex pattern to capture up to the last sentence-ending punctuation
         pattern = r"^(.*[.!?])"
         match = re.search(pattern, text)
         return match.group(0) if match else text
 
-    def remove_caption_sentences(self, text):
+    def _remove_caption_sentences(self, text):
         # Pattern to find sentences that start with "Caption reads: "
         # \s* matches any whitespace characters at the beginning of the string (including none)
         # re.IGNORECASE makes the search case-insensitive
@@ -120,8 +120,8 @@ class TinyLlamaLMPromptGenerator(LMPromptGenerator):
             .replace("'", "")
         )
 
-        return self.remove_caption_sentences(
-            self.remove_incomplete_sentence(decoded_prompt)
+        return self._remove_caption_sentences(
+            self._remove_incomplete_sentence(decoded_prompt)
         )
 
 
