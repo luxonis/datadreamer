@@ -50,7 +50,7 @@ class LMPromptGenerator(PromptGenerator):
             model = AutoModelForCausalLM.from_pretrained(
                 "mistralai/Mistral-7B-Instruct-v0.1",
                 torch_dtype="auto",
-                device_map="auto",
+                device_map="cpu",
                 low_cpu_mem_usage=True,
             )
         else:
