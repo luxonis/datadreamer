@@ -106,7 +106,7 @@ datadreamer --save_dir <directory> --class_names <objects> --prompts_number <num
 
 - `--task`: Choose between `detection` and `classification`. Default is `detection`.
 - `--num_objects_range`: Range of objects in a prompt. Default is 1 to 3.
-- `--prompt_generator`: Choose between `simple` and `lm` (language model). Default is `simple`.
+- `--prompt_generator`: Choose between `simple`, `lm` (language model) and `tiny` (tiny LM). Default is `simple`.
 - `--image_generator`: Choose image generator, e.g., `sdxl` or `sdxl-turbo`. Default is `sdxl-turbo`.
 - `--image_annotator`: Specify the image annotator, like `owlv2`. Default is `owlv2`.
 - `--conf_threshold`: Confidence threshold for object detection. Default is 0.15.
@@ -124,6 +124,7 @@ datadreamer --save_dir <directory> --class_names <objects> --prompts_number <num
 | Model Category    | Model Names                                                                           | Description/Notes                       |
 | ----------------- | ------------------------------------------------------------------------------------- | --------------------------------------- |
 | Prompt Generation | [Mistral-7B-Instruct-v0.1](https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.1) | Semantically rich prompts               |
+|                   | [TinyLlama-1.1B-Chat-v1.0](https://huggingface.co/TinyLlama/TinyLlama-1.1B-Chat-v1.0) | Tiny LM                                 |
 |                   | Simple random generator                                                               | Joins randomly chosen object names      |
 | Image Generation  | [SDXL-1.0](https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0)           | Slow and accurate (1024x1024 images)    |
 |                   | [SDXL-Turbo](https://huggingface.co/stabilityai/sdxl-turbo)                           | Fast and less accurate (512x512 images) |

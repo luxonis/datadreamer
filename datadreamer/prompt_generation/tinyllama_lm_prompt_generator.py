@@ -1,15 +1,13 @@
-import random
 import re
 from typing import List, Optional
 
 import torch
-from tqdm import tqdm
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
-from datadreamer.prompt_generation.prompt_generator import PromptGenerator
+from datadreamer.prompt_generation.lm_prompt_generator import LMPromptGenerator
 
 
-class LMPromptGenerator(PromptGenerator):
+class TinyLlamaLMPromptGenerator(LMPromptGenerator):
     """A language model-based prompt generator class, extending PromptGenerator.
 
     Attributes:
@@ -35,9 +33,7 @@ class LMPromptGenerator(PromptGenerator):
         device: str = "cuda",
     ) -> None:
         """Initializes the LMPromptGenerator with class names and other settings."""
-        num_objects_range = num_objects_range or [1, 3]
         super().__init__(class_names, prompts_number, num_objects_range, seed, device)
-        self.model, self.tokenizer = self._init_lang_model()
 
     def _init_lang_model(self):
         """Initializes the language model and tokenizer for prompt generation.
@@ -48,7 +44,7 @@ class LMPromptGenerator(PromptGenerator):
         if self.device == "cpu":
             print("Loading language model on CPU...")
             model = AutoModelForCausalLM.from_pretrained(
-                "mistralai/Mistral-7B-Instruct-v0.1",
+                "TinyLlama/TinyLlama-1.1B-Chat-v1.0",
                 torch_dtype="auto",
                 device_map="cpu",
                 low_cpu_mem_usage=True,
@@ -56,32 +52,31 @@ class LMPromptGenerator(PromptGenerator):
         else:
             print("Loading language model on GPU...")
             model = AutoModelForCausalLM.from_pretrained(
-                "mistralai/Mistral-7B-Instruct-v0.1", torch_dtype=torch.float16
+                "TinyLlama/TinyLlama-1.1B-Chat-v1.0", torch_dtype=torch.float16
             )
 
-        tokenizer = AutoTokenizer.from_pretrained("mistralai/Mistral-7B-Instruct-v0.1")
+        tokenizer = AutoTokenizer.from_pretrained(
+            "TinyLlama/TinyLlama-1.1B-Chat-v1.0", trust_remote_code=True
+        )
         print("Done!")
         return model.to(self.device), tokenizer
 
-    def generate_prompts(self) -> List[str]:
-        """Generates a list of text prompts based on the class names.
+    def _remove_incomplete_sentence(self, text):
+        # Define the regex pattern to capture up to the last sentence-ending punctuation
+        pattern = r"^(.*[.!?])"
+        match = re.search(pattern, text)
+        return match.group(0) if match else text
 
-        Returns:
-            List[str]: A list of generated prompts.
-        """
-        prompts = []
-        for _ in tqdm(range(self.prompts_number), desc="Generating prompts"):
-            selected_objects = random.sample(
-                self.class_names, random.randint(*self.num_objects_range)
-            )
-            prompt_text = self._create_lm_prompt_text(selected_objects)
-            correct_prompt_generated = False
-            while not correct_prompt_generated:
-                generated_prompt = self.generate_prompt(prompt_text)
-                if self._test_prompt(generated_prompt, selected_objects):
-                    prompts.append((selected_objects, generated_prompt))
-                    correct_prompt_generated = True
-        return prompts
+    def _remove_caption_sentences(self, text):
+        # Pattern to find sentences that start with "Caption reads: "
+        # \s* matches any whitespace characters at the beginning of the string (including none)
+        # re.IGNORECASE makes the search case-insensitive
+        # [^\.!?]* matches any sequence of characters that are not a period, exclamation mark, or question mark
+        # [\.\!?] matches a period, exclamation mark, or question mark, indicating the end of a sentence
+        pattern = re.compile(r"\s*Caption reads: [^\.!?]*[\.\!?]", re.IGNORECASE)
+        # Replace the matched sentences with an empty string
+        cleaned_text = re.sub(pattern, "", text)
+        return cleaned_text
 
     def _create_lm_prompt_text(self, selected_objects: List[str]) -> str:
         """Creates a language model text prompt based on selected objects.
@@ -92,7 +87,7 @@ class LMPromptGenerator(PromptGenerator):
         Returns:
             str: A text prompt for the language model.
         """
-        return f"[INST] Generate a short and concise caption for an image. Follow this template: 'A photo of {', '.join(selected_objects)}', where the objects interact in a meaningful way within a scene, complete with a short scene description. [/INST]"
+        return f"<|system|>\nYou are a chatbot who describes content of images!</s>\n<|user|>\nGenerate a short and concise caption for an image. Follow this template: 'A photo of {', '.join(selected_objects)}', where the objects interact in a meaningful way within a scene, complete with a short scene description. The caption must be short in length and start with the words: 'A photo of '! Do not use the phrase 'Caption reads'.</s>\n<|assistant|>\n"
 
     def generate_prompt(self, prompt_text: str) -> str:
         """Generates a single prompt using the language model.
@@ -108,12 +103,16 @@ class LMPromptGenerator(PromptGenerator):
             **encoded_input,
             max_new_tokens=70,
             do_sample=True,
+            top_p=0.95,
+            top_k=50,
+            temperature=0.7,
+            num_beams=1,
             pad_token_id=self.tokenizer.eos_token_id,
         )
         decoded_prompt = self.tokenizer.decode(
             generated_ids[0], skip_special_tokens=True
         )
-        instructional_pattern = r"\[INST].*?\[/INST\]\s*"
+        instructional_pattern = r"<\|system\|>\n.*?\n<\|user\|>\n.*?\n<\|assistant\|>\n"
         # Remove the instructional text to isolate the caption
         decoded_prompt = (
             re.sub(instructional_pattern, "", decoded_prompt)
@@ -121,35 +120,16 @@ class LMPromptGenerator(PromptGenerator):
             .replace("'", "")
         )
 
-        return decoded_prompt
-
-    def _test_prompt(self, prompt: str, selected_objects: List[str]) -> bool:
-        """Tests if the generated prompt is valid based on selected objects.
-
-        Args:
-            prompt (str): The generated prompt.
-            selected_objects (List[str]): Objects to check in the prompt.
-
-        Returns:
-            bool: True if the prompt is valid, False otherwise.
-        """
-        return prompt.lower().startswith(
-            "a photo of"
-        )  # and all(obj.lower() in prompt.lower() for obj in selected_objects)
-
-    def release(self, empty_cuda_cache=False) -> None:
-        """Releases the model and optionally empties the CUDA cache."""
-        self.model = self.model.to("cpu")
-        if empty_cuda_cache:
-            with torch.no_grad():
-                torch.cuda.empty_cache()
+        return self._remove_caption_sentences(
+            self._remove_incomplete_sentence(decoded_prompt)
+        )
 
 
 if __name__ == "__main__":
     # Example usage of the class
-    object_names = ["aeroplane", "bicycle", "bird", "boat"]
-    prompt_generator = LMPromptGenerator(
-        class_names=object_names, prompts_number=2, device="cpu"
+    object_names = ["aeroplane", "bicycle", "bird", "boat", "city"]
+    prompt_generator = TinyLlamaLMPromptGenerator(
+        class_names=object_names, prompts_number=5, device="cpu"
     )
     generated_prompts = prompt_generator.generate_prompts()
     for prompt in generated_prompts:
