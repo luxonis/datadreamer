@@ -3,7 +3,7 @@
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/luxonis/datadreamer/blob/main/examples/generate_dataset_and_train_yolo.ipynb)
 
-![DataDreamer examples](https://github.com/luxonis/datadreamer/blob/main/images/grid_image_3x2_generated_dataset.jpg)
+![DataDreamer examples](https://raw.githubusercontent.com/luxonis/datadreamer/main/images/grid_image_3x2_generated_dataset.jpg)
 
 ## Quickstart
 
@@ -53,11 +53,11 @@ datadreamer --class_names person moon robot
 
 - **Image Generation**: Generate synthetic datasets with state-of-the-art generative models.
 
-<img src="https://github.com/luxonis/datadreamer/blob/main/images/generated_image.jpg" width="512">
+<img src="https://raw.githubusercontent.com/luxonis/datadreamer/main/images/generated_image.jpg" width="512">
 
 - **Dataset Annotation**: Leverage foundation models to label datasets automatically.
 
-<img src="https://github.com/luxonis/datadreamer/blob/main/images/annotated_image.jpg" width="512">
+<img src="https://raw.githubusercontent.com/luxonis/datadreamer/main/images/annotated_image.jpg" width="512">
 
 - **Edge Model Training**: Train efficient small-scale neural networks for edge deployment. (not part of this library)
 
