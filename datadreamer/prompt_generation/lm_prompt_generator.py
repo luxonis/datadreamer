@@ -4,7 +4,7 @@ from typing import List, Optional
 
 import torch
 from tqdm import tqdm
-from transformers import AutoModelForCausalLM, AutoTokenizer
+from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
 
 from datadreamer.prompt_generation.prompt_generator import PromptGenerator
 
@@ -55,8 +55,18 @@ class LMPromptGenerator(PromptGenerator):
             )
         else:
             print("Loading language model on GPU...")
+            bnb_config = BitsAndBytesConfig(
+                load_in_4bit=True,
+                bnb_4bit_quant_type="nf4",
+                bnb_4bit_use_double_quant=True,
+            )
             model = AutoModelForCausalLM.from_pretrained(
-                "mistralai/Mistral-7B-Instruct-v0.1", torch_dtype=torch.float16
+                # "mistralai/Mistral-7B-Instruct-v0.1", torch_dtype=torch.float16
+                "mistralai/Mistral-7B-Instruct-v0.1",
+                load_in_4bit=True,
+                quantization_config=bnb_config,
+                torch_dtype=torch.bfloat16,
+                trust_remote_code=True,
             )
 
         tokenizer = AutoTokenizer.from_pretrained("mistralai/Mistral-7B-Instruct-v0.1")
