@@ -33,10 +33,13 @@ class LMPromptGenerator(PromptGenerator):
         num_objects_range: Optional[List[int]] = None,
         seed: Optional[float] = 42,
         device: str = "cuda",
+        quantization: str = "none",
     ) -> None:
         """Initializes the LMPromptGenerator with class names and other settings."""
         num_objects_range = num_objects_range or [1, 3]
-        super().__init__(class_names, prompts_number, num_objects_range, seed, device)
+        super().__init__(
+            class_names, prompts_number, num_objects_range, seed, device, quantization
+        )
         self.model, self.tokenizer = self._init_lang_model()
 
     def _init_lang_model(self):
@@ -55,23 +58,39 @@ class LMPromptGenerator(PromptGenerator):
             )
         else:
             print("Loading language model on GPU...")
-            bnb_config = BitsAndBytesConfig(
-                load_in_4bit=True,
-                bnb_4bit_quant_type="nf4",
-                bnb_4bit_use_double_quant=True,
-            )
-            model = AutoModelForCausalLM.from_pretrained(
-                # "mistralai/Mistral-7B-Instruct-v0.1", torch_dtype=torch.float16
-                "mistralai/Mistral-7B-Instruct-v0.1",
-                load_in_4bit=True,
-                quantization_config=bnb_config,
-                torch_dtype=torch.bfloat16,
-                trust_remote_code=True,
-            )
+            if self.quantization == "none":
+                model = AutoModelForCausalLM.from_pretrained(
+                    "mistralai/Mistral-7B-Instruct-v0.1",
+                    torch_dtype=torch.float16,
+                    trust_remote_code=True,
+                    device_map="cuda",
+                )
+            else:
+                # Initialize the configuration dictionary with common settings
+                bnb_config_kwargs = {
+                    "load_in_4bit": self.quantization == "4bit",
+                    "load_in_8bit": self.quantization == "8bit",
+                    "bnb_4bit_use_double_quant": self.quantization == "4bit",
+                }
+
+                # Conditionally add the bnb_4bit_quant_type key
+                if self.quantization == "4bit":
+                    bnb_config_kwargs["bnb_4bit_quant_type"] = "nf4"
+
+                # Create the BitsAndBytesConfig object with the dynamically constructed arguments
+                bnb_config = BitsAndBytesConfig(**bnb_config_kwargs)
+
+                model = AutoModelForCausalLM.from_pretrained(
+                    "mistralai/Mistral-7B-Instruct-v0.1",
+                    load_in_4bit=True,
+                    quantization_config=bnb_config,
+                    torch_dtype=torch.bfloat16,
+                    trust_remote_code=True,
+                )
 
         tokenizer = AutoTokenizer.from_pretrained("mistralai/Mistral-7B-Instruct-v0.1")
         print("Done!")
-        return model.to(self.device), tokenizer
+        return model, tokenizer
 
     def generate_prompts(self) -> List[str]:
         """Generates a list of text prompts based on the class names.
