@@ -57,8 +57,8 @@ class LMPromptGenerator(PromptGenerator):
                 low_cpu_mem_usage=True,
             )
         else:
-            print("Loading language model on GPU...")
             if self.quantization == "none":
+                print("Loading FP16 language model on GPU...")
                 model = AutoModelForCausalLM.from_pretrained(
                     "mistralai/Mistral-7B-Instruct-v0.1",
                     torch_dtype=torch.float16,
@@ -66,6 +66,7 @@ class LMPromptGenerator(PromptGenerator):
                     device_map="cuda",
                 )
             else:
+                print(f"Loading INT{'4' if self.quantization == '4bit' else '8'} language model on GPU...")
                 # Initialize the configuration dictionary with common settings
                 bnb_config_kwargs = {
                     "load_in_4bit": self.quantization == "4bit",
