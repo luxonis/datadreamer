@@ -67,15 +67,18 @@ class LMPromptGenerator(PromptGenerator):
                 )
             else:
                 print(f"Loading INT{'4' if self.quantization == '4bit' else '8'} language model on GPU...")
+                load_in_4bit = self.quantization == "4bit"
+                load_in_8bit = self.quantization == "8bit"
+
                 # Initialize the configuration dictionary with common settings
                 bnb_config_kwargs = {
-                    "load_in_4bit": self.quantization == "4bit",
-                    "load_in_8bit": self.quantization == "8bit",
-                    "bnb_4bit_use_double_quant": self.quantization == "4bit",
+                    "load_in_4bit": load_in_4bit,
+                    "load_in_8bit": load_in_8bit,
+                    "bnb_4bit_use_double_quant": load_in_4bit,
                 }
 
                 # Conditionally add the bnb_4bit_quant_type key
-                if self.quantization == "4bit":
+                if load_in_4bit:
                     bnb_config_kwargs["bnb_4bit_quant_type"] = "nf4"
 
                 # Create the BitsAndBytesConfig object with the dynamically constructed arguments
@@ -83,7 +86,8 @@ class LMPromptGenerator(PromptGenerator):
 
                 model = AutoModelForCausalLM.from_pretrained(
                     "mistralai/Mistral-7B-Instruct-v0.1",
-                    load_in_4bit=True,
+                    load_in_4bit=load_in_4bit,
+                    load_in_8bit=load_in_8bit,
                     quantization_config=bnb_config,
                     torch_dtype=torch.bfloat16,
                     trust_remote_code=True,
@@ -169,7 +173,8 @@ class LMPromptGenerator(PromptGenerator):
 
     def release(self, empty_cuda_cache=False) -> None:
         """Releases the model and optionally empties the CUDA cache."""
-        self.model = self.model.to("cpu")
+        if self.quantization == "none":
+            self.model = self.model.to("cpu")
         if empty_cuda_cache:
             with torch.no_grad():
                 torch.cuda.empty_cache()
