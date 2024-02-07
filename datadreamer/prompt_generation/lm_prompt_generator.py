@@ -4,7 +4,7 @@ from typing import List, Optional
 
 import torch
 from tqdm import tqdm
-from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
+from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig, pipeline
 
 from datadreamer.prompt_generation.prompt_generator import PromptGenerator
 
@@ -40,7 +40,7 @@ class LMPromptGenerator(PromptGenerator):
         super().__init__(
             class_names, prompts_number, num_objects_range, seed, device, quantization
         )
-        self.model, self.tokenizer = self._init_lang_model()
+        self.model, self.tokenizer, self.pipeline = self._init_lang_model()
 
     def _init_lang_model(self):
         """Initializes the language model and tokenizer for prompt generation.
@@ -48,6 +48,7 @@ class LMPromptGenerator(PromptGenerator):
         Returns:
             tuple: The initialized language model and tokenizer.
         """
+        selected_device = "cpu"
         if self.device == "cpu":
             print("Loading language model on CPU...")
             model = AutoModelForCausalLM.from_pretrained(
@@ -65,6 +66,7 @@ class LMPromptGenerator(PromptGenerator):
                     trust_remote_code=True,
                     device_map="cuda",
                 )
+                selected_device = "cuda"
             else:
                 print(f"Loading INT{'4' if self.quantization == '4bit' else '8'} language model on GPU...")
                 load_in_4bit = self.quantization == "4bit"
@@ -89,13 +91,22 @@ class LMPromptGenerator(PromptGenerator):
                     load_in_4bit=load_in_4bit,
                     load_in_8bit=load_in_8bit,
                     quantization_config=bnb_config,
-                    torch_dtype=torch.bfloat16,
+                    torch_dtype="auto", # torch.bfloat16,
+                    device_map="auto",
                     trust_remote_code=True,
                 )
+                selected_device = "auto"
 
         tokenizer = AutoTokenizer.from_pretrained("mistralai/Mistral-7B-Instruct-v0.1")
+        pipe = pipeline(
+            "text-generation", 
+            model=model, 
+            tokenizer = tokenizer, 
+            torch_dtype=torch.float16 if self.quantization == "none" and self.device == "cuda" else "auto", 
+            device_map=selected_device
+        )
         print("Done!")
-        return model, tokenizer
+        return model, tokenizer, pipe
 
     def generate_prompts(self) -> List[str]:
         """Generates a list of text prompts based on the class names.
@@ -137,16 +148,23 @@ class LMPromptGenerator(PromptGenerator):
         Returns:
             str: The generated prompt.
         """
-        encoded_input = self.tokenizer(prompt_text, return_tensors="pt").to(self.device)
-        generated_ids = self.model.generate(
-            **encoded_input,
-            max_new_tokens=70,
+        # encoded_input = self.tokenizer(prompt_text, return_tensors="pt").to(self.device)
+        # generated_ids = self.model.generate(
+        #     **encoded_input,
+        #     max_new_tokens=70,
+        #     do_sample=True,
+        #     pad_token_id=self.tokenizer.eos_token_id,
+        # )
+        # decoded_prompt = self.tokenizer.decode(
+        #     generated_ids[0], skip_special_tokens=True
+        # )
+        sequences = self.pipeline(
+            prompt_text,
+            max_new_tokens=70, 
             do_sample=True,
-            pad_token_id=self.tokenizer.eos_token_id,
+            pad_token_id=self.tokenizer.eos_token_id
         )
-        decoded_prompt = self.tokenizer.decode(
-            generated_ids[0], skip_special_tokens=True
-        )
+        decoded_prompt = sequences[0]['generated_text']
         instructional_pattern = r"\[INST].*?\[/INST\]\s*"
         # Remove the instructional text to isolate the caption
         decoded_prompt = (
