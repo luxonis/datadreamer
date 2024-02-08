@@ -49,6 +49,7 @@ class LMPromptGenerator(PromptGenerator):
             tuple: The initialized language model and tokenizer.
         """
         selected_device = "cpu"
+        selected_dtype = "auto"
         if self.device == "cpu":
             print("Loading language model on CPU...")
             model = AutoModelForCausalLM.from_pretrained(
@@ -67,6 +68,7 @@ class LMPromptGenerator(PromptGenerator):
                     device_map="cuda",
                 )
                 selected_device = "cuda"
+                selected_dtype = torch.float16
             else:
                 print(f"Loading INT{'4' if self.quantization == '4bit' else '8'} language model on GPU...")
                 load_in_4bit = self.quantization == "4bit"
@@ -91,18 +93,20 @@ class LMPromptGenerator(PromptGenerator):
                     load_in_4bit=load_in_4bit,
                     load_in_8bit=load_in_8bit,
                     quantization_config=bnb_config,
-                    torch_dtype="auto", # torch.bfloat16,
-                    device_map="auto",
+                    torch_dtype=torch.bfloat16 if load_in_4bit else "auto", # torch.bfloat16,
+                    device_map="cuda",
                     trust_remote_code=True,
                 )
-                selected_device = "auto"
+                selected_device = "cuda"
+                selected_dtype = torch.bfloat16 if load_in_4bit else "auto"
 
         tokenizer = AutoTokenizer.from_pretrained("mistralai/Mistral-7B-Instruct-v0.1")
         pipe = pipeline(
             "text-generation", 
             model=model, 
             tokenizer = tokenizer, 
-            torch_dtype=torch.float16 if self.quantization == "none" and self.device == "cuda" else "auto", 
+            torch_dtype=selected_dtype, 
+            # torch_dtype=torch.float16 if (self.quantization == "none" or self.quantization == "8bit") and self.device == "cuda" else "auto", 
             device_map=selected_device
         )
         print("Done!")
