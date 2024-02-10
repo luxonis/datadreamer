@@ -31,9 +31,10 @@ class TinyLlamaLMPromptGenerator(LMPromptGenerator):
         num_objects_range: Optional[List[int]] = None,
         seed: Optional[float] = 42,
         device: str = "cuda",
+        quantization: str = "none",
     ) -> None:
         """Initializes the LMPromptGenerator with class names and other settings."""
-        super().__init__(class_names, prompts_number, num_objects_range, seed, device)
+        super().__init__(class_names, prompts_number, num_objects_range, seed, device, quantization)
 
     def _init_lang_model(self):
         """Initializes the language model and tokenizer for prompt generation.

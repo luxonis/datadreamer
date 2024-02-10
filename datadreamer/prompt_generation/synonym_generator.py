@@ -4,7 +4,7 @@ from typing import List, Optional
 
 import torch
 from tqdm import tqdm
-from transformers import AutoModelForCausalLM, AutoTokenizer
+from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig, pipeline
 
 
 class SynonymGenerator:
@@ -15,6 +15,7 @@ class SynonymGenerator:
         synonyms_number (int): Number of synonyms to generate for each word.
         seed (Optional[float]): Seed for randomization.
         device (str): Device for model inference (default is "cuda").
+        quantization (str): Quantization type for the prompt generator.
 
     Methods:
         generate_synonyms_for_list(words): Generates synonyms for a list of words and returns them in a dictionary.
@@ -28,17 +29,24 @@ class SynonymGenerator:
         synonyms_number: int = 5,
         seed: Optional[float] = 42,
         device: str = "cuda",
+        quantization: str = "none",
     ) -> None:
         """Initializes the SynonymGenerator with parameters."""
         self.synonyms_number = synonyms_number
         self.seed = seed
         self.device = device
-        self.model, self.tokenizer = self._init_lang_model()
+        self.model, self.tokenizer, self.pipeline = self._init_lang_model()
 
     def _init_lang_model(self):
-        """Initializes the language model and tokenizer for synonym generation."""
-        print("Initializing language model for synonym generation")
+        """Initializes the language model and tokenizer for prompt generation.
+
+        Returns:
+            tuple: The initialized language model and tokenizer.
+        """
+        selected_device = "cpu"
+        selected_dtype = "auto"
         if self.device == "cpu":
+            print("Loading language model on CPU...")
             model = AutoModelForCausalLM.from_pretrained(
                 "mistralai/Mistral-7B-Instruct-v0.1",
                 torch_dtype="auto",
@@ -46,12 +54,47 @@ class SynonymGenerator:
                 low_cpu_mem_usage=True,
             )
         else:
-            model = AutoModelForCausalLM.from_pretrained(
-                "mistralai/Mistral-7B-Instruct-v0.1", torch_dtype=torch.float16
-            )
+            if self.quantization == "none":
+                print("Loading FP16 language model on GPU...")
+                selected_device = "cuda"
+                selected_dtype = torch.float16
+                model = AutoModelForCausalLM.from_pretrained(
+                    "mistralai/Mistral-7B-Instruct-v0.1",
+                    torch_dtype=selected_dtype,
+                    trust_remote_code=True,
+                    device_map=selected_device,
+                )
+            else:
+                print(f"Loading INT4 language model on GPU...")
+                # Create the BitsAndBytesConfig object with the dynamically constructed arguments
+                bnb_config = BitsAndBytesConfig(
+                    load_in_4bit=True,
+                    bnb_4bit_use_double_quant=True,
+                    bnb_4bit_quant_type="nf4",
+                )
+                
+                selected_device = "cuda"
+                selected_dtype = torch.bfloat16
+
+                model = AutoModelForCausalLM.from_pretrained(
+                    "mistralai/Mistral-7B-Instruct-v0.1",
+                    load_in_4bit=True,
+                    quantization_config=bnb_config,
+                    torch_dtype=selected_dtype,
+                    device_map=selected_device,
+                    trust_remote_code=True,
+                )
 
         tokenizer = AutoTokenizer.from_pretrained("mistralai/Mistral-7B-Instruct-v0.1")
-        return model.to(self.device), tokenizer
+        pipe = pipeline(
+            "text-generation", 
+            model=model, 
+            tokenizer=tokenizer, 
+            torch_dtype=selected_dtype, 
+            device_map=selected_device
+        )
+        print("Done!")
+        return model, tokenizer, pipe
 
     def generate_synonyms_for_list(self, words: List[str]) -> dict:
         """Generates synonyms for a list of words and returns them in a dictionary.
@@ -102,17 +145,14 @@ class SynonymGenerator:
         Returns:
             List[str]: A list of generated synonyms.
         """
-        encoded_input = self.tokenizer(prompt_text, return_tensors="pt").to(self.device)
-        generated_ids = self.model.generate(
-            **encoded_input,
+        sequences = self.pipeline(
+            prompt_text,
             max_new_tokens=50,
             do_sample=True,
             num_return_sequences=1,
             pad_token_id=self.tokenizer.eos_token_id,
         )
-        generated_text = self.tokenizer.decode(
-            generated_ids[0], skip_special_tokens=True
-        )
+        generated_text = sequences[0]['generated_text']
 
         instructional_pattern = r"\[INST].*?\[/INST\]\s*"
         # Remove the instructional text to isolate the caption

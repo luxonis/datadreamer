@@ -61,52 +61,41 @@ class LMPromptGenerator(PromptGenerator):
         else:
             if self.quantization == "none":
                 print("Loading FP16 language model on GPU...")
-                model = AutoModelForCausalLM.from_pretrained(
-                    "mistralai/Mistral-7B-Instruct-v0.1",
-                    torch_dtype=torch.float16,
-                    trust_remote_code=True,
-                    device_map="cuda",
-                )
                 selected_device = "cuda"
                 selected_dtype = torch.float16
+                model = AutoModelForCausalLM.from_pretrained(
+                    "mistralai/Mistral-7B-Instruct-v0.1",
+                    torch_dtype=selected_dtype,
+                    trust_remote_code=True,
+                    device_map=selected_device,
+                )
             else:
-                print(f"Loading INT{'4' if self.quantization == '4bit' else '8'} language model on GPU...")
-                load_in_4bit = self.quantization == "4bit"
-                load_in_8bit = self.quantization == "8bit"
-
-                # Initialize the configuration dictionary with common settings
-                bnb_config_kwargs = {
-                    "load_in_4bit": load_in_4bit,
-                    "load_in_8bit": load_in_8bit,
-                    "bnb_4bit_use_double_quant": load_in_4bit,
-                }
-
-                # Conditionally add the bnb_4bit_quant_type key
-                if load_in_4bit:
-                    bnb_config_kwargs["bnb_4bit_quant_type"] = "nf4"
-
+                print(f"Loading INT4 language model on GPU...")
                 # Create the BitsAndBytesConfig object with the dynamically constructed arguments
-                bnb_config = BitsAndBytesConfig(**bnb_config_kwargs)
+                bnb_config = BitsAndBytesConfig(
+                    load_in_4bit=True,
+                    bnb_4bit_use_double_quant=True,
+                    bnb_4bit_quant_type="nf4",
+                )
+                
+                selected_device = "cuda"
+                selected_dtype = torch.bfloat16
 
                 model = AutoModelForCausalLM.from_pretrained(
                     "mistralai/Mistral-7B-Instruct-v0.1",
-                    load_in_4bit=load_in_4bit,
-                    load_in_8bit=load_in_8bit,
+                    load_in_4bit=True,
                     quantization_config=bnb_config,
-                    torch_dtype=torch.bfloat16 if load_in_4bit else "auto", # torch.bfloat16,
-                    device_map="cuda",
+                    torch_dtype=selected_dtype,
+                    device_map=selected_device,
                     trust_remote_code=True,
                 )
-                selected_device = "cuda"
-                selected_dtype = torch.bfloat16 if load_in_4bit else "auto"
 
         tokenizer = AutoTokenizer.from_pretrained("mistralai/Mistral-7B-Instruct-v0.1")
         pipe = pipeline(
             "text-generation", 
             model=model, 
-            tokenizer = tokenizer, 
+            tokenizer=tokenizer, 
             torch_dtype=selected_dtype, 
-            # torch_dtype=torch.float16 if (self.quantization == "none" or self.quantization == "8bit") and self.device == "cuda" else "auto", 
             device_map=selected_device
         )
         print("Done!")
@@ -152,16 +141,6 @@ class LMPromptGenerator(PromptGenerator):
         Returns:
             str: The generated prompt.
         """
-        # encoded_input = self.tokenizer(prompt_text, return_tensors="pt").to(self.device)
-        # generated_ids = self.model.generate(
-        #     **encoded_input,
-        #     max_new_tokens=70,
-        #     do_sample=True,
-        #     pad_token_id=self.tokenizer.eos_token_id,
-        # )
-        # decoded_prompt = self.tokenizer.decode(
-        #     generated_ids[0], skip_special_tokens=True
-        # )
         sequences = self.pipeline(
             prompt_text,
             max_new_tokens=70, 
