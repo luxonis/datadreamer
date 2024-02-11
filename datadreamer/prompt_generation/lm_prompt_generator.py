@@ -4,7 +4,12 @@ from typing import List, Optional
 
 import torch
 from tqdm import tqdm
-from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig, pipeline
+from transformers import (
+    AutoModelForCausalLM,
+    AutoTokenizer,
+    BitsAndBytesConfig,
+    pipeline,
+)
 
 from datadreamer.prompt_generation.prompt_generator import PromptGenerator
 
@@ -33,7 +38,7 @@ class LMPromptGenerator(PromptGenerator):
         num_objects_range: Optional[List[int]] = None,
         seed: Optional[float] = 42,
         device: str = "cuda",
-        quantization: str = "none",
+        quantization: Optional[str] = "none",
     ) -> None:
         """Initializes the LMPromptGenerator with class names and other settings."""
         num_objects_range = num_objects_range or [1, 3]
@@ -48,7 +53,6 @@ class LMPromptGenerator(PromptGenerator):
         Returns:
             tuple: The initialized language model and tokenizer.
         """
-        selected_device = "cpu"
         selected_dtype = "auto"
         if self.device == "cpu":
             print("Loading language model on CPU...")
@@ -61,24 +65,21 @@ class LMPromptGenerator(PromptGenerator):
         else:
             if self.quantization == "none":
                 print("Loading FP16 language model on GPU...")
-                selected_device = "cuda"
                 selected_dtype = torch.float16
                 model = AutoModelForCausalLM.from_pretrained(
                     "mistralai/Mistral-7B-Instruct-v0.1",
                     torch_dtype=selected_dtype,
                     trust_remote_code=True,
-                    device_map=selected_device,
+                    device_map=self.device,
                 )
             else:
-                print(f"Loading INT4 language model on GPU...")
+                print("Loading INT4 language model on GPU...")
                 # Create the BitsAndBytesConfig object with the dynamically constructed arguments
                 bnb_config = BitsAndBytesConfig(
                     load_in_4bit=True,
                     bnb_4bit_use_double_quant=True,
                     bnb_4bit_quant_type="nf4",
                 )
-                
-                selected_device = "cuda"
                 selected_dtype = torch.bfloat16
 
                 model = AutoModelForCausalLM.from_pretrained(
@@ -86,20 +87,77 @@ class LMPromptGenerator(PromptGenerator):
                     load_in_4bit=True,
                     quantization_config=bnb_config,
                     torch_dtype=selected_dtype,
-                    device_map=selected_device,
+                    device_map=self.device,
                     trust_remote_code=True,
                 )
 
         tokenizer = AutoTokenizer.from_pretrained("mistralai/Mistral-7B-Instruct-v0.1")
         pipe = pipeline(
-            "text-generation", 
-            model=model, 
-            tokenizer=tokenizer, 
-            torch_dtype=selected_dtype, 
-            device_map=selected_device
+            "text-generation",
+            model=model,
+            tokenizer=tokenizer,
+            torch_dtype=selected_dtype,
+            device_map=self.device,
         )
         print("Done!")
         return model, tokenizer, pipe
+
+    def _remove_incomplete_sentence(self, text):
+        # Define the regex pattern to capture up to the last sentence-ending punctuation
+        pattern = r"^(.*[.!?])"
+        match = re.search(pattern, text)
+        return match.group(0) if match else text
+
+    def _create_lm_prompt_text(self, selected_objects: List[str]) -> str:
+        """Creates a language model text prompt based on selected objects.
+
+        Args:
+            selected_objects (List[str]): Objects to include in the prompt.
+
+        Returns:
+            str: A text prompt for the language model.
+        """
+        return f"[INST] Generate a short and concise caption for an image. Follow this template: 'A photo of {', '.join(selected_objects)}', where the objects interact in a meaningful way within a scene, complete with a short scene description. [/INST]"
+
+    def _test_prompt(self, prompt: str, selected_objects: List[str]) -> bool:
+        """Tests if the generated prompt is valid based on selected objects.
+
+        Args:
+            prompt (str): The generated prompt.
+            selected_objects (List[str]): Objects to check in the prompt.
+
+        Returns:
+            bool: True if the prompt is valid, False otherwise.
+        """
+        return prompt.lower().startswith(
+            "a photo of"
+        )  # and all(obj.lower() in prompt.lower() for obj in selected_objects)
+
+    def generate_prompt(self, prompt_text: str) -> str:
+        """Generates a single prompt using the language model.
+
+        Args:
+            prompt_text (str): The text prompt for the language model.
+
+        Returns:
+            str: The generated prompt.
+        """
+        sequences = self.pipeline(
+            prompt_text,
+            max_new_tokens=70,
+            do_sample=True,
+            pad_token_id=self.tokenizer.eos_token_id,
+        )
+        decoded_prompt = sequences[0]["generated_text"]
+        instructional_pattern = r"\[INST].*?\[/INST\]\s*"
+        # Remove the instructional text to isolate the caption
+        decoded_prompt = (
+            re.sub(instructional_pattern, "", decoded_prompt)
+            .replace('"', "")
+            .replace("'", "")
+        )
+
+        return self._remove_incomplete_sentence(decoded_prompt)
 
     def generate_prompts(self) -> List[str]:
         """Generates a list of text prompts based on the class names.
@@ -120,57 +178,6 @@ class LMPromptGenerator(PromptGenerator):
                     prompts.append((selected_objects, generated_prompt))
                     correct_prompt_generated = True
         return prompts
-
-    def _create_lm_prompt_text(self, selected_objects: List[str]) -> str:
-        """Creates a language model text prompt based on selected objects.
-
-        Args:
-            selected_objects (List[str]): Objects to include in the prompt.
-
-        Returns:
-            str: A text prompt for the language model.
-        """
-        return f"[INST] Generate a short and concise caption for an image. Follow this template: 'A photo of {', '.join(selected_objects)}', where the objects interact in a meaningful way within a scene, complete with a short scene description. [/INST]"
-
-    def generate_prompt(self, prompt_text: str) -> str:
-        """Generates a single prompt using the language model.
-
-        Args:
-            prompt_text (str): The text prompt for the language model.
-
-        Returns:
-            str: The generated prompt.
-        """
-        sequences = self.pipeline(
-            prompt_text,
-            max_new_tokens=70, 
-            do_sample=True,
-            pad_token_id=self.tokenizer.eos_token_id
-        )
-        decoded_prompt = sequences[0]['generated_text']
-        instructional_pattern = r"\[INST].*?\[/INST\]\s*"
-        # Remove the instructional text to isolate the caption
-        decoded_prompt = (
-            re.sub(instructional_pattern, "", decoded_prompt)
-            .replace('"', "")
-            .replace("'", "")
-        )
-
-        return decoded_prompt
-
-    def _test_prompt(self, prompt: str, selected_objects: List[str]) -> bool:
-        """Tests if the generated prompt is valid based on selected objects.
-
-        Args:
-            prompt (str): The generated prompt.
-            selected_objects (List[str]): Objects to check in the prompt.
-
-        Returns:
-            bool: True if the prompt is valid, False otherwise.
-        """
-        return prompt.lower().startswith(
-            "a photo of"
-        )  # and all(obj.lower() in prompt.lower() for obj in selected_objects)
 
     def release(self, empty_cuda_cache=False) -> None:
         """Releases the model and optionally empties the CUDA cache."""

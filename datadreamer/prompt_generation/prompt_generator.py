@@ -32,7 +32,7 @@ class PromptGenerator(ABC):
         num_objects_range: Optional[List[int]] = None,
         seed: Optional[float] = None,
         device: str = "cuda",
-        quantization: str = "none",
+        quantization: Optional[str] = "none",
     ) -> None:
         """Initializes the PromptGenerator with class names and other settings."""
         self.class_names = class_names
@@ -42,7 +42,7 @@ class PromptGenerator(ABC):
         if seed is not None:
             self.set_seed(seed)
         self.device = device
-        self.quantization = quantization
+        self.quantization = quantization if quantization is not None else "none"
 
     @staticmethod
     def set_seed(seed: int):

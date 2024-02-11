@@ -200,11 +200,15 @@ def check_args(args):
         if not torch.cuda.is_available():
             raise ValueError("CUDA is not available. Please use --device cpu")
 
-    # Check for quantization availability
+    # Check for LM quantization availability
     if args.lm_quantization != "none" and (
-        args.device == "cpu" or not torch.cuda.is_available()
+        args.device == "cpu"
+        or not torch.cuda.is_available()
+        or args.prompt_generator != "lm"
     ):
-        raise ValueError("Quantization is only available for CUDA devices")
+        raise ValueError(
+            "LM Quantization is only available for CUDA devices and Mistral LM"
+        )
 
     # Check seed
     if args.seed < 0:

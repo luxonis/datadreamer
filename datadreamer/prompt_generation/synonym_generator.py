@@ -4,7 +4,11 @@ from typing import List, Optional
 
 import torch
 from tqdm import tqdm
-from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig, pipeline
+from transformers import (
+    AutoModelForCausalLM,
+    AutoTokenizer,
+    pipeline,
+)
 
 
 class SynonymGenerator:
@@ -15,7 +19,6 @@ class SynonymGenerator:
         synonyms_number (int): Number of synonyms to generate for each word.
         seed (Optional[float]): Seed for randomization.
         device (str): Device for model inference (default is "cuda").
-        quantization (str): Quantization type for the prompt generator.
 
     Methods:
         generate_synonyms_for_list(words): Generates synonyms for a list of words and returns them in a dictionary.
@@ -29,7 +32,6 @@ class SynonymGenerator:
         synonyms_number: int = 5,
         seed: Optional[float] = 42,
         device: str = "cuda",
-        quantization: str = "none",
     ) -> None:
         """Initializes the SynonymGenerator with parameters."""
         self.synonyms_number = synonyms_number
@@ -43,8 +45,6 @@ class SynonymGenerator:
         Returns:
             tuple: The initialized language model and tokenizer.
         """
-        selected_device = "cpu"
-        selected_dtype = "auto"
         if self.device == "cpu":
             print("Loading language model on CPU...")
             model = AutoModelForCausalLM.from_pretrained(
@@ -54,44 +54,21 @@ class SynonymGenerator:
                 low_cpu_mem_usage=True,
             )
         else:
-            if self.quantization == "none":
-                print("Loading FP16 language model on GPU...")
-                selected_device = "cuda"
-                selected_dtype = torch.float16
-                model = AutoModelForCausalLM.from_pretrained(
-                    "mistralai/Mistral-7B-Instruct-v0.1",
-                    torch_dtype=selected_dtype,
-                    trust_remote_code=True,
-                    device_map=selected_device,
-                )
-            else:
-                print(f"Loading INT4 language model on GPU...")
-                # Create the BitsAndBytesConfig object with the dynamically constructed arguments
-                bnb_config = BitsAndBytesConfig(
-                    load_in_4bit=True,
-                    bnb_4bit_use_double_quant=True,
-                    bnb_4bit_quant_type="nf4",
-                )
-                
-                selected_device = "cuda"
-                selected_dtype = torch.bfloat16
-
-                model = AutoModelForCausalLM.from_pretrained(
-                    "mistralai/Mistral-7B-Instruct-v0.1",
-                    load_in_4bit=True,
-                    quantization_config=bnb_config,
-                    torch_dtype=selected_dtype,
-                    device_map=selected_device,
-                    trust_remote_code=True,
-                )
+            print("Loading FP16 language model on GPU...")
+            model = AutoModelForCausalLM.from_pretrained(
+                "mistralai/Mistral-7B-Instruct-v0.1",
+                torch_dtype=torch.float16,
+                trust_remote_code=True,
+                device_map=self.device,
+            )
 
         tokenizer = AutoTokenizer.from_pretrained("mistralai/Mistral-7B-Instruct-v0.1")
         pipe = pipeline(
-            "text-generation", 
-            model=model, 
-            tokenizer=tokenizer, 
-            torch_dtype=selected_dtype, 
-            device_map=selected_device
+            "text-generation",
+            model=model,
+            tokenizer=tokenizer,
+            torch_dtype=torch.float16 if self.device == "cuda" else "auto",
+            device_map=self.device,
         )
         print("Done!")
         return model, tokenizer, pipe
@@ -152,7 +129,7 @@ class SynonymGenerator:
             num_return_sequences=1,
             pad_token_id=self.tokenizer.eos_token_id,
         )
-        generated_text = sequences[0]['generated_text']
+        generated_text = sequences[0]["generated_text"]
 
         instructional_pattern = r"\[INST].*?\[/INST\]\s*"
         # Remove the instructional text to isolate the caption

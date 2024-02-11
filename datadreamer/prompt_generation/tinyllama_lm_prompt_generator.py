@@ -2,7 +2,7 @@ import re
 from typing import List, Optional
 
 import torch
-from transformers import AutoModelForCausalLM, AutoTokenizer
+from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
 
 from datadreamer.prompt_generation.lm_prompt_generator import LMPromptGenerator
 
@@ -31,10 +31,12 @@ class TinyLlamaLMPromptGenerator(LMPromptGenerator):
         num_objects_range: Optional[List[int]] = None,
         seed: Optional[float] = 42,
         device: str = "cuda",
-        quantization: str = "none",
+        quantization: Optional[str] = "none",
     ) -> None:
         """Initializes the LMPromptGenerator with class names and other settings."""
-        super().__init__(class_names, prompts_number, num_objects_range, seed, device, quantization)
+        super().__init__(
+            class_names, prompts_number, num_objects_range, seed, device, quantization
+        )
 
     def _init_lang_model(self):
         """Initializes the language model and tokenizer for prompt generation.
@@ -53,20 +55,23 @@ class TinyLlamaLMPromptGenerator(LMPromptGenerator):
         else:
             print("Loading language model on GPU...")
             model = AutoModelForCausalLM.from_pretrained(
-                "TinyLlama/TinyLlama-1.1B-Chat-v1.0", torch_dtype=torch.float16
+                "TinyLlama/TinyLlama-1.1B-Chat-v1.0",
+                torch_dtype=torch.float16,
+                device_map=self.device,
             )
 
         tokenizer = AutoTokenizer.from_pretrained(
             "TinyLlama/TinyLlama-1.1B-Chat-v1.0", trust_remote_code=True
         )
+        pipe = pipeline(
+            "text-generation",
+            model=model,
+            tokenizer=tokenizer,
+            torch_dtype=torch.float16 if self.device == "cuda" else "auto",
+            device_map=self.device,
+        )
         print("Done!")
-        return model.to(self.device), tokenizer
-
-    def _remove_incomplete_sentence(self, text):
-        # Define the regex pattern to capture up to the last sentence-ending punctuation
-        pattern = r"^(.*[.!?])"
-        match = re.search(pattern, text)
-        return match.group(0) if match else text
+        return model, tokenizer, pipe
 
     def _remove_caption_sentences(self, text):
         # Pattern to find sentences that start with "Caption reads: "
@@ -99,9 +104,8 @@ class TinyLlamaLMPromptGenerator(LMPromptGenerator):
         Returns:
             str: The generated prompt.
         """
-        encoded_input = self.tokenizer(prompt_text, return_tensors="pt").to(self.device)
-        generated_ids = self.model.generate(
-            **encoded_input,
+        sequences = self.pipeline(
+            prompt_text,
             max_new_tokens=70,
             do_sample=True,
             top_p=0.95,
@@ -110,9 +114,7 @@ class TinyLlamaLMPromptGenerator(LMPromptGenerator):
             num_beams=1,
             pad_token_id=self.tokenizer.eos_token_id,
         )
-        decoded_prompt = self.tokenizer.decode(
-            generated_ids[0], skip_special_tokens=True
-        )
+        decoded_prompt = sequences[0]["generated_text"]
         instructional_pattern = r"<\|system\|>\n.*?\n<\|user\|>\n.*?\n<\|assistant\|>\n"
         # Remove the instructional text to isolate the caption
         decoded_prompt = (
