@@ -249,7 +249,7 @@ def test_cuda_simple_enhance_sdxl_turbo_detection_pipeline():
         f"--num_objects_range 1 2 "
         f"--image_generator sdxl-turbo "
         f"--use_image_tester "
-        f"--enhance_images "
+        f"--enhance_class_names "
         f"--device cuda"
     )
     # Check the run of the pipeline
@@ -594,7 +594,7 @@ def test_cuda_simple_enhance_sdxl_turbo_classification_pipeline():
         f"--num_objects_range 1 2 "
         f"--image_generator sdxl-turbo "
         f"--use_image_tester "
-        f"--enhance_images "
+        f"--enhance_class_names "
         f"--device cuda"
     )
     # Check the run of the pipeline
