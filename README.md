@@ -114,6 +114,7 @@ datadreamer --save_dir <directory> --class_names <objects> --prompts_number <num
 - `--enhance_class_names`: Enhance class names with synonyms. Default is False.
 - `--use_image_tester`: Use image tester for image generation. Default is False.
 - `--image_tester_patience`: Patience level for image tester. Default is 1.
+- `--lm_quantization`: Quantization to use for Mistral language model. Choose between `none` and `4bit`. Default is `none`.
 - `--device`: Choose between `cuda` and `cpu`. Default is cuda.
 - `--seed`: Set a random seed for image and prompt generation. Default is 42.
 
@@ -123,7 +124,7 @@ datadreamer --save_dir <directory> --class_names <objects> --prompts_number <num
 
 | Model Category    | Model Names                                                                           | Description/Notes                       |
 | ----------------- | ------------------------------------------------------------------------------------- | --------------------------------------- |
-| Prompt Generation | [Mistral-7B-Instruct-v0.1](https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.1) | Semantically rich prompts               |
+| Prompt Generation | [Mistral-7B-Instruct-v0.2](https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.2) | Semantically rich prompts               |
 |                   | [TinyLlama-1.1B-Chat-v1.0](https://huggingface.co/TinyLlama/TinyLlama-1.1B-Chat-v1.0) | Tiny LM                                 |
 |                   | Simple random generator                                                               | Joins randomly chosen object names      |
 | Image Generation  | [SDXL-1.0](https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0)           | Slow and accurate (1024x1024 images)    |

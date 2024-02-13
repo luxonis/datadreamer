@@ -1,7 +1,7 @@
 import json
 import random
 from abc import ABC, abstractmethod
-from typing import List, Optional
+from typing import List, Optional, Literal
 
 import torch
 
@@ -32,7 +32,7 @@ class PromptGenerator(ABC):
         num_objects_range: Optional[List[int]] = None,
         seed: Optional[float] = None,
         device: str = "cuda",
-        quantization: Optional[str] = "none",
+        quantization: Optional[Literal["none", "4bit"]] = "none",
     ) -> None:
         """Initializes the PromptGenerator with class names and other settings."""
         self.class_names = class_names

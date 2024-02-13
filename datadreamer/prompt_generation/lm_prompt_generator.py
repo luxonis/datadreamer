@@ -1,6 +1,6 @@
 import random
 import re
-from typing import List, Optional
+from typing import List, Optional, Literal
 
 import torch
 from tqdm import tqdm
@@ -9,6 +9,7 @@ from transformers import (
     AutoTokenizer,
     BitsAndBytesConfig,
     pipeline,
+    Pipeline,
 )
 
 from datadreamer.prompt_generation.prompt_generator import PromptGenerator
@@ -19,15 +20,18 @@ class LMPromptGenerator(PromptGenerator):
 
     Attributes:
         device (str): Device to run the language model on ('cuda' for GPU, 'cpu' for CPU).
+        num_objects_range (List[int]): Range for number of objects in a single image.
         model (AutoModelForCausalLM): The pre-trained causal language model for generating prompts.
         tokenizer (AutoTokenizer): The tokenizer for the pre-trained language model.
+        pipeline (pipeline): The HuggingFace pipeline for generating text.
 
     Methods:
         _init_lang_model(): Initializes the language model and tokenizer.
-        generate_prompts(): Generates a list of prompts based on the class names.
+        _remove_incomplete_sentence(text): Removes incomplete sentences from the generated prompt.
         _create_lm_prompt_text(selected_objects): Creates a text prompt for the language model.
-        generate_prompt(prompt_text): Generates a single prompt using the language model.
         _test_prompt(prompt, selected_objects): Tests if the generated prompt is valid.
+        generate_prompt(prompt_text): Generates a single prompt using the language model.
+        generate_prompts(): Generates a list of prompts based on the class names.
         release(empty_cuda_cache): Releases resources and optionally empties the CUDA cache.
     """
 
@@ -38,7 +42,7 @@ class LMPromptGenerator(PromptGenerator):
         num_objects_range: Optional[List[int]] = None,
         seed: Optional[float] = 42,
         device: str = "cuda",
-        quantization: Optional[str] = "none",
+        quantization: Optional[Literal["none", "4bit"]] = "none",
     ) -> None:
         """Initializes the LMPromptGenerator with class names and other settings."""
         num_objects_range = num_objects_range or [1, 3]
@@ -47,17 +51,17 @@ class LMPromptGenerator(PromptGenerator):
         )
         self.model, self.tokenizer, self.pipeline = self._init_lang_model()
 
-    def _init_lang_model(self):
-        """Initializes the language model and tokenizer for prompt generation.
+    def _init_lang_model(self) -> tuple[AutoModelForCausalLM, AutoTokenizer, Pipeline]:
+        """Initializes the language model, tokenizer and pipeline for prompt generation.
 
         Returns:
-            tuple: The initialized language model and tokenizer.
+            tuple: The initialized language model, tokenizer and pipeline.
         """
         selected_dtype = "auto"
         if self.device == "cpu":
             print("Loading language model on CPU...")
             model = AutoModelForCausalLM.from_pretrained(
-                "mistralai/Mistral-7B-Instruct-v0.1",
+                "mistralai/Mistral-7B-Instruct-v0.2",
                 torch_dtype="auto",
                 device_map="cpu",
                 low_cpu_mem_usage=True,
@@ -67,7 +71,7 @@ class LMPromptGenerator(PromptGenerator):
                 print("Loading FP16 language model on GPU...")
                 selected_dtype = torch.float16
                 model = AutoModelForCausalLM.from_pretrained(
-                    "mistralai/Mistral-7B-Instruct-v0.1",
+                    "mistralai/Mistral-7B-Instruct-v0.2",
                     torch_dtype=selected_dtype,
                     trust_remote_code=True,
                     device_map=self.device,
@@ -83,7 +87,7 @@ class LMPromptGenerator(PromptGenerator):
                 selected_dtype = torch.bfloat16
 
                 model = AutoModelForCausalLM.from_pretrained(
-                    "mistralai/Mistral-7B-Instruct-v0.1",
+                    "mistralai/Mistral-7B-Instruct-v0.2",
                     load_in_4bit=True,
                     quantization_config=bnb_config,
                     torch_dtype=selected_dtype,
@@ -91,7 +95,7 @@ class LMPromptGenerator(PromptGenerator):
                     trust_remote_code=True,
                 )
 
-        tokenizer = AutoTokenizer.from_pretrained("mistralai/Mistral-7B-Instruct-v0.1")
+        tokenizer = AutoTokenizer.from_pretrained("mistralai/Mistral-7B-Instruct-v0.2")
         pipe = pipeline(
             "text-generation",
             model=model,
@@ -102,7 +106,15 @@ class LMPromptGenerator(PromptGenerator):
         print("Done!")
         return model, tokenizer, pipe
 
-    def _remove_incomplete_sentence(self, text):
+    def _remove_incomplete_sentence(self, text: str) -> str:
+        """Removes incomplete sentences from the generated prompt.
+
+        Args:
+            text (str): The generated prompt text.
+            
+        Returns:
+            str: The cleaned prompt text.
+        """
         # Define the regex pattern to capture up to the last sentence-ending punctuation
         pattern = r"^(.*[.!?])"
         match = re.search(pattern, text)

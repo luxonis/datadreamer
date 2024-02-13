@@ -1,8 +1,8 @@
 import re
-from typing import List, Optional
+from typing import List, Optional, Literal
 
 import torch
-from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
+from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline, Pipeline
 
 from datadreamer.prompt_generation.lm_prompt_generator import LMPromptGenerator
 
@@ -14,14 +14,13 @@ class TinyLlamaLMPromptGenerator(LMPromptGenerator):
         device (str): Device to run the language model on ('cuda' for GPU, 'cpu' for CPU).
         model (AutoModelForCausalLM): The pre-trained causal language model for generating prompts.
         tokenizer (AutoTokenizer): The tokenizer for the pre-trained language model.
+        pipeline (pipeline): The HuggingFace pipeline for generating text.
 
     Methods:
         _init_lang_model(): Initializes the language model and tokenizer.
-        generate_prompts(): Generates a list of prompts based on the class names.
+        _remove_caption_sentences(text): Removes caption sentences from the generated prompt.
         _create_lm_prompt_text(selected_objects): Creates a text prompt for the language model.
         generate_prompt(prompt_text): Generates a single prompt using the language model.
-        _test_prompt(prompt, selected_objects): Tests if the generated prompt is valid.
-        release(empty_cuda_cache): Releases resources and optionally empties the CUDA cache.
     """
 
     def __init__(
@@ -31,18 +30,18 @@ class TinyLlamaLMPromptGenerator(LMPromptGenerator):
         num_objects_range: Optional[List[int]] = None,
         seed: Optional[float] = 42,
         device: str = "cuda",
-        quantization: Optional[str] = "none",
+        quantization: Optional[Literal["none", "4bit"]] = "none",
     ) -> None:
         """Initializes the LMPromptGenerator with class names and other settings."""
         super().__init__(
             class_names, prompts_number, num_objects_range, seed, device, quantization
         )
 
-    def _init_lang_model(self):
-        """Initializes the language model and tokenizer for prompt generation.
+    def _init_lang_model(self) -> tuple[AutoModelForCausalLM, AutoTokenizer, Pipeline]:
+        """Initializes the language model, tokenizer and pipeline for prompt generation.
 
         Returns:
-            tuple: The initialized language model and tokenizer.
+            tuple: The initialized language model, tokenizer and pipeline.
         """
         if self.device == "cpu":
             print("Loading language model on CPU...")
@@ -73,7 +72,15 @@ class TinyLlamaLMPromptGenerator(LMPromptGenerator):
         print("Done!")
         return model, tokenizer, pipe
 
-    def _remove_caption_sentences(self, text):
+    def _remove_caption_sentences(self, text: str) -> str:
+        """Removes caption sentences from the generated prompt.
+
+        Args:
+            text (str): The generated prompt text.
+
+        Returns:
+            str: The cleaned prompt text.
+        """
         # Pattern to find sentences that start with "Caption reads: "
         # \s* matches any whitespace characters at the beginning of the string (including none)
         # re.IGNORECASE makes the search case-insensitive
