@@ -1,7 +1,7 @@
 import json
 import random
 from abc import ABC, abstractmethod
-from typing import List, Optional
+from typing import List, Literal, Optional
 
 import torch
 
@@ -15,6 +15,8 @@ class PromptGenerator(ABC):
         prompts_number (int): Number of prompts to generate.
         num_objects_range (Optional[List[int]]): Range for the number of objects to include in prompts.
         seed (Optional[float]): Seed for randomization.
+        device (str): Device to run the prompt generator on ('cuda' for GPU, 'cpu' for CPU).
+        quantization (str): Quantization type for the prompt generator.
 
     Methods:
         set_seed(seed): Sets the random seed for consistent prompt generation.
@@ -30,6 +32,7 @@ class PromptGenerator(ABC):
         num_objects_range: Optional[List[int]] = None,
         seed: Optional[float] = None,
         device: str = "cuda",
+        quantization: Optional[Literal["none", "4bit"]] = "none",
     ) -> None:
         """Initializes the PromptGenerator with class names and other settings."""
         self.class_names = class_names
@@ -39,6 +42,7 @@ class PromptGenerator(ABC):
         if seed is not None:
             self.set_seed(seed)
         self.device = device
+        self.quantization = quantization if quantization is not None else "none"
 
     @staticmethod
     def set_seed(seed: int):

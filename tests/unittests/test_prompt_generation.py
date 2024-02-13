@@ -35,10 +35,15 @@ def test_simple_prompt_generator():
         assert prompt_text == f"A photo of a {', a '.join(selected_objects)}"
 
 
-def _check_lm_prompt_generator(device: str, prompt_generator_class=LMPromptGenerator):
+def _check_lm_prompt_generator(
+    device: str, prompt_generator_class=LMPromptGenerator, quantization: str = "none"
+):
     object_names = ["aeroplane", "bicycle", "bird", "boat"]
     prompt_generator = prompt_generator_class(
-        class_names=object_names, prompts_number=2, device=device
+        class_names=object_names,
+        prompts_number=2,
+        device=device,
+        quantization=quantization,
     )
     prompts = prompt_generator.generate_prompts()
     # Check that the some prompts were generated
@@ -64,6 +69,14 @@ def _check_lm_prompt_generator(device: str, prompt_generator_class=LMPromptGener
 )
 def test_cuda_lm_prompt_generator():
     _check_lm_prompt_generator("cuda")
+
+
+@pytest.mark.skipif(
+    total_memory < 12 or not torch.cuda.is_available() or total_disk_space < 25,
+    reason="Test requires at least 12GB of RAM, 25GB of HDD and CUDA support",
+)
+def test_cuda_4bit_lm_prompt_generator():
+    _check_lm_prompt_generator("cuda", quantization="4bit")
 
 
 @pytest.mark.skipif(
