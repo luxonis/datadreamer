@@ -131,6 +131,14 @@ def parse_args():
     )
 
     parser.add_argument(
+        "--lm_quantization",
+        type=str,
+        default="none",
+        choices=["none", "4bit"],
+        help="Quantization to use for Mistral language model",
+    )
+
+    parser.add_argument(
         "--device",
         type=str,
         default="cuda",
@@ -191,6 +199,16 @@ def check_args(args):
     if args.device == "cuda":
         if not torch.cuda.is_available():
             raise ValueError("CUDA is not available. Please use --device cpu")
+
+    # Check for LM quantization availability
+    if args.lm_quantization != "none" and (
+        args.device == "cpu"
+        or not torch.cuda.is_available()
+        or args.prompt_generator != "lm"
+    ):
+        raise ValueError(
+            "LM Quantization is only available for CUDA devices and Mistral LM"
+        )
 
     # Check seed
     if args.seed < 0:
@@ -260,6 +278,7 @@ def main():
         num_objects_range=args.num_objects_range,
         seed=args.seed,
         device=args.device,
+        quantization=args.lm_quantization,
     )
     generated_prompts = prompt_generator.generate_prompts()
     prompt_generator.save_prompts(

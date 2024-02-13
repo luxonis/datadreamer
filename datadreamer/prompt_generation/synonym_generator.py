@@ -4,7 +4,12 @@ from typing import List, Optional
 
 import torch
 from tqdm import tqdm
-from transformers import AutoModelForCausalLM, AutoTokenizer
+from transformers import (
+    AutoModelForCausalLM,
+    AutoTokenizer,
+    Pipeline,
+    pipeline,
+)
 
 
 class SynonymGenerator:
@@ -17,6 +22,10 @@ class SynonymGenerator:
         device (str): Device for model inference (default is "cuda").
 
     Methods:
+        _init_lang_model(): Initializes the language model and tokenizer.
+        _generate_synonyms(prompt_text): Generates synonyms based on a given prompt text.
+        _extract_synonyms(text): Extracts synonyms from a text containing synonyms.
+        _create_prompt_text(word): Creates a prompt text for generating synonyms for a given word.
         generate_synonyms_for_list(words): Generates synonyms for a list of words and returns them in a dictionary.
         generate_synonyms(word): Generates synonyms for a single word and returns them in a list.
         save_synonyms(synonyms, save_path): Saves the generated synonyms to a JSON file.
@@ -33,12 +42,16 @@ class SynonymGenerator:
         self.synonyms_number = synonyms_number
         self.seed = seed
         self.device = device
-        self.model, self.tokenizer = self._init_lang_model()
+        self.model, self.tokenizer, self.pipeline = self._init_lang_model()
 
-    def _init_lang_model(self):
-        """Initializes the language model and tokenizer for synonym generation."""
-        print("Initializing language model for synonym generation")
+    def _init_lang_model(self) -> tuple[AutoModelForCausalLM, AutoTokenizer, Pipeline]:
+        """Initializes the language model, tokenizer and pipeline for prompt generation.
+
+        Returns:
+            tuple: The initialized language model, tokenizer and pipeline.
+        """
         if self.device == "cpu":
+            print("Loading language model on CPU...")
             model = AutoModelForCausalLM.from_pretrained(
                 "mistralai/Mistral-7B-Instruct-v0.1",
                 torch_dtype="auto",
@@ -46,12 +59,80 @@ class SynonymGenerator:
                 low_cpu_mem_usage=True,
             )
         else:
+            print("Loading FP16 language model on GPU...")
             model = AutoModelForCausalLM.from_pretrained(
-                "mistralai/Mistral-7B-Instruct-v0.1", torch_dtype=torch.float16
+                "mistralai/Mistral-7B-Instruct-v0.1",
+                torch_dtype=torch.float16,
+                trust_remote_code=True,
+                device_map=self.device,
             )
 
         tokenizer = AutoTokenizer.from_pretrained("mistralai/Mistral-7B-Instruct-v0.1")
-        return model.to(self.device), tokenizer
+        pipe = pipeline(
+            "text-generation",
+            model=model,
+            tokenizer=tokenizer,
+            torch_dtype=torch.float16 if self.device == "cuda" else "auto",
+            device_map=self.device,
+        )
+        print("Done!")
+        return model, tokenizer, pipe
+
+    def _generate_synonyms(self, prompt_text: str) -> List[str]:
+        """Generates synonyms based on a given prompt text.
+
+        Args:
+            prompt_text (str): The prompt text for generating synonyms.
+
+        Returns:
+            List[str]: A list of generated synonyms.
+        """
+        sequences = self.pipeline(
+            prompt_text,
+            max_new_tokens=50,
+            do_sample=True,
+            num_return_sequences=1,
+            pad_token_id=self.tokenizer.eos_token_id,
+        )
+        generated_text = sequences[0]["generated_text"]
+
+        instructional_pattern = r"\[INST].*?\[/INST\]\s*"
+        # Remove the instructional text to isolate the caption
+        generated_text = (
+            re.sub(instructional_pattern, "", generated_text)
+            .replace('"', "")
+            .replace("'", "")
+            .replace(".", "")
+        )
+
+        # Process the generated text to extract synonyms
+        synonyms = self._extract_synonyms(generated_text)
+        return synonyms
+
+    def _extract_synonyms(self, text: str) -> List[str]:
+        """Extracts synonyms from a text containing synonyms.
+
+        Args:
+            text (str): The text containing synonyms.
+
+        Returns:
+            List[str]: A list of extracted synonyms.
+        """
+        synonyms = [
+            word.strip() for word in text.split(",")
+        ]  # Split and strip each synonym
+        return synonyms[: self.synonyms_number]
+
+    def _create_prompt_text(self, word: str) -> str:
+        """Creates a prompt text for generating synonyms for a given word.
+
+        Args:
+            word (str): The word for which synonyms are generated.
+
+        Returns:
+            str: The prompt text for generating synonyms.
+        """
+        return f"[INST] List {self.synonyms_number} most common synonyms for the word '{word}'. Write only synonyms separated by commas. [/INST]"
 
     def generate_synonyms_for_list(self, words: List[str]) -> dict:
         """Generates synonyms for a list of words and returns them in a dictionary.
@@ -81,65 +162,6 @@ class SynonymGenerator:
         prompt_text = self._create_prompt_text(word)
         generated_synonyms = self._generate_synonyms(prompt_text)
         return generated_synonyms
-
-    def _create_prompt_text(self, word: str) -> str:
-        """Creates a prompt text for generating synonyms for a given word.
-
-        Args:
-            word (str): The word for which synonyms are generated.
-
-        Returns:
-            str: The prompt text for generating synonyms.
-        """
-        return f"[INST] List {self.synonyms_number} most common synonyms for the word '{word}'. Write only synonyms separated by commas. [/INST]"
-
-    def _generate_synonyms(self, prompt_text: str) -> List[str]:
-        """Generates synonyms based on a given prompt text.
-
-        Args:
-            prompt_text (str): The prompt text for generating synonyms.
-
-        Returns:
-            List[str]: A list of generated synonyms.
-        """
-        encoded_input = self.tokenizer(prompt_text, return_tensors="pt").to(self.device)
-        generated_ids = self.model.generate(
-            **encoded_input,
-            max_new_tokens=50,
-            do_sample=True,
-            num_return_sequences=1,
-            pad_token_id=self.tokenizer.eos_token_id,
-        )
-        generated_text = self.tokenizer.decode(
-            generated_ids[0], skip_special_tokens=True
-        )
-
-        instructional_pattern = r"\[INST].*?\[/INST\]\s*"
-        # Remove the instructional text to isolate the caption
-        generated_text = (
-            re.sub(instructional_pattern, "", generated_text)
-            .replace('"', "")
-            .replace("'", "")
-            .replace(".", "")
-        )
-
-        # Process the generated text to extract synonyms
-        synonyms = self._extract_synonyms(generated_text)
-        return synonyms
-
-    def _extract_synonyms(self, text: str) -> List[str]:
-        """Extracts synonyms from a text containing synonyms.
-
-        Args:
-            text (str): The text containing synonyms.
-
-        Returns:
-            List[str]: A list of extracted synonyms.
-        """
-        synonyms = [
-            word.strip() for word in text.split(",")
-        ]  # Split and strip each synonym
-        return synonyms[: self.synonyms_number]
 
     def save_synonyms(self, synonyms, save_path: str) -> None:
         """Saves the generated synonyms to a JSON file.
