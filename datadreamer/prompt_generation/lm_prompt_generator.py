@@ -1,6 +1,6 @@
 import random
 import re
-from typing import List, Optional, Literal
+from typing import List, Literal, Optional
 
 import torch
 from tqdm import tqdm
@@ -8,8 +8,8 @@ from transformers import (
     AutoModelForCausalLM,
     AutoTokenizer,
     BitsAndBytesConfig,
-    pipeline,
     Pipeline,
+    pipeline,
 )
 
 from datadreamer.prompt_generation.prompt_generator import PromptGenerator
@@ -61,7 +61,7 @@ class LMPromptGenerator(PromptGenerator):
         if self.device == "cpu":
             print("Loading language model on CPU...")
             model = AutoModelForCausalLM.from_pretrained(
-                "mistralai/Mistral-7B-Instruct-v0.2",
+                "mistralai/Mistral-7B-Instruct-v0.1",
                 torch_dtype="auto",
                 device_map="cpu",
                 low_cpu_mem_usage=True,
@@ -71,7 +71,7 @@ class LMPromptGenerator(PromptGenerator):
                 print("Loading FP16 language model on GPU...")
                 selected_dtype = torch.float16
                 model = AutoModelForCausalLM.from_pretrained(
-                    "mistralai/Mistral-7B-Instruct-v0.2",
+                    "mistralai/Mistral-7B-Instruct-v0.1",
                     torch_dtype=selected_dtype,
                     trust_remote_code=True,
                     device_map=self.device,
@@ -87,7 +87,7 @@ class LMPromptGenerator(PromptGenerator):
                 selected_dtype = torch.bfloat16
 
                 model = AutoModelForCausalLM.from_pretrained(
-                    "mistralai/Mistral-7B-Instruct-v0.2",
+                    "mistralai/Mistral-7B-Instruct-v0.1",
                     load_in_4bit=True,
                     quantization_config=bnb_config,
                     torch_dtype=selected_dtype,
@@ -95,7 +95,7 @@ class LMPromptGenerator(PromptGenerator):
                     trust_remote_code=True,
                 )
 
-        tokenizer = AutoTokenizer.from_pretrained("mistralai/Mistral-7B-Instruct-v0.2")
+        tokenizer = AutoTokenizer.from_pretrained("mistralai/Mistral-7B-Instruct-v0.1")
         pipe = pipeline(
             "text-generation",
             model=model,
@@ -111,7 +111,7 @@ class LMPromptGenerator(PromptGenerator):
 
         Args:
             text (str): The generated prompt text.
-            
+
         Returns:
             str: The cleaned prompt text.
         """

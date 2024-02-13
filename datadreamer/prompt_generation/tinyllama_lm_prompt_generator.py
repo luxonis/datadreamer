@@ -1,8 +1,8 @@
 import re
-from typing import List, Optional, Literal
+from typing import List, Literal, Optional
 
 import torch
-from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline, Pipeline
+from transformers import AutoModelForCausalLM, AutoTokenizer, Pipeline, pipeline
 
 from datadreamer.prompt_generation.lm_prompt_generator import LMPromptGenerator
 

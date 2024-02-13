@@ -1,7 +1,7 @@
 import json
 import random
 from abc import ABC, abstractmethod
-from typing import List, Optional, Literal
+from typing import List, Literal, Optional
 
 import torch
 

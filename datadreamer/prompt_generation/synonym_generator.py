@@ -7,8 +7,8 @@ from tqdm import tqdm
 from transformers import (
     AutoModelForCausalLM,
     AutoTokenizer,
-    pipeline,
     Pipeline,
+    pipeline,
 )
 
 
@@ -53,7 +53,7 @@ class SynonymGenerator:
         if self.device == "cpu":
             print("Loading language model on CPU...")
             model = AutoModelForCausalLM.from_pretrained(
-                "mistralai/Mistral-7B-Instruct-v0.2",
+                "mistralai/Mistral-7B-Instruct-v0.1",
                 torch_dtype="auto",
                 device_map="cpu",
                 low_cpu_mem_usage=True,
@@ -61,13 +61,13 @@ class SynonymGenerator:
         else:
             print("Loading FP16 language model on GPU...")
             model = AutoModelForCausalLM.from_pretrained(
-                "mistralai/Mistral-7B-Instruct-v0.2",
+                "mistralai/Mistral-7B-Instruct-v0.1",
                 torch_dtype=torch.float16,
                 trust_remote_code=True,
                 device_map=self.device,
             )
 
-        tokenizer = AutoTokenizer.from_pretrained("mistralai/Mistral-7B-Instruct-v0.2")
+        tokenizer = AutoTokenizer.from_pretrained("mistralai/Mistral-7B-Instruct-v0.1")
         pipe = pipeline(
             "text-generation",
             model=model,
@@ -122,7 +122,7 @@ class SynonymGenerator:
             word.strip() for word in text.split(",")
         ]  # Split and strip each synonym
         return synonyms[: self.synonyms_number]
-    
+
     def _create_prompt_text(self, word: str) -> str:
         """Creates a prompt text for generating synonyms for a given word.
 
@@ -133,7 +133,7 @@ class SynonymGenerator:
             str: The prompt text for generating synonyms.
         """
         return f"[INST] List {self.synonyms_number} most common synonyms for the word '{word}'. Write only synonyms separated by commas. [/INST]"
-    
+
     def generate_synonyms_for_list(self, words: List[str]) -> dict:
         """Generates synonyms for a list of words and returns them in a dictionary.
 
