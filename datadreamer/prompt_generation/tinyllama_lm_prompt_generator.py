@@ -28,13 +28,20 @@ class TinyLlamaLMPromptGenerator(LMPromptGenerator):
         class_names: List[str],
         prompts_number: int = 10,
         num_objects_range: Optional[List[int]] = None,
+        batch_size: int = 1,
         seed: Optional[float] = 42,
         device: str = "cuda",
         quantization: Optional[Literal["none", "4bit"]] = "none",
     ) -> None:
         """Initializes the LMPromptGenerator with class names and other settings."""
         super().__init__(
-            class_names, prompts_number, num_objects_range, seed, device, quantization
+            class_names,
+            prompts_number,
+            num_objects_range,
+            batch_size,
+            seed,
+            device,
+            quantization,
         )
 
     def _init_lang_model(self) -> tuple[AutoModelForCausalLM, AutoTokenizer, Pipeline]:
@@ -60,7 +67,9 @@ class TinyLlamaLMPromptGenerator(LMPromptGenerator):
             )
 
         tokenizer = AutoTokenizer.from_pretrained(
-            "TinyLlama/TinyLlama-1.1B-Chat-v1.0", trust_remote_code=True
+            "TinyLlama/TinyLlama-1.1B-Chat-v1.0",
+            trust_remote_code=True,
+            padding_side="left",
         )
         pipe = pipeline(
             "text-generation",
@@ -68,6 +77,7 @@ class TinyLlamaLMPromptGenerator(LMPromptGenerator):
             tokenizer=tokenizer,
             torch_dtype=torch.float16 if self.device == "cuda" else "auto",
             device_map=self.device,
+            batch_size=self.batch_size,
         )
         print("Done!")
         return model, tokenizer, pipe
@@ -102,17 +112,36 @@ class TinyLlamaLMPromptGenerator(LMPromptGenerator):
         """
         return f"<|system|>\nYou are a chatbot who describes content of images!</s>\n<|user|>\nGenerate a short and concise caption for an image. Follow this template: 'A photo of {', '.join(selected_objects)}', where the objects interact in a meaningful way within a scene, complete with a short scene description. The caption must be short in length and start with the words: 'A photo of '! Do not use the phrase 'Caption reads'.</s>\n<|assistant|>\n"
 
-    def generate_prompt(self, prompt_text: str) -> str:
-        """Generates a single prompt using the language model.
+    def _posprocess_prompt(self, prompt: str) -> str:
+        """Post-processes the generated prompt.
 
         Args:
-            prompt_text (str): The text prompt for the language model.
+            prompt (str): The generated prompt.
 
         Returns:
-            str: The generated prompt.
+            str: The post-processed prompt.
+        """
+        instructional_pattern = r"<\|system\|>\n.*?\n<\|user\|>\n.*?\n<\|assistant\|>\n"
+        # Remove the instructional text to isolate the caption
+        prompt = (
+            re.sub(instructional_pattern, "", prompt).replace('"', "").replace("'", "")
+        )
+        prompt = self._remove_caption_sentences(
+            self._remove_incomplete_sentence(prompt)
+        )
+        return prompt
+
+    def generate_prompts_batch(self, prompt_texts_batch: List[str]) -> List[str]:
+        """Generates a list of prompts using the language model.
+
+        Args:
+            prompt_texts_batch (List[str]): List of text prompts for the language model.
+
+        Returns:
+            List[str]: List of generated prompts.
         """
         sequences = self.pipeline(
-            prompt_text,
+            prompt_texts_batch,
             max_new_tokens=70,
             do_sample=True,
             top_p=0.95,
@@ -121,18 +150,12 @@ class TinyLlamaLMPromptGenerator(LMPromptGenerator):
             num_beams=1,
             pad_token_id=self.tokenizer.eos_token_id,
         )
-        decoded_prompt = sequences[0]["generated_text"]
-        instructional_pattern = r"<\|system\|>\n.*?\n<\|user\|>\n.*?\n<\|assistant\|>\n"
-        # Remove the instructional text to isolate the caption
-        decoded_prompt = (
-            re.sub(instructional_pattern, "", decoded_prompt)
-            .replace('"', "")
-            .replace("'", "")
-        )
+        decoded_prompts = [
+            self._posprocess_prompt(sequence[0]["generated_text"])
+            for sequence in sequences
+        ]
 
-        return self._remove_caption_sentences(
-            self._remove_incomplete_sentence(decoded_prompt)
-        )
+        return decoded_prompts
 
 
 if __name__ == "__main__":
