@@ -141,7 +141,7 @@ def parse_args():
     parser.add_argument(
         "--batch_size_prompt",
         type=int,
-        default=1,
+        default=64,
         help="Batch size for prompt generation",
     )
 
