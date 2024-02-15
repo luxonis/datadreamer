@@ -227,7 +227,6 @@ class LMPromptGenerator(PromptGenerator):
                 selected_objects_batch
             )
             generated_prompts_batch = self.generate_prompts_batch(prompt_texts_batch)
-            print(f"Generated {len(generated_prompts_batch)} prompts.")
             for generated_prompt, selected_objects in zip(
                 generated_prompts_batch, selected_objects_batch
             ):
