@@ -1,25 +1,23 @@
-from datadreamer.prompt_generation import LMPromptGenerator, TinyLlamaLMPromptGenerator
-from tqdm import tqdm
 import time
 
+from datadreamer.prompt_generation import LMPromptGenerator, TinyLlamaLMPromptGenerator
 
 if __name__ == "__main__":
-
-    time_per_prompt_dict = {
-        "tinyllama": {},
-        "mistral_int4": {},
-        "mistral_fp16": {}
-    }
+    time_per_prompt_dict = {"tinyllama": {}, "mistral_int4": {}, "mistral_fp16": {}}
     for prompt_generator_class, batch_sizes, generator_name in zip(
-        [   
+        [
             TinyLlamaLMPromptGenerator,
-            lambda *args, **kwargs: LMPromptGenerator(*args, **kwargs, quantization="4bit"),
-            lambda *args, **kwargs: LMPromptGenerator(*args, **kwargs, quantization="none"),
+            lambda *args, **kwargs: LMPromptGenerator(
+                *args, **kwargs, quantization="4bit"
+            ),
+            lambda *args, **kwargs: LMPromptGenerator(
+                *args, **kwargs, quantization="none"
+            ),
         ],
         [
-            [2**i for i in range(0, 10)], # tinyllama
-            [2**i for i in range(0, 9)], # mistral_int4
-            [2**i for i in range(0, 8)], # mistral_fp16
+            [2**i for i in range(0, 10)],  # tinyllama
+            [2**i for i in range(0, 9)],  # mistral_int4
+            [2**i for i in range(0, 8)],  # mistral_fp16
         ],
         time_per_prompt_dict.keys(),
     ):
@@ -46,18 +44,14 @@ if __name__ == "__main__":
     max_model_length = max(len(model) for model in time_per_prompt_dict.keys())
 
     # Print the headers
-    print(f'{"Model":<{max_model_length}}\t', end='')
+    print(f'{"Model":<{max_model_length}}\t', end="")
     for i in range(0, max_columns):
-        print(f'{2**i}\t\t', end='')
+        print(f"{2**i}\t\t", end="")
     print()
 
     # Print each row of the table
     for model, batch_size_times in time_per_prompt_dict.items():
-        print(f'{model:<{max_model_length}}\t', end='')
-        for _, time in batch_size_times.items():
-            print(f'{time}\t\t', end='')
+        print(f"{model:<{max_model_length}}\t", end="")
+        for _, time_per_prompt in batch_size_times.items():
+            print(f"{time_per_prompt}\t\t", end="")
         print()
-
-    
-
-
