@@ -156,7 +156,7 @@ class LMPromptGenerator(PromptGenerator):
             for selected_objects in selected_objects_batch
         ]
 
-    def _posprocess_prompt(self, prompt: str) -> str:
+    def _postprocess_prompt(self, prompt: str) -> str:
         """Post-processes the generated prompt.
 
         Args:
@@ -203,7 +203,7 @@ class LMPromptGenerator(PromptGenerator):
             pad_token_id=self.tokenizer.eos_token_id,
         )
         decoded_prompts = [
-            self._posprocess_prompt(sequence[0]["generated_text"])
+            self._postprocess_prompt(sequence[0]["generated_text"])
             for sequence in sequences
         ]
         return decoded_prompts

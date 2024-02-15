@@ -112,7 +112,7 @@ class TinyLlamaLMPromptGenerator(LMPromptGenerator):
         """
         return f"<|system|>\nYou are a chatbot who describes content of images!</s>\n<|user|>\nGenerate a short and concise caption for an image. Follow this template: 'A photo of {', '.join(selected_objects)}', where the objects interact in a meaningful way within a scene, complete with a short scene description. The caption must be short in length and start with the words: 'A photo of '! Do not use the phrase 'Caption reads'.</s>\n<|assistant|>\n"
 
-    def _posprocess_prompt(self, prompt: str) -> str:
+    def _postprocess_prompt(self, prompt: str) -> str:
         """Post-processes the generated prompt.
 
         Args:
@@ -151,7 +151,7 @@ class TinyLlamaLMPromptGenerator(LMPromptGenerator):
             pad_token_id=self.tokenizer.eos_token_id,
         )
         decoded_prompts = [
-            self._posprocess_prompt(sequence[0]["generated_text"])
+            self._postprocess_prompt(sequence[0]["generated_text"])
             for sequence in sequences
         ]
 
