@@ -115,6 +115,7 @@ datadreamer --save_dir <directory> --class_names <objects> --prompts_number <num
 - `--use_image_tester`: Use image tester for image generation. Default is False.
 - `--image_tester_patience`: Patience level for image tester. Default is 1.
 - `--lm_quantization`: Quantization to use for Mistral language model. Choose between `none` and `4bit`. Default is `none`.
+- `--batch_size_prompt`: Batch size for prompt generation. Default is 64.
 - `--device`: Choose between `cuda` and `cpu`. Default is cuda.
 - `--seed`: Set a random seed for image and prompt generation. Default is 42.
 
