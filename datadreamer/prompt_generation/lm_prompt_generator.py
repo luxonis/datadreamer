@@ -40,6 +40,7 @@ class LMPromptGenerator(PromptGenerator):
         class_names: List[str],
         prompts_number: int = 10,
         num_objects_range: Optional[List[int]] = None,
+        batch_size: int = 1,
         seed: Optional[float] = 42,
         device: str = "cuda",
         quantization: Optional[Literal["none", "4bit"]] = "none",
@@ -47,7 +48,13 @@ class LMPromptGenerator(PromptGenerator):
         """Initializes the LMPromptGenerator with class names and other settings."""
         num_objects_range = num_objects_range or [1, 3]
         super().__init__(
-            class_names, prompts_number, num_objects_range, seed, device, quantization
+            class_names,
+            prompts_number,
+            num_objects_range,
+            batch_size,
+            seed,
+            device,
+            quantization,
         )
         self.model, self.tokenizer, self.pipeline = self._init_lang_model()
 
@@ -96,12 +103,14 @@ class LMPromptGenerator(PromptGenerator):
                 )
 
         tokenizer = AutoTokenizer.from_pretrained("mistralai/Mistral-7B-Instruct-v0.1")
+        tokenizer.pad_token = tokenizer.eos_token
         pipe = pipeline(
             "text-generation",
             model=model,
             tokenizer=tokenizer,
             torch_dtype=selected_dtype,
             device_map=self.device,
+            batch_size=self.batch_size,
         )
         print("Done!")
         return model, tokenizer, pipe
@@ -131,6 +140,39 @@ class LMPromptGenerator(PromptGenerator):
         """
         return f"[INST] Generate a short and concise caption for an image. Follow this template: 'A photo of {', '.join(selected_objects)}', where the objects interact in a meaningful way within a scene, complete with a short scene description. [/INST]"
 
+    def _create_lm_prompt_texts_batch(
+        self, selected_objects_batch: List[List[str]]
+    ) -> List[str]:
+        """Creates a list of language model text prompts based on selected objects.
+
+        Args:
+            selected_objects_batch (List[List[str]]): List of objects to include in the prompts.
+
+        Returns:
+            List[str]: List of text prompts for the language model.
+        """
+        return [
+            self._create_lm_prompt_text(selected_objects)
+            for selected_objects in selected_objects_batch
+        ]
+
+    def _postprocess_prompt(self, prompt: str) -> str:
+        """Post-processes the generated prompt.
+
+        Args:
+            prompt (str): The generated prompt.
+
+        Returns:
+            str: The post-processed prompt.
+        """
+        instructional_pattern = r"\[INST].*?\[/INST\]\s*"
+        # Remove the instructional text to isolate the caption
+        prompt = (
+            re.sub(instructional_pattern, "", prompt).replace('"', "").replace("'", "")
+        )
+        prompt = self._remove_incomplete_sentence(prompt)
+        return prompt
+
     def _test_prompt(self, prompt: str, selected_objects: List[str]) -> bool:
         """Tests if the generated prompt is valid based on selected objects.
 
@@ -145,31 +187,26 @@ class LMPromptGenerator(PromptGenerator):
             "a photo of"
         )  # and all(obj.lower() in prompt.lower() for obj in selected_objects)
 
-    def generate_prompt(self, prompt_text: str) -> str:
-        """Generates a single prompt using the language model.
+    def generate_prompts_batch(self, prompt_texts_batch: List[str]) -> List[str]:
+        """Generates a list of prompts using the language model.
 
         Args:
-            prompt_text (str): The text prompt for the language model.
+            prompt_texts_batch (List[str]): List of text prompts for the language model.
 
         Returns:
-            str: The generated prompt.
+            List[str]: List of generated prompts.
         """
         sequences = self.pipeline(
-            prompt_text,
+            prompt_texts_batch,
             max_new_tokens=70,
             do_sample=True,
             pad_token_id=self.tokenizer.eos_token_id,
         )
-        decoded_prompt = sequences[0]["generated_text"]
-        instructional_pattern = r"\[INST].*?\[/INST\]\s*"
-        # Remove the instructional text to isolate the caption
-        decoded_prompt = (
-            re.sub(instructional_pattern, "", decoded_prompt)
-            .replace('"', "")
-            .replace("'", "")
-        )
-
-        return self._remove_incomplete_sentence(decoded_prompt)
+        decoded_prompts = [
+            self._postprocess_prompt(sequence[0]["generated_text"])
+            for sequence in sequences
+        ]
+        return decoded_prompts
 
     def generate_prompts(self) -> List[str]:
         """Generates a list of text prompts based on the class names.
@@ -178,17 +215,28 @@ class LMPromptGenerator(PromptGenerator):
             List[str]: A list of generated prompts.
         """
         prompts = []
-        for _ in tqdm(range(self.prompts_number), desc="Generating prompts"):
-            selected_objects = random.sample(
-                self.class_names, random.randint(*self.num_objects_range)
+        progress_bar = tqdm(
+            desc="Generating prompts...", position=0, total=self.prompts_number
+        )
+        while len(prompts) < self.prompts_number:
+            selected_objects_batch = [
+                random.sample(self.class_names, random.randint(*self.num_objects_range))
+                for _ in range(self.batch_size)
+            ]
+            prompt_texts_batch = self._create_lm_prompt_texts_batch(
+                selected_objects_batch
             )
-            prompt_text = self._create_lm_prompt_text(selected_objects)
-            correct_prompt_generated = False
-            while not correct_prompt_generated:
-                generated_prompt = self.generate_prompt(prompt_text)
+            generated_prompts_batch = self.generate_prompts_batch(prompt_texts_batch)
+            for generated_prompt, selected_objects in zip(
+                generated_prompts_batch, selected_objects_batch
+            ):
                 if self._test_prompt(generated_prompt, selected_objects):
                     prompts.append((selected_objects, generated_prompt))
-                    correct_prompt_generated = True
+                    progress_bar.update()
+                if len(prompts) == self.prompts_number:
+                    break
+
+        progress_bar.close()
         return prompts
 
     def release(self, empty_cuda_cache=False) -> None:

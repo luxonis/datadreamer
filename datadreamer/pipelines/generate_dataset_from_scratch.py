@@ -139,6 +139,13 @@ def parse_args():
     )
 
     parser.add_argument(
+        "--batch_size_prompt",
+        type=int,
+        default=64,
+        help="Batch size for prompt generation",
+    )
+
+    parser.add_argument(
         "--device",
         type=str,
         default="cuda",
@@ -210,6 +217,10 @@ def check_args(args):
             "LM Quantization is only available for CUDA devices and Mistral LM"
         )
 
+    # Check batch_size_prompt
+    if args.batch_size_prompt < 1:
+        raise ValueError("--batch_size_prompt must be a positive integer")
+
     # Check seed
     if args.seed < 0:
         raise ValueError("--seed must be a non-negative integer")
@@ -279,6 +290,7 @@ def main():
         seed=args.seed,
         device=args.device,
         quantization=args.lm_quantization,
+        batch_size=args.batch_size_prompt,
     )
     generated_prompts = prompt_generator.generate_prompts()
     prompt_generator.save_prompts(

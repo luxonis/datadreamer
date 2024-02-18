@@ -30,6 +30,7 @@ class PromptGenerator(ABC):
         class_names: List[str],
         prompts_number: int = 10,
         num_objects_range: Optional[List[int]] = None,
+        batch_size: int = 1,
         seed: Optional[float] = None,
         device: str = "cuda",
         quantization: Optional[Literal["none", "4bit"]] = "none",
@@ -38,6 +39,7 @@ class PromptGenerator(ABC):
         self.class_names = class_names
         self.prompts_number = prompts_number
         self.num_objects_range = num_objects_range or [1, 3]
+        self.batch_size = batch_size
         self.seed = seed
         if seed is not None:
             self.set_seed(seed)
