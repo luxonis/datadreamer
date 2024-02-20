@@ -3,7 +3,6 @@ from typing import List, Optional
 import torch
 from compel import Compel, ReturnedEmbeddingsType
 from diffusers import DiffusionPipeline
-from PIL import Image
 
 from datadreamer.image_generation.image_generator import ImageGenerator
 
@@ -21,7 +20,7 @@ class StableDiffusionImageGenerator(ImageGenerator):
     Methods:
         _init_gen_model(): Initializes the generative models for image generation.
         _init_processor(): Initializes the processors for the models.
-        generate_image(prompt, negative_prompt, prompt_objects): Generates an image based on the provided prompt.
+        generate_images_batch(prompts, negative_prompt, prompt_objects): Generates a batch of images based on the provided prompts.
         release(empty_cuda_cache): Releases resources and optionally empties the CUDA cache.
     """
 
@@ -38,6 +37,7 @@ class StableDiffusionImageGenerator(ImageGenerator):
             tuple: The base and refiner models.
         """
         if self.device == "cpu":
+            print("Loading SDXL on CPU...")
             base = DiffusionPipeline.from_pretrained(
                 "stabilityai/stable-diffusion-xl-base-1.0",
                 # variant="fp16",
@@ -55,6 +55,7 @@ class StableDiffusionImageGenerator(ImageGenerator):
             )
             refiner.to("cpu")
         else:
+            print("Loading SDXL on GPU...")
             base = DiffusionPipeline.from_pretrained(
                 "stabilityai/stable-diffusion-xl-base-1.0",
                 torch_dtype=torch.float16,
@@ -94,35 +95,39 @@ class StableDiffusionImageGenerator(ImageGenerator):
         )
         return compel, compel_refiner
 
-    def generate_image(
+    def generate_images_batch(
         self,
-        prompt: str,
+        prompts: List[str],
         negative_prompt: str,
-        prompt_objects: Optional[List[str]] = None,
-    ) -> Image.Image:
-        """Generates an image based on the provided prompt, using Stable Diffusion
-        models.
+        prompt_objects: Optional[List[List[str]]] = None,
+    ):
+        """Generates a batch of images based on the provided prompts.
 
         Args:
-            prompt (str): The positive prompt to guide image generation.
+            prompts (List[str]): A list of positive prompts to guide image generation.
             negative_prompt (str): The negative prompt to avoid certain features in the image.
-            prompt_objects (Optional[List[str]]): Optional list of objects to be used in CLIP model testing.
+            prompt_objects (Optional[List[List[str]]]): Optional list of objects to be used in CLIP model testing.
 
         Returns:
-            Image.Image: The generated image.
+            List[Image.Image]: A list of generated images.
         """
         if prompt_objects is not None:
-            for obj in prompt_objects:
-                prompt = prompt.replace(obj, f"({obj})1.5", 1)
+            for obj_list in prompt_objects:
+                for obj in obj_list:
+                    for prompt in prompts:
+                        prompt = prompt.replace(obj, f"({obj})1.5", 1)
 
-        conditioning, pooled = self.base_processor(prompt)
-        conditioning_neg, pooled_neg = self.base_processor(negative_prompt)
-
-        conditioning_refiner, pooled_refiner = self.refiner_processor(prompt)
-        negative_conditioning_refiner, negative_pooled_refiner = self.refiner_processor(
-            negative_prompt
+        conditioning, pooled = self.base_processor(prompts)
+        conditioning_neg, pooled_neg = self.base_processor(
+            [negative_prompt] * len(prompts)
         )
-        image = self.base(
+
+        conditioning_refiner, pooled_refiner = self.refiner_processor(prompts)
+        negative_conditioning_refiner, negative_pooled_refiner = self.refiner_processor(
+            [negative_prompt] * len(prompts)
+        )
+
+        images = self.base(
             prompt_embeds=conditioning,
             pooled_prompt_embeds=pooled,
             negative_prompt_embeds=conditioning_neg,
@@ -131,17 +136,18 @@ class StableDiffusionImageGenerator(ImageGenerator):
             denoising_end=0.78,
             output_type="latent",
         ).images
-        image = self.refiner(
+
+        images = self.refiner(
             prompt_embeds=conditioning_refiner,
             pooled_prompt_embeds=pooled_refiner,
             negative_prompt_embeds=negative_conditioning_refiner,
             negative_pooled_prompt_embeds=negative_pooled_refiner,
             num_inference_steps=65,
             denoising_start=0.78,
-            image=image,
-        ).images[0]
+            image=images,
+        ).images
 
-        return image
+        return images
 
     def release(self, empty_cuda_cache=False) -> None:
         """Releases the models and optionally empties the CUDA cache."""
@@ -171,11 +177,14 @@ if __name__ == "__main__":
     prompt_objects = [["aeroplane", "boat", "bicycle"], ["bicycle"]]
 
     image_paths = []
-    for i, generated_image in enumerate(
-        image_generator.generate_images(prompts, prompt_objects)
+    counter = 0
+    for generated_images_batch in image_generator.generate_images(
+        prompts, prompt_objects
     ):
-        image_path = os.path.join("./", f"image_{i}.jpg")
-        generated_image.save(image_path)
-        image_paths.append(image_path)
+        for generated_image in generated_images_batch:
+            image_path = os.path.join("./", f"image_{counter}.jpg")
+            generated_image.save(image_path)
+            image_paths.append(image_path)
+            counter += 1
 
     image_generator.release(empty_cuda_cache=True)
