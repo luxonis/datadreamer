@@ -112,10 +112,9 @@ class StableDiffusionImageGenerator(ImageGenerator):
             List[Image.Image]: A list of generated images.
         """
         if prompt_objects is not None:
-            for obj_list in prompt_objects:
-                for obj in obj_list:
-                    for prompt in prompts:
-                        prompt = prompt.replace(obj, f"({obj})1.5", 1)
+            for i in range(len(prompt_objects)):
+                for obj in prompt_objects[i]:
+                    prompts[i] = prompts[i].replace(obj, f"({obj})1.5", 1)
 
         conditioning, pooled = self.base_processor(prompts)
         conditioning_neg, pooled_neg = self.base_processor(
