@@ -168,6 +168,12 @@ def test_invalid_batch_size_prompt():
     _check_wrong_value(cmd)
 
 
+def test_invalid_batch_size_image():
+    # Define the cmd
+    cmd = "datadreamer --batch_size_image -1"
+    _check_wrong_value(cmd)
+
+
 def test_invalid_num_objects_range():
     # Define the cmd
     cmd = "datadreamer --num_objects_range 1"

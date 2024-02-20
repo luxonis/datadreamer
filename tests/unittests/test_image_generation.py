@@ -61,9 +61,10 @@ def _check_image_generator(
 ):
     image_generator = image_generator_class(device=device)
     # Generate images and check each of them
-    for generated_image in image_generator.generate_images(
+    for generated_images_batch in image_generator.generate_images(
         ["A photo of a cat, dog"], [["cat", "dog"]]
     ):
+        generated_image = generated_images_batch[0]
         assert generated_image is not None
         assert isinstance(generated_image, Image.Image)
     # Release the generator
