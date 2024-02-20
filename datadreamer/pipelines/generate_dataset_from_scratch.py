@@ -146,6 +146,13 @@ def parse_args():
     )
 
     parser.add_argument(
+        "--batch_size_annotation",
+        type=int,
+        default=64,
+        help="Batch size for annotation",
+    )
+
+    parser.add_argument(
         "--device",
         type=str,
         default="cuda",
@@ -220,6 +227,10 @@ def check_args(args):
     # Check batch_size_prompt
     if args.batch_size_prompt < 1:
         raise ValueError("--batch_size_prompt must be a positive integer")
+
+    # Check batch_size_prompt
+    if args.batch_size_annotation < 1:
+        raise ValueError("--batch_size_annotation must be a positive integer")
 
     # Check seed
     if args.seed < 0:
@@ -351,69 +362,73 @@ def main():
         scores_list = []
         labels_list = []
 
-        for i, image_path in tqdm(
-            enumerate(image_paths),
-            desc="Annotating images",
-            total=len(image_paths),
-        ):
-            image = Image.open(image_path)
-            boxes, scores, local_labels = annotator.annotate(
-                image,
+        # Split image_paths into batches
+        image_batches = [image_paths[i:i + args.batch_size_annotation] for i in range(0, len(image_paths), args.batch_size_annotation)]
+
+        for i, image_batch in tqdm(
+                enumerate(image_batches),
+                desc="Annotating images",
+                total=len(image_batches),
+            ):
+            images = [Image.open(image_path) for image_path in image_batch]
+            boxes_batch, scores_batch, local_labels_batch = annotator.annotate_batch(
+                images,
                 args.class_names,
                 conf_threshold=args.conf_threshold,
                 use_tta=args.use_tta,
                 synonym_dict=synonym_dict,
             )
             # Convert to numpy arrays
-            boxes = (
-                boxes.detach().cpu().numpy()
-                if not isinstance(boxes, np.ndarray)
-                else boxes
+            boxes_batch = (
+                boxes_batch.detach().cpu().numpy()
+                if not isinstance(boxes_batch, np.ndarray)
+                else boxes_batch
             )
-            scores = (
-                scores.detach().cpu().numpy()
-                if not isinstance(scores, np.ndarray)
-                else scores
+            scores_batch = (
+                scores_batch.detach().cpu().numpy()
+                if not isinstance(scores_batch, np.ndarray)
+                else scores_batch
             )
-            local_labels = (
-                local_labels
-                if isinstance(local_labels, np.ndarray)
-                else local_labels.detach().cpu().numpy()
+            local_labels_batch = (
+                local_labels_batch
+                if isinstance(local_labels_batch, np.ndarray)
+                else local_labels_batch.detach().cpu().numpy()
             )
 
-            boxes_list.append(boxes)
-            scores_list.append(scores)
+            boxes_list.extend(boxes_batch)
+            scores_list.extend(scores_batch)
 
-            labels = []
-            # Save bbox visualizations
-            fig, ax = plt.subplots(1)
-            ax.imshow(image)
-            for box, score, label in zip(boxes, scores, local_labels):
-                labels.append(label)
-                x1, y1, x2, y2 = box
-                rect = patches.Rectangle(
-                    (x1, y1),
-                    x2 - x1,
-                    y2 - y1,
-                    linewidth=2,
-                    edgecolor="r",
-                    facecolor="none",
-                )
-                ax.add_patch(rect)
-                label_text = args.class_names[label]
-                plt.text(
-                    x1,
-                    y1,
-                    f"{label_text} {score:.2f}",
-                    bbox=dict(facecolor="yellow", alpha=0.5),
-                )
-                # Add prompt text as title
-                plt.title(generated_prompts[i][1])
+            for j, image in enumerate(images):
+                labels = []
+                # Save bbox visualizations
+                fig, ax = plt.subplots(1)
+                ax.imshow(image)
+                for box, score, label in zip(boxes_batch[j], scores_batch[j], local_labels_batch[j]):
+                    labels.append(label)
+                    x1, y1, x2, y2 = box
+                    rect = patches.Rectangle(
+                        (x1, y1),
+                        x2 - x1,
+                        y2 - y1,
+                        linewidth=2,
+                        edgecolor="r",
+                        facecolor="none",
+                    )
+                    ax.add_patch(rect)
+                    label_text = args.class_names[label]
+                    plt.text(
+                        x1,
+                        y1,
+                        f"{label_text} {score:.2f}",
+                        bbox=dict(facecolor="yellow", alpha=0.5),
+                    )
+                    # Add prompt text as title
+                    plt.title(generated_prompts[i * args.batch_size + j][1])
 
-            labels_list.append(np.array(labels))
+                labels_list.append(np.array(labels))
 
-            plt.savefig(os.path.join(bbox_dir, f"bbox_{i}.jpg"))
-            plt.close()
+                plt.savefig(os.path.join(bbox_dir, f"bbox_{i * args.batch_size + j}.jpg"))
+                plt.close()
 
         # Save annotations as JSON files
         save_det_annotations_to_json(
