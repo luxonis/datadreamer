@@ -31,5 +31,5 @@ class BaseAnnotator(ABC):
         self.task_definition = task_definition
 
     @abstractmethod
-    def annotate(self):
+    def annotate_batch(self):
         pass

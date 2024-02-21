@@ -1,10 +1,10 @@
+import numpy as np
 import torch
 from transformers import Owlv2ForObjectDetection, Owlv2Processor
 
 from datadreamer.dataset_annotation.image_annotator import BaseAnnotator
 from datadreamer.dataset_annotation.utils import apply_tta
 from datadreamer.utils.nms import non_max_suppression
-import numpy as np
 
 
 class OWLv2Annotator(BaseAnnotator):
@@ -59,7 +59,7 @@ class OWLv2Annotator(BaseAnnotator):
         return Owlv2Processor.from_pretrained(
             "google/owlv2-base-patch16-ensemble", do_pad=False
         )
-    
+
     def _generate_annotations(self, images, prompts, conf_threshold=0.1):
         """"""
         n = len(images)
@@ -78,7 +78,9 @@ class OWLv2Annotator(BaseAnnotator):
 
         return preds
 
-    def _get_annotations(self, pred, use_tta: bool, img_dim: int, synonym_dict, synonym_dict_rev):
+    def _get_annotations(
+        self, pred, use_tta: bool, img_dim: int, synonym_dict, synonym_dict_rev
+    ):
         boxes, scores, labels = (
             pred["boxes"],
             pred["scores"],
@@ -89,9 +91,7 @@ class OWLv2Annotator(BaseAnnotator):
             boxes[:, [0, 2]] = img_dim - boxes[:, [2, 0]]
 
         if synonym_dict is not None:
-            labels = torch.tensor(
-                [synonym_dict_rev[label.item()] for label in labels]
-            )
+            labels = torch.tensor([synonym_dict_rev[label.item()] for label in labels])
 
         return boxes, scores, labels
 
@@ -127,9 +127,11 @@ class OWLv2Annotator(BaseAnnotator):
                         synonym_dict_rev[prompts_syn.index(v)] = prompts.index(key)
             prompts = prompts_syn
 
-        preds = self._generate_annotations(self, images, prompts, conf_threshold)
+        preds = self._generate_annotations(images, prompts, conf_threshold)
         if use_tta:
-            augmented_preds = self._generate_annotations(self, augmented_images, prompts, conf_threshold)
+            augmented_preds = self._generate_annotations(
+                augmented_images, prompts, conf_threshold
+            )
         else:
             augmented_preds = [None] * len(images)
 
@@ -139,55 +141,70 @@ class OWLv2Annotator(BaseAnnotator):
 
         for i, (pred, aug_pred) in enumerate(zip(preds, augmented_preds)):
             boxes, scores, labels = self._get_annotations(
-                pred, 
-                False, 
-                images[i].size[0], 
-                synonym_dict, 
-                synonym_dict_rev
+                pred,
+                False,
+                images[i].size[0],
+                synonym_dict,
+                synonym_dict_rev if synonym_dict is not None else None,
             )
-            
+
             all_boxes = [boxes.to("cpu")]
             all_scores = [scores.to("cpu")]
             all_labels = [labels.to("cpu")]
-            
+
             # Flip boxes back if using TTA
             if use_tta:
                 aug_boxes, aug_scores, aug_labels = self._get_annotations(
-                    aug_pred, 
-                    True, 
-                    images[i].size[0], 
-                    synonym_dict, 
-                    synonym_dict_rev
+                    aug_pred,
+                    True,
+                    images[i].size[0],
+                    synonym_dict,
+                    synonym_dict_rev if synonym_dict is not None else None,
                 )
 
                 all_boxes.append(aug_boxes.to("cpu"))
                 all_scores.append(aug_scores.to("cpu"))
                 all_labels.append(aug_labels.to("cpu"))
 
-            # Convert list of tensors to a single tensor for NMS
-            all_boxes_cat = torch.cat(all_boxes)
-            all_scores_cat = torch.cat(all_scores)
-            all_labels_cat = torch.cat(all_labels)
-
             one_hot_labels = torch.nn.functional.one_hot(
-                all_labels_cat, num_classes=len(prompts)
+                torch.cat(all_labels), num_classes=len(prompts)
             )
 
             # Apply NMS
             # transform predictions to shape [N, 5 + num_classes], N is the number of bboxes for nms function
             all_boxes_cat = torch.cat(
-                (all_boxes_cat, all_scores_cat.unsqueeze(-1), one_hot_labels),
+                (
+                    torch.cat(all_boxes),
+                    torch.cat(all_scores).unsqueeze(-1),
+                    one_hot_labels,
+                ),
                 dim=1,
             )
 
-            # output is  a list of detections, each item is one tensor with shape (num_boxes, 6), 6 is for [xyxy, conf, cls].
+            # output is a list of detections, each item is one tensor with shape (num_boxes, 6), 6 is for [xyxy, conf, cls].
             output = non_max_suppression(
                 all_boxes_cat.unsqueeze(0), conf_thres=conf_threshold, iou_thres=0.2
             )
 
-            final_boxes.append(output[0][:, :4])
-            final_scores.append(output[0][:, 4])
-            final_labels.append(output[0][:, 5].long())
+            output_boxes = output[0][:, :4]
+            output_scores = output[0][:, 4]
+            output_local_labels = output[0][:, 5].long()
+
+            final_boxes.append(
+                output_boxes.detach().cpu().numpy()
+                if not isinstance(output_boxes, np.ndarray)
+                else output_boxes
+            )
+            final_scores.append(
+                output_scores.detach().cpu().numpy()
+                if not isinstance(output_scores, np.ndarray)
+                else output_scores
+            )
+            final_labels.append(
+                output_local_labels.detach().cpu().numpy()
+                if not isinstance(output_local_labels, np.ndarray)
+                else output_local_labels
+            )
 
         return final_boxes, final_scores, final_labels
 
