@@ -148,7 +148,7 @@ def parse_args():
     parser.add_argument(
         "--batch_size_annotation",
         type=int,
-        default=8,
+        default=1,
         help="Batch size for annotation",
     )
 
