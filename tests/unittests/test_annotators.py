@@ -14,7 +14,7 @@ def _check_owlv2_annotator(device: str):
     url = "https://ultralytics.com/images/bus.jpg"
     im = Image.open(requests.get(url, stream=True).raw)
     annotator = OWLv2Annotator(device=device)
-    final_boxes, final_scores, final_labels = annotator.annotate(im, ["bus", "people"])
+    final_boxes, final_scores, final_labels = annotator.annotate_batch(im, ["bus", "people"])
     # Assert that the boxes, scores and labels are tensors
     assert type(final_boxes) == torch.Tensor
     assert type(final_scores) == torch.Tensor
