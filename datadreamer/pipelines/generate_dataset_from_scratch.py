@@ -146,6 +146,13 @@ def parse_args():
     )
 
     parser.add_argument(
+        "--batch_size_image",
+        type=int,
+        default=1,
+        help="Batch size for image generation",
+    )
+
+    parser.add_argument(
         "--device",
         type=str,
         default="cuda",
@@ -220,6 +227,10 @@ def check_args(args):
     # Check batch_size_prompt
     if args.batch_size_prompt < 1:
         raise ValueError("--batch_size_prompt must be a positive integer")
+
+    # Check batch_size_image
+    if args.batch_size_image < 1:
+        raise ValueError("--batch_size_image must be a positive integer")
 
     # Check seed
     if args.seed < 0:
@@ -314,6 +325,7 @@ def main():
         seed=args.seed,
         use_clip_image_tester=args.use_image_tester,
         image_tester_patience=args.image_tester_patience,
+        batch_size=args.batch_size_image,
         device=args.device,
     )
 
@@ -321,12 +333,15 @@ def main():
     prompt_objects = [p[0] for p in generated_prompts]
 
     image_paths = []
-    for i, generated_image in enumerate(
-        image_generator.generate_images(prompts, prompt_objects)
+    num_generated_images = 0
+    for generated_images_batch in image_generator.generate_images(
+        prompts, prompt_objects
     ):
-        image_path = os.path.join(save_dir, f"image_{i}.jpg")
-        generated_image.save(image_path)
-        image_paths.append(image_path)
+        for generated_image in generated_images_batch:
+            image_path = os.path.join(save_dir, f"image_{num_generated_images}.jpg")
+            generated_image.save(image_path)
+            image_paths.append(image_path)
+            num_generated_images += 1
 
     image_generator.release(empty_cuda_cache=True)
 
