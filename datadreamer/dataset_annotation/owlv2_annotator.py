@@ -1,4 +1,7 @@
+from typing import List, Tuple
+
 import numpy as np
+import PIL
 import torch
 from transformers import Owlv2ForObjectDetection, Owlv2Processor
 
@@ -60,8 +63,23 @@ class OWLv2Annotator(BaseAnnotator):
             "google/owlv2-base-patch16-ensemble", do_pad=False
         )
 
-    def _generate_annotations(self, images, prompts, conf_threshold=0.1):
-        """"""
+    def _generate_annotations(
+        self,
+        images: List[PIL.Image.Image],
+        prompts: List[str],
+        conf_threshold: float = 0.1,
+    ) -> List[dict[str, torch.Tensor]]:
+        """
+        Generates annotations for the given images and prompts.
+
+        Args:
+            images: The images to be annotated.
+            prompts: Prompts to guide the annotation.
+            conf_threshold (float, optional): Confidence threshold for the annotations. Defaults to 0.1.
+
+        Returns:
+            dict: A dictionary containing the annotations for the images.
+        """
         n = len(images)
         batched_prompts = [prompts] * n
         target_sizes = torch.Tensor(images[0].size[::-1]).repeat((n, 1)).to(self.device)
@@ -79,8 +97,27 @@ class OWLv2Annotator(BaseAnnotator):
         return preds
 
     def _get_annotations(
-        self, pred, use_tta: bool, img_dim: int, synonym_dict, synonym_dict_rev
-    ):
+        self,
+        pred: dict[str, torch.Tensor],
+        use_tta: bool,
+        img_dim: int,
+        synonym_dict: dict[str, List[str]] | None,
+        synonym_dict_rev: dict[int, int] | None,
+    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+        """
+        Extracts the annotations from the predictions.
+
+        Args:
+            pred: The predictions from the model.
+            use_tta (bool): Flag to whether the test-time augmentation was applied.
+            img_dim (int): The dimension of the image.
+            synonym_dict (dict): Dictionary for handling synonyms in labels.
+            synonym_dict_rev (dict): Dictionary for handling synonyms in labels.
+
+        Returns:
+            tuple: A tuple containing the final bounding boxes, scores, and labels for the annotations.
+        """
+
         boxes, scores, labels = (
             pred["boxes"],
             pred["scores"],
@@ -96,8 +133,13 @@ class OWLv2Annotator(BaseAnnotator):
         return boxes, scores, labels
 
     def annotate_batch(
-        self, images, prompts, conf_threshold=0.1, use_tta=False, synonym_dict=None
-    ):
+        self,
+        images: List[PIL.Image.Image],
+        prompts: List[str],
+        conf_threshold: float = 0.1,
+        use_tta: bool = False,
+        synonym_dict: dict[str, List[str]] | None = None,
+    ) -> Tuple[List[np.ndarray], List[np.ndarray], List[np.ndarray]]:
         """Annotates images using the OWLv2 model.
 
         Args:
@@ -208,7 +250,7 @@ class OWLv2Annotator(BaseAnnotator):
 
         return final_boxes, final_scores, final_labels
 
-    def release(self, empty_cuda_cache=False) -> None:
+    def release(self, empty_cuda_cache: bool = False) -> None:
         """Releases the model and optionally empties the CUDA cache.
 
         Args:
