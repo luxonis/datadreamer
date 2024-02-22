@@ -151,7 +151,7 @@ def parse_args():
         default=1,
         help="Batch size for annotation",
     )
-    
+
     parser.add_argument(
         "--batch_size_image",
         type=int,
