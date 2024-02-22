@@ -69,8 +69,7 @@ class OWLv2Annotator(BaseAnnotator):
         prompts: List[str],
         conf_threshold: float = 0.1,
     ) -> List[dict[str, torch.Tensor]]:
-        """
-        Generates annotations for the given images and prompts.
+        """Generates annotations for the given images and prompts.
 
         Args:
             images: The images to be annotated.
@@ -104,8 +103,7 @@ class OWLv2Annotator(BaseAnnotator):
         synonym_dict: dict[str, List[str]] | None,
         synonym_dict_rev: dict[int, int] | None,
     ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
-        """
-        Extracts the annotations from the predictions.
+        """Extracts the annotations from the predictions.
 
         Args:
             pred: The predictions from the model.
