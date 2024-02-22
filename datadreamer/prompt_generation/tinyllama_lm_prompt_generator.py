@@ -20,7 +20,8 @@ class TinyLlamaLMPromptGenerator(LMPromptGenerator):
         _init_lang_model(): Initializes the language model and tokenizer.
         _remove_caption_sentences(text): Removes caption sentences from the generated prompt.
         _create_lm_prompt_text(selected_objects): Creates a text prompt for the language model.
-        generate_prompt(prompt_text): Generates a single prompt using the language model.
+        _postprocess_prompt(prompt): Post-processes the generated prompt.
+        generate_prompts_batch(prompt_texts_batch): Generates a batch of prompts using the language model.
     """
 
     def __init__(

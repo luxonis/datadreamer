@@ -29,8 +29,10 @@ class LMPromptGenerator(PromptGenerator):
         _init_lang_model(): Initializes the language model and tokenizer.
         _remove_incomplete_sentence(text): Removes incomplete sentences from the generated prompt.
         _create_lm_prompt_text(selected_objects): Creates a text prompt for the language model.
+        _create_lm_prompt_text_batch(selected_objects_batch): Creates a batch of text prompts for the language model.
+        _postprocess_prompt(prompt): Post-processes the generated prompt.
         _test_prompt(prompt, selected_objects): Tests if the generated prompt is valid.
-        generate_prompt(prompt_text): Generates a single prompt using the language model.
+        generate_prompts_batch(prompt_texts_batch): Generates a batch of prompts using the language model.
         generate_prompts(): Generates a list of prompts based on the class names.
         release(empty_cuda_cache): Releases resources and optionally empties the CUDA cache.
     """

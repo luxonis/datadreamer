@@ -25,7 +25,9 @@ image_generator = StableDiffusionTurboImageGenerator(
 )
 
 # Generate images using the list of prompts assuming yield is used in the generator
-generated_images = list(image_generator.generate_images(prompts, prompt_objects))
+generated_images = []
+for generated_images_batch in image_generator.generate_images(prompts, prompt_objects):
+    generated_images.extend(generated_images_batch)
 
 # Release the model and empty the CUDA cache
 image_generator.release(empty_cuda_cache=True)

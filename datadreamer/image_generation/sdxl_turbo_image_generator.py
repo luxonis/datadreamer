@@ -16,7 +16,7 @@ class StableDiffusionTurboImageGenerator(ImageGenerator):
 
     Methods:
         _init_gen_model(): Initializes the Stable Diffusion Turbo model.
-        generate_image(prompt, negative_prompt, prompt_objects): Generates an image based on the provided prompt.
+        generate_images_batch(prompts, negative_prompt, prompt_objects): Generates a batch of images based on the provided prompts.
         release(empty_cuda_cache): Releases resources and optionally empties the CUDA cache.
     """
 
@@ -33,6 +33,7 @@ class StableDiffusionTurboImageGenerator(ImageGenerator):
             AutoPipelineForText2Image: The initialized Stable Diffusion Turbo model.
         """
         if self.device == "cpu":
+            print("Loading SDXL Turbo on CPU...")
             base = AutoPipelineForText2Image.from_pretrained(
                 "stabilityai/sdxl-turbo",
                 # variant="fp16",
@@ -41,6 +42,7 @@ class StableDiffusionTurboImageGenerator(ImageGenerator):
             )
             base.to("cpu")
         else:
+            print("Loading SDXL Turbo on GPU...")
             base = AutoPipelineForText2Image.from_pretrained(
                 "stabilityai/sdxl-turbo",
                 torch_dtype=torch.float16,
@@ -51,31 +53,33 @@ class StableDiffusionTurboImageGenerator(ImageGenerator):
 
         return base
 
-    def generate_image(
+    def generate_images_batch(
         self,
-        prompt: str,
+        prompts: List[str],
         negative_prompt: str,
-        prompt_objects: Optional[List[str]] = None,
-    ) -> Image.Image:
-        """Generates an image using the Stable Diffusion Turbo model based on the
-        provided prompt.
+        prompt_objects: Optional[List[List[str]]] = None,
+        batch_size: int = 1,
+    ) -> List[Image.Image]:
+        """Generates a batch of images using the Stable Diffusion Turbo model based on
+        the provided prompts.
 
         Args:
-            prompt (str): The positive prompt to guide image generation.
+            prompts (List[str]): A list of positive prompts to guide image generation.
             negative_prompt (str): The negative prompt to avoid certain features in the image.
-            prompt_objects (Optional[List[str]]): Optional list of objects to be used in CLIP model testing.
+            prompt_objects (Optional[List[List[str]]]): Optional list of objects for each prompt for CLIP model testing.
+            batch_size (int): The number of images to generate in each batch.
 
         Returns:
-            Image.Image: The generated image.
+            List[Image.Image]: A list of generated images.
         """
-        image = self.base(
-            prompt=prompt,
+        images = self.base(
+            prompt=prompts,
             negative_prompt=negative_prompt,
             guidance_scale=0.0,
             num_inference_steps=4,
-        ).images[0]
+        ).images
 
-        return image
+        return images
 
     def release(self, empty_cuda_cache=False) -> None:
         """Releases the model and optionally empties the CUDA cache."""
@@ -95,19 +99,23 @@ if __name__ == "__main__":
         seed=42,
         use_clip_image_tester=False,
         image_tester_patience=1,
+        batch_size=8,
         device="cpu",
     )
     prompts = [
         "A photo of a bicycle pedaling alongside an aeroplane taking off, showcasing the harmony between human-powered and mechanical transportation.",
-    ]
-    prompt_objects = [["aeroplane", "boat", "bicycle"]]
+    ] * 16
+    prompt_objects = [["aeroplane", "boat", "bicycle"]] * 16
 
     image_paths = []
-    for i, generated_image in enumerate(
-        image_generator.generate_images(prompts, prompt_objects)
+    counter = 0
+    for generated_images_batch in image_generator.generate_images(
+        prompts, prompt_objects
     ):
-        image_path = os.path.join("./", f"image_turbo_{i}.jpg")
-        generated_image.save(image_path)
-        image_paths.append(image_path)
+        for generated_image in generated_images_batch:
+            image_path = os.path.join("./", f"image_turbo_{counter}.jpg")
+            generated_image.save(image_path)
+            image_paths.append(image_path)
+            counter += 1
 
     image_generator.release(empty_cuda_cache=True)

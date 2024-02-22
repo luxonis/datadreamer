@@ -19,6 +19,7 @@ class ImageGenerator:
         negative_prompt (str): A string of negative prompts to guide the generation away from certain features.
         use_clip_image_tester (bool): Flag to use CLIP model testing for generated images.
         image_tester_patience (int): The number of attempts to generate an image that passes CLIP testing.
+        batch_size (int): The number of images to generate in each batch.
         seed (float): Seed for reproducibility.
         clip_image_tester (ClipImageTester): Instance of ClipImageTester if use_clip_image_tester is True.
         device (str): The device on which the model will run ('cuda' for GPU, 'cpu' for CPU).
@@ -42,6 +43,7 @@ class ImageGenerator:
         ] = "cartoon, blue skin, painting, scrispture, golden, illustration, worst quality, low quality, normal quality:2, unrealistic dream, low resolution,  static, sd character, low quality, low resolution, greyscale, monochrome, nose, cropped, lowres, jpeg artifacts, deformed iris, deformed pupils, bad eyes, semi-realistic worst quality, bad lips, deformed mouth, deformed face, deformed fingers, bad anatomy",
         use_clip_image_tester: Optional[bool] = False,
         image_tester_patience: Optional[int] = 1,
+        batch_size: Optional[int] = 1,
         seed: Optional[float] = 42,
         device: str = "cuda",
     ) -> None:
@@ -52,6 +54,7 @@ class ImageGenerator:
         self.seed = seed
         self.use_clip_image_tester = use_clip_image_tester
         self.image_tester_patience = image_tester_patience
+        self.batch_size = batch_size
         self.device = device
         if self.use_clip_image_tester:
             self.clip_image_tester = ClipImageTester(self.device)
@@ -81,7 +84,7 @@ class ImageGenerator:
             prompt_objects (Optional[List[List[str]]]): Optional list of objects for each prompt for CLIP model testing.
 
         Yields:
-            Image.Image: Generated images.
+            List[Image.Image]: A batch of generated images.
         """
         if isinstance(prompts, str):
             prompts = [prompts]
@@ -92,39 +95,53 @@ class ImageGenerator:
         if prompt_objects is None:
             prompt_objects = [None] * len(prompts)
 
-        for prompt, prompt_objs in tqdm(
-            zip(prompts, prompt_objects), desc="Generating images", total=len(prompts)
-        ):
+        progress_bar = tqdm(
+            desc="Generating images", total=len(prompts), dynamic_ncols=True
+        )
+
+        for i in range(0, len(prompts), self.batch_size):
+            prompts_batch = prompts[i : i + self.batch_size]
+            prompt_objs_batch = prompt_objects[i : i + self.batch_size]
             if self.use_clip_image_tester:
                 best_prob = 0
-                best_image = None
+                best_images_batch = None
                 best_num_passed = 0
                 passed = False
 
                 for _ in tqdm(range(self.image_tester_patience), desc="Testing image"):
-                    image = self.generate_image(
-                        prompt, self.negative_prompt, prompt_objs
+                    images_batch = self.generate_images_batch(
+                        prompts_batch, self.negative_prompt, prompt_objs_batch
                     )
-                    passed, probs, num_passed = self.clip_image_tester.test_image(
-                        image, prompt_objs
+                    (
+                        passed_list,
+                        probs_list,
+                        num_passed_list,
+                    ) = self.clip_image_tester.test_images_batch(
+                        images_batch, prompt_objs_batch
                     )
-                    # Return the first image that passes the test
+                    passed = all(passed_list)
+                    mean_prob = sum(
+                        torch.mean(probs).item() for probs in probs_list
+                    ) / len(probs_list)
+                    num_passed = sum(num_passed_list)
                     if passed:
-                        yield image
+                        yield images_batch
                         break
-                    mean_prob = probs.mean().item()
                     if num_passed > best_num_passed or (
                         num_passed == best_num_passed and mean_prob > best_prob
                     ):
-                        best_image = image
+                        best_images_batch = images_batch
                         best_prob = mean_prob
                         best_num_passed = num_passed
                 # If no image passed the test, return the image with the highest number of objects that passed the test
                 if not passed:
-                    yield best_image
-
+                    yield best_images_batch
             else:
-                yield self.generate_image(prompt, self.negative_prompt, prompt_objs)
+                yield self.generate_images_batch(
+                    prompts_batch, self.negative_prompt, prompt_objs_batch
+                )
+
+            progress_bar.update(len(prompts_batch))
 
     @abstractmethod
     def release(self, empty_cuda_cache=False) -> None:
