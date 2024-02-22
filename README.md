@@ -117,6 +117,7 @@ datadreamer --save_dir <directory> --class_names <objects> --prompts_number <num
 - `--lm_quantization`: Quantization to use for Mistral language model. Choose between `none` and `4bit`. Default is `none`.
 - `--batch_size_prompt`: Batch size for prompt generation. Default is 64.
 - `--batch_size_annotation`: Batch size for annotation. Default is 8.
+- `--batch_size_image`: Batch size for image generation. Default is 1.
 - `--device`: Choose between `cuda` and `cpu`. Default is cuda.
 - `--seed`: Set a random seed for image and prompt generation. Default is 42.
 
@@ -131,7 +132,7 @@ datadreamer --save_dir <directory> --class_names <objects> --prompts_number <num
 |                   | Simple random generator                                                               | Joins randomly chosen object names      |
 | Image Generation  | [SDXL-1.0](https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0)           | Slow and accurate (1024x1024 images)    |
 |                   | [SDXL-Turbo](https://huggingface.co/stabilityai/sdxl-turbo)                           | Fast and less accurate (512x512 images) |
-| Image Annotation  | [OWLv2](https://huggingface.co/google/owlv2-large-patch14-ensemble)                   | Open-Vocabulary object detector         |
+| Image Annotation  | [OWLv2](https://huggingface.co/google/owlv2-base-patch16-ensemble)                    | Open-Vocabulary object detector         |
 
 <a name="example"></a>
 

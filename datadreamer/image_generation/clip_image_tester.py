@@ -54,6 +54,52 @@ class ClipImageTester:
         # Check if all objects meet the confidence threshold
         return passed, probs, num_passed
 
+    def test_images_batch(
+        self,
+        images: List[Image.Image],
+        objects: List[List[str]],
+        conf_threshold=0.05,
+    ) -> List[tuple]:
+        """Tests the generated images against a set of objects using the CLIP model.
+
+        Args:
+            images (List[Image.Image]): The images to be tested.
+            objects (List[List[str]]): A list of objects (text) to test against the images.
+            conf_threshold (float, optional): Confidence threshold for considering an object as present. Defaults to 0.05.
+
+        Returns:
+            List[tuple]: A list of tuples containing a boolean indicating if the image passes the test,
+                        the probabilities of the objects, and the number of objects that passed the test.
+        """
+        # Transform the inputs for the CLIP model
+        objects_array = []
+        for obj_list in objects:
+            objects_array.extend(obj_list)
+        inputs = self.clip_processor(
+            text=objects_array, images=images, return_tensors="pt", padding=True
+        ).to(self.device)
+
+        outputs = self.clip(**inputs)
+
+        logits_per_image = outputs.logits_per_image  # image-text similarity score
+        probs = logits_per_image.softmax(dim=1)  # label probabilities
+
+        # Cahnge the shape of the probs, passed and num_passed so they correspond to the initial tuples in the objects list
+        probs_list = []
+        passed_list = []
+        num_passed_list = []
+
+        start_pos = 0
+        for i, obj_list in enumerate(objects):
+            end_pos = start_pos + len(obj_list)
+            probs_list.append(probs[i, start_pos:end_pos])
+            passed_list.append(torch.all(probs_list[-1] > conf_threshold).item())
+            num_passed_list.append(torch.sum(probs_list[-1] > conf_threshold).item())
+            start_pos = end_pos
+
+        # Check if all objects meet the confidence threshold
+        return passed_list, probs_list, num_passed_list
+
     def release(self, empty_cuda_cache=False) -> None:
         """Releases the model and optionally empties the CUDA cache.
 
