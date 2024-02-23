@@ -60,7 +60,7 @@ class OWLv2Annotator(BaseAnnotator):
             Owlv2Processor: The initialized processor.
         """
         return Owlv2Processor.from_pretrained(
-            "google/owlv2-base-patch16-ensemble", do_pad=False
+            "google/owlv2-base-patch16-ensemble", do_pad=False, do_resize=False
         )
 
     def _generate_annotations(
@@ -83,6 +83,8 @@ class OWLv2Annotator(BaseAnnotator):
         batched_prompts = [prompts] * n
         target_sizes = torch.Tensor(images[0].size[::-1]).repeat((n, 1)).to(self.device)
 
+        # resize the images to the model's input size
+        images = [images[i].resize((960, 960)) for i in range(n)]
         inputs = self.processor(
             text=batched_prompts, images=images, return_tensors="pt"
         ).to(self.device)
