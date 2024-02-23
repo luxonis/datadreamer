@@ -1,3 +1,4 @@
+import numpy as np
 import psutil
 import pytest
 import requests
@@ -14,23 +15,25 @@ def _check_owlv2_annotator(device: str):
     url = "https://ultralytics.com/images/bus.jpg"
     im = Image.open(requests.get(url, stream=True).raw)
     annotator = OWLv2Annotator(device=device)
-    final_boxes, final_scores, final_labels = annotator.annotate(im, ["bus", "people"])
+    final_boxes, final_scores, final_labels = annotator.annotate_batch(
+        [im], ["bus", "people"]
+    )
     # Assert that the boxes, scores and labels are tensors
-    assert type(final_boxes) == torch.Tensor
-    assert type(final_scores) == torch.Tensor
-    assert type(final_labels) == torch.Tensor
+    assert isinstance(final_boxes, list) and len(final_boxes) == 1
+    assert isinstance(final_scores, list) and len(final_scores) == 1
+    assert isinstance(final_labels, list) and len(final_labels) == 1
     # Get the number of objects detected
-    num_objects = final_boxes.shape[0]
+    num_objects = final_boxes[0].shape[0]
     # Check that the boxes has correct shape
-    assert final_boxes.shape == (num_objects, 4)
+    assert final_boxes[0].shape == (num_objects, 4)
     # Check that the scores has correct shape
-    assert final_scores.shape == (num_objects,)
+    assert final_scores[0].shape == (num_objects,)
     # Check that the labels has correct shape
-    assert final_labels.shape == (num_objects,)
+    assert final_labels[0].shape == (num_objects,)
     # Check that the scores are not zero
-    assert torch.all(final_scores > 0)
+    assert np.all(final_scores[0] > 0)
     # Check that the labels are bigger or equal to zero
-    assert torch.all(final_labels >= 0)
+    assert np.all(final_labels[0] >= 0)
 
 
 @pytest.mark.skipif(
