@@ -8,7 +8,7 @@ from datadreamer.dataset_annotation import OWLv2Annotator
 # Initialize the OWLv2Annotator
 annotator = OWLv2Annotator(
     seed=42,
-    device="cuda",  # Use "cuda" for GPU or "cpu" for CPU
+    device="cpu",  # Use "cuda" for GPU or "cpu" for CPU
 )
 
 # Load your image
@@ -22,9 +22,11 @@ class_map = {
 prompts = list(class_map.keys())
 
 # Perform object detection
-boxes, scores, labels = annotator.annotate(
-    image, prompts, conf_threshold=0.15, use_tta=True
+boxes, scores, labels = annotator.annotate_batch(
+    [image], prompts, conf_threshold=0.15, use_tta=True
 )
+
+boxes, scores, labels = boxes[0], scores[0], labels[0]
 
 # Convert to numpy arrays
 if not isinstance(boxes, np.ndarray):

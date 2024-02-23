@@ -20,7 +20,7 @@ class BaseAnnotator(ABC):
                                     which can be overridden by subclasses for specific tasks.
 
     Methods:
-        annotate(): Abstract method to be implemented by subclasses. It should contain
+        annotate_batch(): Abstract method to be implemented by subclasses. It should contain
                     the logic for performing annotation based on the task definition.
     """
 
@@ -31,5 +31,5 @@ class BaseAnnotator(ABC):
         self.task_definition = task_definition
 
     @abstractmethod
-    def annotate(self):
+    def annotate_batch(self):
         pass

@@ -8,7 +8,7 @@ def apply_tta(image):
         image: The image to be augmented.
 
     Returns:
-        list: A list of augmented images, including the original and transformed versions.
+        list: A list of augmented images.
 
     Note:
         Currently, only horizontal flip is enabled. Additional transformations like
@@ -16,7 +16,7 @@ def apply_tta(image):
     """
     tta_transforms = [
         # Original image
-        transforms.Compose([]),
+        # transforms.Compose([]),
         # Horizontal Flip
         transforms.Compose([transforms.RandomHorizontalFlip(p=1)]),
         # Vertical Flip
