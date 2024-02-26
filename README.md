@@ -107,7 +107,7 @@ datadreamer --save_dir <directory> --class_names <objects> --prompts_number <num
 - `--task`: Choose between `detection` and `classification`. Default is `detection`.
 - `--num_objects_range`: Range of objects in a prompt. Default is 1 to 3.
 - `--prompt_generator`: Choose between `simple`, `lm` (language model) and `tiny` (tiny LM). Default is `simple`.
-- `--image_generator`: Choose image generator, e.g., `sdxl` or `sdxl-turbo`. Default is `sdxl-turbo`.
+- `--image_generator`: Choose image generator, e.g., `sdxl`, `sdxl-turbo` or `sdxl-lightning`. Default is `sdxl-turbo`.
 - `--image_annotator`: Specify the image annotator, like `owlv2`. Default is `owlv2`.
 - `--conf_threshold`: Confidence threshold for object detection. Default is 0.15.
 - `--use_tta`: Toggle test time augmentation for object detection. Default is True.
