@@ -1,6 +1,7 @@
 from typing import List, Optional
 
 import torch
+from compel import Compel, ReturnedEmbeddingsType
 from diffusers import (
     EulerDiscreteScheduler,
     StableDiffusionXLPipeline,
@@ -22,6 +23,7 @@ class StableDiffusionLightningImageGenerator(ImageGenerator):
 
     Methods:
         _init_gen_model(): Initializes the Stable Diffusion Lightning model.
+        _init_compel(): Initializes the Compel model for text prompt weighting.
         generate_images_batch(prompts, negative_prompt, prompt_objects): Generates a batch of images based on the provided prompts.
         release(empty_cuda_cache): Releases resources and optionally empties the CUDA cache.
     """
@@ -31,6 +33,7 @@ class StableDiffusionLightningImageGenerator(ImageGenerator):
         arguments."""
         super().__init__(*args, **kwargs)
         self.pipe = self._init_gen_model()
+        self.compel = self._init_compel()
 
     def _init_gen_model(self):
         """Initializes the Stable Diffusion Lightning model for image generation.
@@ -68,6 +71,20 @@ class StableDiffusionLightningImageGenerator(ImageGenerator):
 
         return pipe
 
+    def _init_compel(self):
+        """Initializes the Compel model for text prompt weighting.
+
+        Returns:
+            Compel: The initialized Compel model.
+        """
+        compel = Compel(
+            tokenizer=[self.pipe.tokenizer, self.pipe.tokenizer_2],
+            text_encoder=[self.pipe.text_encoder, self.pipe.text_encoder_2],
+            returned_embeddings_type=ReturnedEmbeddingsType.PENULTIMATE_HIDDEN_STATES_NON_NORMALIZED,
+            requires_pooled=[False, True],
+        )
+        return compel
+
     def generate_images_batch(
         self,
         prompts: List[str],
@@ -87,9 +104,19 @@ class StableDiffusionLightningImageGenerator(ImageGenerator):
         Returns:
             List[Image.Image]: A list of generated images.
         """
+
+        if prompt_objects is not None:
+            for i in range(len(prompt_objects)):
+                for obj in prompt_objects[i]:
+                    prompts[i] = prompts[i].replace(obj, f"({obj})1.5", 1)
+
+        conditioning, pooled = self.compel(prompts)
+        conditioning_neg, pooled_neg = self.compel([negative_prompt] * len(prompts))
         images = self.pipe(
-            prompt=prompts,
-            negative_prompt=negative_prompt,
+            prompt_embeds=conditioning,
+            pooled_prompt_embeds=pooled,
+            negative_prompt_embeds=conditioning_neg,
+            negative_pooled_prompt_embeds=pooled_neg,
             guidance_scale=0.0,
             num_inference_steps=4,
         ).images
@@ -124,7 +151,13 @@ if __name__ == "__main__":
         "A photo of an alien exploring the galaxy.",
         "A photo of a robot working on a computer.",
     ]
-    prompt_objects = [["aeroplane", "bicycle"]] * 5
+    prompt_objects = [
+        ["aeroplane", "bicycle"],
+        ["dragonfly"],
+        ["dog"],
+        ["alien"],
+        ["robot", "computer"],
+    ]
 
     image_paths = []
     counter = 0
