@@ -12,6 +12,7 @@ from tqdm import tqdm
 from datadreamer.dataset_annotation import OWLv2Annotator
 from datadreamer.image_generation import (
     StableDiffusionImageGenerator,
+    StableDiffusionLightningImageGenerator,
     StableDiffusionTurboImageGenerator,
 )
 from datadreamer.prompt_generation import (
@@ -30,6 +31,7 @@ prompt_generators = {
 image_generators = {
     "sdxl": StableDiffusionImageGenerator,
     "sdxl-turbo": StableDiffusionTurboImageGenerator,
+    "sdxl-lightning": StableDiffusionLightningImageGenerator,
 }
 
 annotators = {"owlv2": OWLv2Annotator}
@@ -84,7 +86,7 @@ def parse_args():
         "--image_generator",
         type=str,
         default="sdxl-turbo",
-        choices=["sdxl", "sdxl-turbo"],
+        choices=["sdxl", "sdxl-turbo", "sdxl-lightning"],
         help="Image generator to use",
     )
     parser.add_argument(

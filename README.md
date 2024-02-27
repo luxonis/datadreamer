@@ -107,7 +107,7 @@ datadreamer --save_dir <directory> --class_names <objects> --prompts_number <num
 - `--task`: Choose between `detection` and `classification`. Default is `detection`.
 - `--num_objects_range`: Range of objects in a prompt. Default is 1 to 3.
 - `--prompt_generator`: Choose between `simple`, `lm` (language model) and `tiny` (tiny LM). Default is `simple`.
-- `--image_generator`: Choose image generator, e.g., `sdxl` or `sdxl-turbo`. Default is `sdxl-turbo`.
+- `--image_generator`: Choose image generator, e.g., `sdxl`, `sdxl-turbo` or `sdxl-lightning`. Default is `sdxl-turbo`.
 - `--image_annotator`: Specify the image annotator, like `owlv2`. Default is `owlv2`.
 - `--conf_threshold`: Confidence threshold for object detection. Default is 0.15.
 - `--use_tta`: Toggle test time augmentation for object detection. Default is True.
@@ -132,6 +132,7 @@ datadreamer --save_dir <directory> --class_names <objects> --prompts_number <num
 |                   | Simple random generator                                                               | Joins randomly chosen object names      |
 | Image Generation  | [SDXL-1.0](https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0)           | Slow and accurate (1024x1024 images)    |
 |                   | [SDXL-Turbo](https://huggingface.co/stabilityai/sdxl-turbo)                           | Fast and less accurate (512x512 images) |
+|                   | [SDXL-Lightning](https://huggingface.co/ByteDance/SDXL-Lightning)                     | Fast and accurate (1024x1024 images)    |
 | Image Annotation  | [OWLv2](https://huggingface.co/google/owlv2-base-patch16-ensemble)                    | Open-Vocabulary object detector         |
 
 <a name="example"></a>
