@@ -111,7 +111,7 @@ datadreamer --save_dir <directory> --class_names <objects> --prompts_number <num
 - `--image_annotator`: Specify the image annotator, like `owlv2`. Default is `owlv2`.
 - `--conf_threshold`: Confidence threshold for object detection. Default is 0.15.
 - `--use_tta`: Toggle test time augmentation for object detection. Default is True.
-- `--enhance_class_names`: Enhance class names with synonyms. Default is False.
+- `--synonym_generator`: Enhance class names with synonyms. Default is `none`. Other options are `llm`, `wordnet`.
 - `--use_image_tester`: Use image tester for image generation. Default is False.
 - `--image_tester_patience`: Patience level for image tester. Default is 1.
 - `--lm_quantization`: Quantization to use for Mistral language model. Choose between `none` and `4bit`. Default is `none`.
