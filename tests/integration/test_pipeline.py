@@ -318,6 +318,50 @@ def test_cuda_simple_sdxl_detection_pipeline():
     _check_detection_pipeline(cmd, target_folder)
 
 
+@pytest.mark.skipif(
+    total_memory < 16 or total_disk_space < 35,
+    reason="Test requires at least 16GB of RAM and 35GB of HDD",
+)
+def test_cpu_simple_sdxl_lightning_detection_pipeline():
+    # Define target folder
+    target_folder = "data/data-det-cpu-simple-sdxl-lightning/"
+    # Define the command to run the datadreamer
+    cmd = (
+        f"datadreamer --save_dir {target_folder} "
+        f"--class_names alien mars cat "
+        f"--prompts_number 1 "
+        f"--prompt_generator simple "
+        f"--num_objects_range 1 2 "
+        f"--image_generator sdxl-lightning "
+        f"--use_image_tester "
+        f"--device cpu"
+    )
+    # Check the run of the pipeline
+    _check_detection_pipeline(cmd, target_folder)
+
+
+@pytest.mark.skipif(
+    not torch.cuda.is_available() or total_memory < 16 or total_disk_space < 35,
+    reason="Test requires GPU, at least 16GB of RAM and 35GB of HDD",
+)
+def test_cuda_simple_sdxl_lightning_detection_pipeline():
+    # Define target folder
+    target_folder = "data/data-det-cuda-simple-sdxl-lightning/"
+    # Define the command to run the datadreamer
+    cmd = (
+        f"datadreamer --save_dir {target_folder} "
+        f"--class_names alien mars cat "
+        f"--prompts_number 1 "
+        f"--prompt_generator simple "
+        f"--num_objects_range 1 2 "
+        f"--image_generator sdxl-lightning "
+        f"--use_image_tester "
+        f"--device cuda"
+    )
+    # Check the run of the pipeline
+    _check_detection_pipeline(cmd, target_folder)
+
+
 # =========================================================
 # DETECTION - LLM
 # =========================================================

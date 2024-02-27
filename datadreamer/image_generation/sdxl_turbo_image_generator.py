@@ -105,7 +105,7 @@ if __name__ == "__main__":
     prompts = [
         "A photo of a bicycle pedaling alongside an aeroplane taking off, showcasing the harmony between human-powered and mechanical transportation.",
     ] * 16
-    prompt_objects = [["aeroplane", "boat", "bicycle"]] * 16
+    prompt_objects = [["aeroplane", "bicycle"]] * 16
 
     image_paths = []
     counter = 0

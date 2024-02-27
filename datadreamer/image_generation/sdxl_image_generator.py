@@ -173,7 +173,7 @@ if __name__ == "__main__":
         "A photo of a bicycle pedaling alongside an aeroplane taking off, showcasing the harmony between human-powered and mechanical transportation.",
         "A photo of bicycles along a scenic mountain path, where the riders seem to have taken a moment to appreciate the stunning views.",
     ]
-    prompt_objects = [["aeroplane", "boat", "bicycle"], ["bicycle"]]
+    prompt_objects = [["aeroplane", "bicycle"], ["bicycle"]]
 
     image_paths = []
     counter = 0

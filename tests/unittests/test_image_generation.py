@@ -6,13 +6,12 @@ import requests
 import torch
 from PIL import Image
 
-from datadreamer.image_generation.clip_image_tester import ClipImageTester
-from datadreamer.image_generation.sdxl_image_generator import (
+from datadreamer.image_generation import (
     StableDiffusionImageGenerator,
-)
-from datadreamer.image_generation.sdxl_turbo_image_generator import (
+    StableDiffusionLightningImageGenerator,
     StableDiffusionTurboImageGenerator,
 )
+from datadreamer.image_generation.clip_image_tester import ClipImageTester
 
 # Get the total memory in GB
 total_memory = psutil.virtual_memory().total / (1024**3)
@@ -55,7 +54,11 @@ def test_cpu_clip_image_tester():
 
 def _check_image_generator(
     image_generator_class: Type[
-        Union[StableDiffusionImageGenerator, StableDiffusionTurboImageGenerator]
+        Union[
+            StableDiffusionImageGenerator,
+            StableDiffusionTurboImageGenerator,
+            StableDiffusionLightningImageGenerator,
+        ]
     ],
     device: str,
 ):
@@ -101,3 +104,19 @@ def test_cuda_sdxl_turbo_image_generator():
 )
 def test_cpu_sdxl_turbo_image_generator():
     _check_image_generator(StableDiffusionTurboImageGenerator, "cpu")
+
+
+@pytest.mark.skipif(
+    not torch.cuda.is_available() or total_memory < 16 or total_disk_space < 25,
+    reason="Test requires GPU, at least 16GB of RAM and 25GB of HDD",
+)
+def test_cuda_sdxl_lightning_image_generator():
+    _check_image_generator(StableDiffusionLightningImageGenerator, "cuda")
+
+
+@pytest.mark.skipif(
+    total_memory < 16 or total_disk_space < 25,
+    reason="Test requires at least 16GB of RAM and 25GB of HDD",
+)
+def test_cpu_sdxl_lightning_image_generator():
+    _check_image_generator(StableDiffusionLightningImageGenerator, "cpu")
