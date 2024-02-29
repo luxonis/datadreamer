@@ -2,6 +2,8 @@
 
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/luxonis/datadreamer/blob/main/examples/generate_dataset_and_train_yolo.ipynb)
+[![Project Video](https://img.shields.io/static/v1?label=Project&message=Video&color=red)](https://www.youtube.com/watch?v=6FcSz3uFqRI)
+[![Blog Post](https://img.shields.io/static/v1?label=Blog&message=Post&color=red)](https://discuss.luxonis.com/blog/3272-datadreamer-creating-custom-datasets-made-easy)
 
 ![DataDreamer examples](https://raw.githubusercontent.com/luxonis/datadreamer/main/images/grid_image_3x2_generated_dataset.jpg)
 
@@ -15,6 +17,8 @@ datadreamer --class_names person moon robot
 ```
 
 ## Overview
+
+<img src='images/datadreamer_scheme.gif' align="center">
 
 `DataDreamer` is an advanced toolkit engineered to facilitate the development of edge AI models, irrespective of initial data availability. Distinctive features of DataDreamer include:
 
