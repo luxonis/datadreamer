@@ -9,7 +9,7 @@ from transformers import (
     pipeline,
 )
 
-from .synonym_generator import SynonymGenerator
+from datadreamer.prompt_generation.synonym_generator import SynonymGenerator
 
 
 class LMSynonymGenerator(SynonymGenerator):

@@ -3,7 +3,7 @@ from typing import List, Optional
 import nltk
 from nltk.corpus import wordnet
 
-from .synonym_generator import SynonymGenerator
+from datadreamer.prompt_generation.synonym_generator import SynonymGenerator
 
 # Ensure that WordNet data is downloaded
 nltk.download("wordnet")
