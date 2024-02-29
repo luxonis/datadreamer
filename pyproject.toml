@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "datadreamer"
-version = "0.1.1"
+version = "0.1.2"
 description = "A library for dataset generation and knowledge extraction from foundation computer vision models."
 readme = "README.md"
 requires-python = ">=3.8"
