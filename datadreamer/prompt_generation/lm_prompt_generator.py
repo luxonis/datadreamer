@@ -97,7 +97,6 @@ class LMPromptGenerator(PromptGenerator):
 
                 model = AutoModelForCausalLM.from_pretrained(
                     "mistralai/Mistral-7B-Instruct-v0.1",
-                    load_in_4bit=True,
                     quantization_config=bnb_config,
                     torch_dtype=selected_dtype,
                     device_map=self.device,
