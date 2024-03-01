@@ -86,7 +86,11 @@ class OWLv2Annotator(BaseAnnotator):
         # resize the images to the model's input size
         images = [images[i].resize((960, 960)) for i in range(n)]
         inputs = self.processor(
-            text=batched_prompts, images=images, return_tensors="pt", padding='max_length', truncation=True
+            text=batched_prompts,
+            images=images,
+            return_tensors="pt",
+            padding="max_length",
+            truncation=True,
         ).to(self.device)
         with torch.no_grad():
             outputs = self.model(**inputs)
