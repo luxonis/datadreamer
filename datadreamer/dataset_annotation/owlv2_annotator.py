@@ -132,7 +132,7 @@ class OWLv2Annotator(BaseAnnotator):
             boxes[:, [0, 2]] = img_dim - boxes[:, [2, 0]]
 
         if synonym_dict is not None:
-            labels = torch.tensor([synonym_dict_rev[label.item()] for label in labels])
+            labels = torch.tensor([synonym_dict_rev[label.item()] for label in labels], dtype=torch.int64)
 
         return boxes, scores, labels
 
