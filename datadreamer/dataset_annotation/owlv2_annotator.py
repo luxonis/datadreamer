@@ -86,7 +86,11 @@ class OWLv2Annotator(BaseAnnotator):
         # resize the images to the model's input size
         images = [images[i].resize((960, 960)) for i in range(n)]
         inputs = self.processor(
-            text=batched_prompts, images=images, return_tensors="pt"
+            text=batched_prompts,
+            images=images,
+            return_tensors="pt",
+            padding="max_length",
+            truncation=True,
         ).to(self.device)
         with torch.no_grad():
             outputs = self.model(**inputs)
@@ -128,7 +132,9 @@ class OWLv2Annotator(BaseAnnotator):
             boxes[:, [0, 2]] = img_dim - boxes[:, [2, 0]]
 
         if synonym_dict is not None:
-            labels = torch.tensor([synonym_dict_rev[label.item()] for label in labels])
+            labels = torch.tensor(
+                [synonym_dict_rev[label.item()] for label in labels], dtype=torch.int64
+            )
 
         return boxes, scores, labels
 
