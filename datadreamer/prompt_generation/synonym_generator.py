@@ -70,6 +70,7 @@ class SynonymGenerator(ABC):
         """
         pass
 
+    @abstractmethod
     def release(self, empty_cuda_cache=False) -> None:
         """Abstract method to release resources (must be implemented in subclasses)."""
         pass

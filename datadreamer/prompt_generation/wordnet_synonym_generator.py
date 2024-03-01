@@ -48,6 +48,10 @@ class WordNetSynonymGenerator(SynonymGenerator):
                     synonyms.add(lemma.name().replace("_", " "))
         return list(synonyms)[: self.synonyms_number]
 
+    def release(self, empty_cuda_cache: bool = False) -> None:
+        """Releases resources (no action is taken in this implementation)."""
+        pass
+
 
 if __name__ == "__main__":
     # Example usage
