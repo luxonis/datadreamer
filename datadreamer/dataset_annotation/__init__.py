@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from .image_annotator import BaseAnnotator, TaskList
 from .owlv2_annotator import OWLv2Annotator
 
