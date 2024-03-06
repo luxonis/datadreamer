@@ -19,15 +19,21 @@ from datadreamer.image_generation import (
 )
 from datadreamer.prompt_generation import (
     LMPromptGenerator,
+    LMSynonymGenerator,
     SimplePromptGenerator,
-    SynonymGenerator,
     TinyLlamaLMPromptGenerator,
+    WordNetSynonymGenerator,
 )
 
 prompt_generators = {
     "simple": SimplePromptGenerator,
     "lm": LMPromptGenerator,
     "tiny": TinyLlamaLMPromptGenerator,
+}
+
+synonym_generators = {
+    "llm": LMSynonymGenerator,
+    "wordnet": WordNetSynonymGenerator,
 }
 
 image_generators = {
@@ -100,6 +106,14 @@ def parse_args():
     )
 
     parser.add_argument(
+        "--synonym_generator",
+        type=str,
+        default="none",
+        choices=["none", "llm", "wordnet"],
+        help="Image annotator to use",
+    )
+
+    parser.add_argument(
         "--conf_threshold",
         type=float,
         default=0.15,
@@ -111,13 +125,6 @@ def parse_args():
         default=False,
         action="store_true",
         help="Whether to use test time augmentation for object detection",
-    )
-
-    parser.add_argument(
-        "--enhance_class_names",
-        default=False,
-        action="store_true",
-        help="Whether to enhance class names with synonyms",
     )
 
     parser.add_argument(
@@ -326,8 +333,9 @@ def main():
 
     # Synonym generation
     synonym_dict = None
-    if args.enhance_class_names:
-        synonym_generator = SynonymGenerator(device=args.device)
+    if args.synonym_generator != "none":
+        synonym_generator_class = synonym_generators[args.synonym_generator]
+        synonym_generator = synonym_generator_class(device=args.device)
         synonym_dict = synonym_generator.generate_synonyms_for_list(args.class_names)
         synonym_generator.release(empty_cuda_cache=True)
         synonym_generator.save_synonyms(

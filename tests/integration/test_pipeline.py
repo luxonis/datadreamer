@@ -152,6 +152,12 @@ def test_invalid_seed():
     _check_wrong_value(cmd)
 
 
+def test_invalid_synonym_generator():
+    # Define the cmd
+    cmd = "datadreamer --device cpu --synonym_generator invalid"
+    _check_wrong_value(cmd)
+
+
 def test_invalid_lm_quantization():
     # Define the cmd
     cmd = "datadreamer --device cude --lm_quantization invalid"
@@ -257,9 +263,9 @@ def test_cuda_simple_sdxl_turbo_detection_pipeline():
     not torch.cuda.is_available() or total_memory < 16 or total_disk_space < 55,
     reason="Test requires GPU, at least 16GB of RAM and 55GB of HDD",
 )
-def test_cuda_simple_enhance_sdxl_turbo_detection_pipeline():
+def test_cuda_simple_llm_synonym_sdxl_turbo_detection_pipeline():
     # Define target folder
-    target_folder = "data/data-det-cuda-simple-enhance-sdxl-turbo/"
+    target_folder = "data/data-det-cuda-simple-llm-synonym-sdxl-turbo/"
     # Define the command to run the datadreamer
     cmd = (
         f"datadreamer --save_dir {target_folder} "
@@ -269,7 +275,30 @@ def test_cuda_simple_enhance_sdxl_turbo_detection_pipeline():
         f"--num_objects_range 1 2 "
         f"--image_generator sdxl-turbo "
         f"--use_image_tester "
-        f"--enhance_class_names "
+        f"--synonym_generator llm "
+        f"--device cuda"
+    )
+    # Check the run of the pipeline
+    _check_detection_pipeline(cmd, target_folder)
+
+
+@pytest.mark.skipif(
+    not torch.cuda.is_available() or total_memory < 16 or total_disk_space < 35,
+    reason="Test requires GPU, at least 16GB of RAM and 35GB of HDD",
+)
+def test_cuda_simple_wordnet_synonym_sdxl_turbo_detection_pipeline():
+    # Define target folder
+    target_folder = "data/data-det-cuda-simple-wordnet-synonym-sdxl-turbo/"
+    # Define the command to run the datadreamer
+    cmd = (
+        f"datadreamer --save_dir {target_folder} "
+        f"--class_names alien mars cat "
+        f"--prompts_number 1 "
+        f"--prompt_generator simple "
+        f"--num_objects_range 1 2 "
+        f"--image_generator sdxl-turbo "
+        f"--use_image_tester "
+        f"--synonym_generator wordnet "
         f"--device cuda"
     )
     # Check the run of the pipeline
@@ -645,9 +674,9 @@ def test_cuda_simple_sdxl_turbo_classification_pipeline():
     not torch.cuda.is_available() or total_memory < 16 or total_disk_space < 55,
     reason="Test requires GPU, at least 16GB of RAM and 55GB of HDD",
 )
-def test_cuda_simple_enhance_sdxl_turbo_classification_pipeline():
+def test_cuda_simple_llm_synonym_sdxl_turbo_classification_pipeline():
     # Define target folder
-    target_folder = "data/data-cls-cuda-simple-enhance-sdxl-turbo/"
+    target_folder = "data/data-cls-cuda-simple-llm-synonym-sdxl-turbo/"
     # Define the command to run the datadreamer
     cmd = (
         f"datadreamer --task classification "
@@ -658,7 +687,31 @@ def test_cuda_simple_enhance_sdxl_turbo_classification_pipeline():
         f"--num_objects_range 1 2 "
         f"--image_generator sdxl-turbo "
         f"--use_image_tester "
-        f"--enhance_class_names "
+        f"--synonym_generator llm "
+        f"--device cuda"
+    )
+    # Check the run of the pipeline
+    _check_detection_pipeline(cmd, target_folder)
+
+
+@pytest.mark.skipif(
+    not torch.cuda.is_available() or total_memory < 16 or total_disk_space < 35,
+    reason="Test requires GPU, at least 16GB of RAM and 35GB of HDD",
+)
+def test_cuda_simple_wordnet_synonym_sdxl_turbo_classification_pipeline():
+    # Define target folder
+    target_folder = "data/data-cls-cuda-simple-wordnet-synonym-sdxl-turbo/"
+    # Define the command to run the datadreamer
+    cmd = (
+        f"datadreamer --task classification "
+        f"--save_dir {target_folder} "
+        f"--class_names alien mars cat "
+        f"--prompts_number 1 "
+        f"--prompt_generator simple "
+        f"--num_objects_range 1 2 "
+        f"--image_generator sdxl-turbo "
+        f"--use_image_tester "
+        f"--synonym_generator wordnet "
         f"--device cuda"
     )
     # Check the run of the pipeline
