@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from .lm_prompt_generator import LMPromptGenerator
 from .lm_synonym_generator import LMSynonymGenerator
 from .simple_prompt_generator import SimplePromptGenerator

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import json
 from abc import ABC, abstractmethod
 from typing import List, Optional
@@ -15,6 +17,10 @@ class SynonymGenerator(ABC):
         device (str): Device to run the prompt generator on ('cuda' for GPU, 'cpu' for CPU).
 
     Methods:
+        _init_lang_model(): Initializes the language model and tokenizer.
+        _generate_synonyms(prompt_text): Generates synonyms based on a given prompt text.
+        _extract_synonyms(text): Extracts synonyms from a text containing synonyms.
+        _create_prompt_text(word): Creates a prompt text for generating synonyms for a given word.
         generate_synonyms_for_list(words): Generates synonyms for a list of words and returns them in a dictionary.
         generate_synonyms(word): Generates synonyms for a single word and returns them in a list.
         save_synonyms(synonyms, save_path): Saves the generated synonyms to a JSON file.
