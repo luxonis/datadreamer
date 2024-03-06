@@ -40,12 +40,9 @@ class WordNetSynonymGenerator(SynonymGenerator):
             List[str]: A list of generated synonyms for the word.
         """
         synonyms = set()
-        for syn in wordnet.synsets(word):
-            word_class = syn.pos()
+        for syn in wordnet.synsets(word, pos=wordnet.NOUN):
             for lemma in syn.lemmas():
-                # Check if the synonym has the same word class as the input word
-                if wordnet.synsets(lemma.name(), pos=word_class):
-                    synonyms.add(lemma.name().replace("_", " "))
+                synonyms.add(lemma.name().replace("_", " "))
         return list(synonyms)[: self.synonyms_number]
 
     def release(self, empty_cuda_cache: bool = False) -> None:
