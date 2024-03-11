@@ -72,6 +72,12 @@ def parse_args():
     )
 
     parser.add_argument(
+        "--annotate_only",
+        action="store_true",
+        help="Only annotate the images without generating new ones, prompt and image generator will be skipped.",
+    )
+
+    parser.add_argument(
         "--prompts_number", type=int, default=10, help="Number of prompts to generate"
     )
 
@@ -199,6 +205,9 @@ def check_args(args):
     ):
         raise ValueError("--class_names must be a non-empty list of strings")
 
+    if args.annotate_only and not args.task == "detection":
+        raise ValueError("--annotate_only can only be used with --task=detection")
+
     # Check prompts_number
     if args.prompts_number <= 0:
         raise ValueError("--prompts_number must be a positive integer")
@@ -314,22 +323,58 @@ def main():
     with open(os.path.join(save_dir, "generation_args.json"), "w") as f:
         json.dump(vars(args), f, indent=4)
 
-    # Prompt generation
-    prompt_generator_class = prompt_generators[args.prompt_generator]
-    prompt_generator = prompt_generator_class(
-        class_names=args.class_names,
-        prompts_number=args.prompts_number,
-        num_objects_range=args.num_objects_range,
-        seed=args.seed,
-        device=args.device,
-        quantization=args.lm_quantization,
-        batch_size=args.batch_size_prompt,
-    )
-    generated_prompts = prompt_generator.generate_prompts()
-    prompt_generator.save_prompts(
-        generated_prompts, os.path.join(save_dir, "prompts.json")
-    )
-    prompt_generator.release(empty_cuda_cache=True)
+    generated_prompts = None
+    image_paths = []
+
+    if not args.annotate_only:
+        # Prompt generation
+        prompt_generator_class = prompt_generators[args.prompt_generator]
+        prompt_generator = prompt_generator_class(
+            class_names=args.class_names,
+            prompts_number=args.prompts_number,
+            num_objects_range=args.num_objects_range,
+            seed=args.seed,
+            device=args.device,
+            quantization=args.lm_quantization,
+            batch_size=args.batch_size_prompt,
+        )
+        generated_prompts = prompt_generator.generate_prompts()
+        prompt_generator.save_prompts(
+            generated_prompts, os.path.join(save_dir, "prompts.json")
+        )
+        prompt_generator.release(empty_cuda_cache=True)
+
+        # Image generation
+        image_generator_class = image_generators[args.image_generator]
+        image_generator = image_generator_class(
+            seed=args.seed,
+            use_clip_image_tester=args.use_image_tester,
+            image_tester_patience=args.image_tester_patience,
+            batch_size=args.batch_size_image,
+            device=args.device,
+        )
+
+        prompts = [p[1] for p in generated_prompts]
+        prompt_objects = [p[0] for p in generated_prompts]
+
+        num_generated_images = 0
+        for generated_images_batch in image_generator.generate_images(
+            prompts, prompt_objects
+        ):
+            for generated_image in generated_images_batch:
+                image_path = os.path.join(save_dir, f"image_{num_generated_images}.jpg")
+                generated_image.save(image_path)
+                image_paths.append(image_path)
+                num_generated_images += 1
+
+        image_generator.release(empty_cuda_cache=True)
+
+    else:
+        # Load image paths for annotation
+        for image_path in os.listdir(save_dir):
+            # Check file extension: jpg, png, jpeg
+            if image_path.lower().endswith((".jpg", ".png", ".jpeg", ".bmp", "webp")):
+                image_paths.append(os.path.join(save_dir, image_path))
 
     # Synonym generation
     synonym_dict = None
@@ -341,32 +386,6 @@ def main():
         synonym_generator.save_synonyms(
             synonym_dict, os.path.join(save_dir, "synonyms.json")
         )
-
-    # Image generation
-    image_generator_class = image_generators[args.image_generator]
-    image_generator = image_generator_class(
-        seed=args.seed,
-        use_clip_image_tester=args.use_image_tester,
-        image_tester_patience=args.image_tester_patience,
-        batch_size=args.batch_size_image,
-        device=args.device,
-    )
-
-    prompts = [p[1] for p in generated_prompts]
-    prompt_objects = [p[0] for p in generated_prompts]
-
-    image_paths = []
-    num_generated_images = 0
-    for generated_images_batch in image_generator.generate_images(
-        prompts, prompt_objects
-    ):
-        for generated_image in generated_images_batch:
-            image_path = os.path.join(save_dir, f"image_{num_generated_images}.jpg")
-            generated_image.save(image_path)
-            image_paths.append(image_path)
-            num_generated_images += 1
-
-    image_generator.release(empty_cuda_cache=True)
 
     if args.task == "classification":
         # Classification annotation
@@ -439,7 +458,10 @@ def main():
                         bbox=dict(facecolor="yellow", alpha=0.5),
                     )
                     # Add prompt text as title
+                if generated_prompts:
                     plt.title(generated_prompts[i * args.batch_size_annotation + j][1])
+                else:
+                    plt.title("Annotated image")
 
                 labels_list.append(np.array(labels))
 

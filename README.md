@@ -103,6 +103,7 @@ datadreamer --save_dir <directory> --class_names <objects> --prompts_number <num
 - `--save_dir` (required): Path to the directory for saving generated images and annotations.
 - `--class_names` (required): Space-separated list of object names for image generation and annotation. Example: person moon robot.
 - `--prompts_number` (optional): Number of prompts to generate for each object. Defaults to 10.
+- `--annotate_only` (optional): Only annotate the images without generating new ones, prompt and image generator will be skipped. Defaults to False.
 
 <a name="additional-parameters"></a>
 
