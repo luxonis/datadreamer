@@ -98,9 +98,15 @@ def test_invalid_image_generator():
     _check_wrong_argument_choice(cmd)
 
 
-def test_invalid_image_annotator():
+def test_invalid_det_image_annotator():
     # Define the cmd
-    cmd = "datadreamer --image_annotator invalide_value"
+    cmd = "datadreamer --det_image_annotator invalide_value"
+    _check_wrong_argument_choice(cmd)
+
+
+def test_invalid_clf_image_annotator():
+    # Define the cmd
+    cmd = "datadreamer --clf_image_annotator invalide_value"
     _check_wrong_argument_choice(cmd)
 
 
