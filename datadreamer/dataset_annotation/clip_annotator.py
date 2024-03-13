@@ -91,11 +91,15 @@ class CLIPAnnotator(BaseAnnotator):
         if synonym_dict is not None:
             for prob in probs:
                 labels.append(
-                    np.array(
-                        [
-                            synonym_dict_rev[label.item()]
-                            for label in torch.where(prob > conf_threshold)[0].numpy()
-                        ]
+                    np.unique(
+                        np.array(
+                            [
+                                synonym_dict_rev[label.item()]
+                                for label in torch.where(prob > conf_threshold)[
+                                    0
+                                ].numpy()
+                            ]
+                        )
                     )
                 )
         else:
