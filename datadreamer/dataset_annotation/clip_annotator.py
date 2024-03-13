@@ -62,10 +62,12 @@ class CLIPAnnotator(BaseAnnotator):
             List[List[int]]: A list of lists of labels for each image.
         """
         if synonym_dict is not None:
-            objs_syn = []
+            objs_syn = set()
             for obj in objects:
-                objs_syn.append(obj)
-                objs_syn.extend(synonym_dict[obj])
+                objs_syn.add(obj)
+                for syn in synonym_dict[obj]:
+                    objs_syn.add(syn)
+            objs_syn = list(objs_syn)
             # Make a dict to transform synonym ids to original ids
             synonym_dict_rev = {}
             for key, value in synonym_dict.items():
@@ -82,17 +84,19 @@ class CLIPAnnotator(BaseAnnotator):
         outputs = self.clip(**inputs)
 
         logits_per_image = outputs.logits_per_image  # image-text similarity score
-        probs = logits_per_image.softmax(dim=1)  # label probabilities
+        probs = logits_per_image.softmax(dim=1).cpu()  # label probabilities
 
         labels = []
         # Get the labels for each image
         if synonym_dict is not None:
             for prob in probs:
                 labels.append(
-                    [
-                        synonym_dict_rev[label.item()]
-                        for label in torch.where(prob > conf_threshold)[0].numpy()
-                    ]
+                    np.array(
+                        [
+                            synonym_dict_rev[label.item()]
+                            for label in torch.where(prob > conf_threshold)[0].numpy()
+                        ]
+                    )
                 )
         else:
             for prob in probs:

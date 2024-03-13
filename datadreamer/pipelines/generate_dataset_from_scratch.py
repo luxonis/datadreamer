@@ -426,7 +426,7 @@ def main():
         )
     else:
         # Annotation
-        annotator_class = det_annotators[args.obj_det_image_annotator]
+        annotator_class = det_annotators[args.det_image_annotator]
         annotator = annotator_class(device=args.device)
 
         boxes_list = []
