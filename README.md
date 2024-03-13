@@ -140,7 +140,7 @@ datadreamer --save_dir <directory> --class_names <objects> --prompts_number <num
 |                   | [SDXL-Turbo](https://huggingface.co/stabilityai/sdxl-turbo)                           | Fast and less accurate (512x512 images) |
 |                   | [SDXL-Lightning](https://huggingface.co/ByteDance/SDXL-Lightning)                     | Fast and accurate (1024x1024 images)    |
 | Image Annotation  | [OWLv2](https://huggingface.co/google/owlv2-base-patch16-ensemble)                    | Open-Vocabulary object detector         |
-|                   | [CLIP](https://huggingface.co/openai/clip-vit-large-patch14)                    | Zero-shot-image-classification         |
+|                   | [CLIP](https://huggingface.co/openai/clip-vit-large-patch14)                          | Zero-shot-image-classification          |
 
 <a name="example"></a>
 

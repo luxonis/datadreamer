@@ -12,7 +12,8 @@ from datadreamer.dataset_annotation.image_annotator import BaseAnnotator
 
 
 class CLIPAnnotator(BaseAnnotator):
-    """A class for image annotation using the CLIP model, specializing in image classification.
+    """A class for image annotation using the CLIP model, specializing in image
+    classification.
 
     Attributes:
         clip (CLIPModel): The CLIP model for image-text similarity evaluation.
