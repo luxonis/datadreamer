@@ -113,8 +113,7 @@ datadreamer --save_dir <directory> --class_names <objects> --prompts_number <num
 - `--num_objects_range`: Range of objects in a prompt. Default is 1 to 3.
 - `--prompt_generator`: Choose between `simple`, `lm` (language model) and `tiny` (tiny LM). Default is `simple`.
 - `--image_generator`: Choose image generator, e.g., `sdxl`, `sdxl-turbo` or `sdxl-lightning`. Default is `sdxl-turbo`.
-- `--det_image_annotator`: Specify the image annotator for object detection, like `owlv2`. Default is `owlv2`.
-- `--clf_image_annotator`: Specify the image annotator for image classification, like `clip`. Default is `clip`.
+- `--image_annotator`: Specify the image annotator, like `owlv2` for object detection or `clip` for image classification. Default is `owlv2`.
 - `--conf_threshold`: Confidence threshold for annotation. Default is 0.15.
 - `--use_tta`: Toggle test time augmentation for object detection. Default is True.
 - `--synonym_generator`: Enhance class names with synonyms. Default is `none`. Other options are `llm`, `wordnet`.
@@ -140,7 +139,7 @@ datadreamer --save_dir <directory> --class_names <objects> --prompts_number <num
 |                   | [SDXL-Turbo](https://huggingface.co/stabilityai/sdxl-turbo)                           | Fast and less accurate (512x512 images) |
 |                   | [SDXL-Lightning](https://huggingface.co/ByteDance/SDXL-Lightning)                     | Fast and accurate (1024x1024 images)    |
 | Image Annotation  | [OWLv2](https://huggingface.co/google/owlv2-base-patch16-ensemble)                    | Open-Vocabulary object detector         |
-|                   | [CLIP](https://huggingface.co/openai/clip-vit-large-patch14)                          | Zero-shot-image-classification          |
+|                   | [CLIP](https://huggingface.co/openai/clip-vit-base-patch32)                           | Zero-shot-image-classification          |
 
 <a name="example"></a>
 

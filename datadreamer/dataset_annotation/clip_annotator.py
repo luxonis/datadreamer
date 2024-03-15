@@ -37,9 +37,9 @@ class CLIPAnnotator(BaseAnnotator):
             device (str): The device to run the model on. Defaults to 'cuda'.
         """
         super().__init__(seed)
-        self.clip = CLIPModel.from_pretrained("openai/clip-vit-large-patch14")
+        self.clip = CLIPModel.from_pretrained("openai/clip-vit-base-patch32")
         self.clip_processor = CLIPProcessor.from_pretrained(
-            "openai/clip-vit-large-patch14"
+            "openai/clip-vit-base-patch32"
         )
         self.device = device
         self.clip.to(self.device)

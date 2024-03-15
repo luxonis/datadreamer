@@ -105,18 +105,11 @@ def parse_args():
         help="Image generator to use",
     )
     parser.add_argument(
-        "--det_image_annotator",
+        "--image_annotator",
         type=str,
         default="owlv2",
-        choices=["owlv2"],
-        help="Object Detection image annotator to use",
-    )
-    parser.add_argument(
-        "--clf_image_annotator",
-        type=str,
-        default="clip",
-        choices=["clip"],
-        help="Classification image annotator to use",
+        choices=["owlv2", "clip"],
+        help="Image annotator to use",
     )
 
     parser.add_argument(
@@ -275,6 +268,17 @@ def check_args(args):
     if args.seed < 0:
         raise ValueError("--seed must be a non-negative integer")
 
+    # Check correct annotation and task
+    if args.task == "detection" and args.image_annotator not in det_annotators:
+        raise ValueError(
+            "--image_annotator must be one of the available annotators for detection task"
+        )
+
+    if args.task == "classification" and args.image_annotator not in clf_annotators:
+        raise ValueError(
+            "--image_annotator must be one of the available annotators for classification task"
+        )
+
 
 def save_det_annotations_to_json(
     image_paths,
@@ -397,7 +401,7 @@ def main():
 
     if args.task == "classification":
         # Classification annotation
-        annotator_class = clf_annotators[args.clf_image_annotator]
+        annotator_class = clf_annotators[args.image_annotator]
         annotator = annotator_class(device=args.device)
 
         labels_list = []
@@ -426,7 +430,7 @@ def main():
         )
     else:
         # Annotation
-        annotator_class = det_annotators[args.det_image_annotator]
+        annotator_class = det_annotators[args.image_annotator]
         annotator = annotator_class(device=args.device)
 
         boxes_list = []
