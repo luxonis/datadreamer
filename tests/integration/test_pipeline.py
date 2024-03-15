@@ -104,6 +104,18 @@ def test_invalid_image_annotator():
     _check_wrong_argument_choice(cmd)
 
 
+def test_invalid_det_image_annotator():
+    # Define the cmd
+    cmd = "datadreamer --image_annotator clip"
+    _check_wrong_argument_choice(cmd)
+
+
+def test_invalid_clf_image_annotator():
+    # Define the cmd
+    cmd = "datadreamer --image_annotator owlv2 --task classification"
+    _check_wrong_argument_choice(cmd)
+
+
 def test_invalid_device():
     # Define the cmd
     cmd = "datadreamer --device invalide_value"

@@ -11,7 +11,7 @@ import torch
 from PIL import Image
 from tqdm import tqdm
 
-from datadreamer.dataset_annotation import OWLv2Annotator
+from datadreamer.dataset_annotation import CLIPAnnotator, OWLv2Annotator
 from datadreamer.image_generation import (
     StableDiffusionImageGenerator,
     StableDiffusionLightningImageGenerator,
@@ -42,7 +42,8 @@ image_generators = {
     "sdxl-lightning": StableDiffusionLightningImageGenerator,
 }
 
-annotators = {"owlv2": OWLv2Annotator}
+det_annotators = {"owlv2": OWLv2Annotator}
+clf_annotators = {"clip": CLIPAnnotator}
 
 
 def parse_args():
@@ -107,7 +108,7 @@ def parse_args():
         "--image_annotator",
         type=str,
         default="owlv2",
-        choices=["owlv2"],
+        choices=["owlv2", "clip"],
         help="Image annotator to use",
     )
 
@@ -123,7 +124,7 @@ def parse_args():
         "--conf_threshold",
         type=float,
         default=0.15,
-        help="Confidence threshold for object detection",
+        help="Confidence threshold for annotation",
     )
 
     parser.add_argument(
@@ -267,6 +268,17 @@ def check_args(args):
     if args.seed < 0:
         raise ValueError("--seed must be a non-negative integer")
 
+    # Check correct annotation and task
+    if args.task == "detection" and args.image_annotator not in det_annotators:
+        raise ValueError(
+            "--image_annotator must be one of the available annotators for detection task"
+        )
+
+    if args.task == "classification" and args.image_annotator not in clf_annotators:
+        raise ValueError(
+            "--image_annotator must be one of the available annotators for classification task"
+        )
+
 
 def save_det_annotations_to_json(
     image_paths,
@@ -389,19 +401,36 @@ def main():
 
     if args.task == "classification":
         # Classification annotation
+        annotator_class = clf_annotators[args.image_annotator]
+        annotator = annotator_class(device=args.device)
+
         labels_list = []
-        for prompt_objs in prompt_objects:
-            labels = []
-            for obj in prompt_objs:
-                labels.append(args.class_names.index(obj))
-            labels_list.append(np.unique(labels))
+        # Split image_paths into batches
+        image_batches = [
+            image_paths[i : i + args.batch_size_annotation]
+            for i in range(0, len(image_paths), args.batch_size_annotation)
+        ]
+
+        for image_batch in tqdm(
+            image_batches,
+            desc="Annotating images",
+            total=len(image_batches),
+        ):
+            images = [Image.open(image_path) for image_path in image_batch]
+            batch_labels = annotator.annotate_batch(
+                images,
+                args.class_names,
+                conf_threshold=args.conf_threshold,
+                synonym_dict=synonym_dict,
+            )
+            labels_list.extend(batch_labels)
 
         save_clf_annotations_to_json(
             image_paths, labels_list, args.class_names, save_dir
         )
     else:
         # Annotation
-        annotator_class = annotators[args.image_annotator]
+        annotator_class = det_annotators[args.image_annotator]
         annotator = annotator_class(device=args.device)
 
         boxes_list = []

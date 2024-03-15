@@ -7,6 +7,7 @@ import requests
 import torch
 from PIL import Image
 
+from datadreamer.dataset_annotation.clip_annotator import CLIPAnnotator
 from datadreamer.dataset_annotation.owlv2_annotator import OWLv2Annotator
 
 # Get the total disk space in GB
@@ -52,3 +53,30 @@ def test_cuda_owlv2_annotator():
 )
 def test_cou_owlv2_annotator():
     _check_owlv2_annotator("cpu")
+
+
+def _check_clip_annotator(device: str):
+    url = "https://ultralytics.com/images/bus.jpg"
+    im = Image.open(requests.get(url, stream=True).raw)
+    annotator = CLIPAnnotator(device=device)
+    labels = annotator.annotate_batch([im], ["bus", "people"])
+    # Check that the labels are lists
+    assert isinstance(labels, list) and len(labels) == 1
+    # Check that the labels are ndarray of integers
+    assert isinstance(labels[0], np.ndarray) and labels[0].dtype == np.int64
+
+
+@pytest.mark.skipif(
+    not torch.cuda.is_available() or total_disk_space < 15,
+    reason="Test requires GPU and 15GB of HDD",
+)
+def test_cuda_clip_annotator():
+    _check_clip_annotator("cuda")
+
+
+@pytest.mark.skipif(
+    total_disk_space < 15,
+    reason="Test requires at least 15GB of HDD",
+)
+def test_cpu_clip_annotator():
+    _check_clip_annotator("cpu")
