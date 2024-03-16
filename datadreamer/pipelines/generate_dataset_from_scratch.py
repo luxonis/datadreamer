@@ -128,6 +128,13 @@ def parse_args():
     )
 
     parser.add_argument(
+        "--annotation_iou_threshold",
+        type=float,
+        default=0.2,
+        help="Intersection over Union (IoU) threshold for annotation",
+    )
+
+    parser.add_argument(
         "--use_tta",
         default=False,
         action="store_true",
@@ -154,6 +161,14 @@ def parse_args():
         default="none",
         choices=["none", "4bit"],
         help="Quantization to use for Mistral language model",
+    )
+
+    parser.add_argument(
+        "--annotator_size",
+        type=str,
+        default="base",
+        choices=["base", "large"],
+        help="Size of the annotator model to use",
     )
 
     parser.add_argument(
@@ -402,7 +417,7 @@ def main():
     if args.task == "classification":
         # Classification annotation
         annotator_class = clf_annotators[args.image_annotator]
-        annotator = annotator_class(device=args.device)
+        annotator = annotator_class(device=args.device, size=args.annotator_size)
 
         labels_list = []
         # Split image_paths into batches
@@ -431,7 +446,7 @@ def main():
     else:
         # Annotation
         annotator_class = det_annotators[args.image_annotator]
-        annotator = annotator_class(device=args.device)
+        annotator = annotator_class(device=args.device, size=args.annotator_size)
 
         boxes_list = []
         scores_list = []
@@ -453,6 +468,7 @@ def main():
                 images,
                 args.class_names,
                 conf_threshold=args.conf_threshold,
+                iou_threshold=args.annotation_iou_threshold,
                 use_tta=args.use_tta,
                 synonym_dict=synonym_dict,
             )

@@ -8,7 +8,7 @@ import torch
 from PIL import Image
 from transformers import CLIPModel, CLIPProcessor
 
-from datadreamer.dataset_annotation.image_annotator import BaseAnnotator
+from datadreamer.dataset_annotation.image_annotator import BaseAnnotator, TaskList
 
 
 class CLIPAnnotator(BaseAnnotator):
@@ -19,8 +19,11 @@ class CLIPAnnotator(BaseAnnotator):
         clip (CLIPModel): The CLIP model for image-text similarity evaluation.
         clip_processor (CLIPProcessor): The processor for preparing inputs to the CLIP model.
         device (str): The device on which the model will run ('cuda' for GPU, 'cpu' for CPU).
+        size (str): The size of the CLIP model to use ('base' or 'large').
 
     Methods:
+        _init_processor(): Initializes the CLIP processor.
+        _init_model(): Initializes the CLIP model.
         annotate_batch(image, prompts, conf_threshold, use_tta, synonym_dict): Annotates the given image with bounding boxes and labels.
         release(empty_cuda_cache): Releases resources and optionally empties the CUDA cache.
     """
@@ -29,6 +32,7 @@ class CLIPAnnotator(BaseAnnotator):
         self,
         seed: float = 42,
         device: str = "cuda",
+        size: str = "base",
     ) -> None:
         """Initializes the CLIPAnnotator with a specific seed and device.
 
@@ -36,13 +40,32 @@ class CLIPAnnotator(BaseAnnotator):
             seed (float): Seed for reproducibility. Defaults to 42.
             device (str): The device to run the model on. Defaults to 'cuda'.
         """
-        super().__init__(seed)
-        self.clip = CLIPModel.from_pretrained("openai/clip-vit-base-patch32")
-        self.clip_processor = CLIPProcessor.from_pretrained(
-            "openai/clip-vit-base-patch32"
-        )
+        super().__init__(seed, task_definition=TaskList.CLASSIFICATION)
+        self.size = size
+        self.clip = self._init_model()
+        self.clip_processor = self._init_processor()
         self.device = device
         self.clip.to(self.device)
+
+    def _init_processor(self):
+        """Initializes the CLIP processor.
+
+        Returns:
+            CLIPProcessor: The initialized CLIP processor.
+        """
+        if self.size == "large":
+            return CLIPProcessor.from_pretrained("openai/clip-vit-large-patch14")
+        return CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32")
+
+    def _init_model(self):
+        """Initializes the CLIP model.
+
+        Returns:
+            CLIPModel: The initialized CLIP model.
+        """
+        if self.size == "large":
+            return CLIPModel.from_pretrained("openai/clip-vit-large-patch14")
+        return CLIPModel.from_pretrained("openai/clip-vit-base-patch32")
 
     def annotate_batch(
         self,
