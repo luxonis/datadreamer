@@ -16,8 +16,8 @@ class CLIPAnnotator(BaseAnnotator):
     classification.
 
     Attributes:
-        clip (CLIPModel): The CLIP model for image-text similarity evaluation.
-        clip_processor (CLIPProcessor): The processor for preparing inputs to the CLIP model.
+        model (CLIPModel): The CLIP model for image-text similarity evaluation.
+        processor (CLIPProcessor): The processor for preparing inputs to the CLIP model.
         device (str): The device on which the model will run ('cuda' for GPU, 'cpu' for CPU).
         size (str): The size of the CLIP model to use ('base' or 'large').
 
@@ -42,10 +42,10 @@ class CLIPAnnotator(BaseAnnotator):
         """
         super().__init__(seed, task_definition=TaskList.CLASSIFICATION)
         self.size = size
-        self.clip = self._init_model()
-        self.clip_processor = self._init_processor()
+        self.model = self._init_model()
+        self.processor = self._init_processor()
         self.device = device
-        self.clip.to(self.device)
+        self.model.to(self.device)
 
     def _init_processor(self):
         """Initializes the CLIP processor.
@@ -101,11 +101,11 @@ class CLIPAnnotator(BaseAnnotator):
                         synonym_dict_rev[objs_syn.index(v)] = objects.index(key)
             objects = objs_syn
 
-        inputs = self.clip_processor(
+        inputs = self.processor(
             text=objects, images=images, return_tensors="pt", padding=True
         ).to(self.device)
 
-        outputs = self.clip(**inputs)
+        outputs = self.model(**inputs)
 
         logits_per_image = outputs.logits_per_image  # image-text similarity score
         probs = logits_per_image.softmax(dim=1).cpu()  # label probabilities
@@ -153,3 +153,4 @@ if __name__ == "__main__":
     annotator = CLIPAnnotator(device=device)
     labels = annotator.annotate_batch([im], ["bus", "people"])
     print(labels)
+    annotator.release()
