@@ -122,9 +122,27 @@ def test_invalid_device():
     _check_wrong_argument_choice(cmd)
 
 
+def test_invalid_annotator_size():
+    # Define the cmd
+    cmd = "datadreamer --annotator_size invalide_value"
+    _check_wrong_argument_choice(cmd)
+
+
 def test_empty_class_names():
     # Define the cmd
     cmd = "datadreamer --class_names []"
+    _check_wrong_value(cmd)
+
+
+def test_empty_negative_prompt():
+    # Define the cmd
+    cmd = "datadreamer --negative_prompt []"
+    _check_wrong_value(cmd)
+
+
+def test_empty_prompt_suffix():
+    # Define the cmd
+    cmd = "datadreamer --prompt_suffix []"
     _check_wrong_value(cmd)
 
 
@@ -149,6 +167,18 @@ def test_negative_conf_threshold():
 def test_big_conf_threshold():
     # Define the cmd
     cmd = "datadreamer --conf_threshold 10"
+    _check_wrong_value(cmd)
+
+
+def test_negative_annotation_iou_threshold():
+    # Define the cmd
+    cmd = "datadreamer --annotation_iou_threshold -1"
+    _check_wrong_value(cmd)
+
+
+def test_big_annotation_iou_threshold():
+    # Define the cmd
+    cmd = "datadreamer --annotation_iou_threshold 10"
     _check_wrong_value(cmd)
 
 

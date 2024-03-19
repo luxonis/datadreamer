@@ -121,6 +121,64 @@ def parse_args():
     )
 
     parser.add_argument(
+        "--negative_prompt",
+        type=str,
+        nargs="+",
+        default=[
+            "cartoon",
+            "blue skin",
+            "painting",
+            "scrispture",
+            "golden",
+            "illustration",
+            "worst quality",
+            "low quality",
+            "normal quality:2",
+            "unrealistic dream",
+            "low resolution",
+            "static",
+            "sd character",
+            "low quality",
+            "low resolution",
+            "greyscale",
+            "monochrome",
+            "nose",
+            "cropped",
+            "lowres",
+            "jpeg artifacts",
+            "deformed iris",
+            "deformed pupils",
+            "bad eyes",
+            "semi-realistic worst quality",
+            "bad lips",
+            "deformed mouth",
+            "deformed face",
+            "deformed fingers",
+            "bad anatomy",
+        ],
+        help="List of of negative prompts to guide the generation away from certain features",
+    )
+
+    parser.add_argument(
+        "--prompt_suffix",
+        type=str,
+        nargs="+",
+        default=[
+            "hd",
+            "8k",
+            "highly detailed",
+        ],
+        help="Suffix to add to every image generation prompt, e.g., for adding details like resolution",
+    )
+
+    parser.add_argument(
+        "--prompt_prefix",
+        type=str,
+        default="",
+        help="Prefix to add to every image generation prompt",
+    )
+
+    parser.add_argument(
         "--conf_threshold",
         type=float,
         default=0.15,
@@ -248,6 +306,10 @@ def check_args(args):
     if not 0 <= args.conf_threshold <= 1:
         raise ValueError("--conf_threshold must be between 0 and 1")
 
+    # Check annotation_iou_threshold
+    if not 0 <= args.annotation_iou_threshold <= 1:
+        raise ValueError("--annotation_iou_threshold must be between 0 and 1")
+
     # Check image_tester_patience
     if args.image_tester_patience < 0:
         raise ValueError("--image_tester_patience must be a non-negative integer")
@@ -256,6 +318,18 @@ def check_args(args):
     if args.device == "cuda":
         if not torch.cuda.is_available():
             raise ValueError("CUDA is not available. Please use --device cpu")
+
+    # Check negative_prompt
+    if not args.negative_prompt or any(
+        not isinstance(name, str) for name in args.negative_prompt
+    ):
+        raise ValueError("--negative_prompt must be a non-empty list of strings")
+
+    # Check prompt_suffix
+    if not args.prompt_suffix or any(
+        not isinstance(name, str) for name in args.prompt_suffix
+    ):
+        raise ValueError("--prompt_suffix must be a non-empty list of strings")
 
     # Check for LM quantization availability
     if args.lm_quantization != "none" and (
@@ -374,6 +448,9 @@ def main():
         # Image generation
         image_generator_class = image_generators[args.image_generator]
         image_generator = image_generator_class(
+            prompt_prefix=args.prompt_prefix,
+            prompt_suffix=", " + ", ".join(args.prompt_suffix),
+            negative_prompt=", ".join(args.negative_prompt),
             seed=args.seed,
             use_clip_image_tester=args.use_image_tester,
             image_tester_patience=args.image_tester_patience,
