@@ -97,7 +97,8 @@ class OWLv2Annotator(BaseAnnotator):
         target_sizes = torch.Tensor(images[0].size[::-1]).repeat((n, 1)).to(self.device)
 
         # resize the images to the model's input size
-        images = [images[i].resize((960, 960)) for i in range(n)]
+        img_size = (1008, 1008) if self.size == "large" else (960, 960)
+        images = [images[i].resize(img_size) for i in range(n)]
         inputs = self.processor(
             text=batched_prompts,
             images=images,
@@ -283,3 +284,16 @@ class OWLv2Annotator(BaseAnnotator):
         if empty_cuda_cache:
             with torch.no_grad():
                 torch.cuda.empty_cache()
+
+
+if __name__ == "__main__":
+    import requests
+    from PIL import Image
+
+    url = "https://ultralytics.com/images/bus.jpg"
+    im = Image.open(requests.get(url, stream=True).raw)
+    annotator = OWLv2Annotator(device="cpu", size="large")
+    final_boxes, final_scores, final_labels = annotator.annotate_batch(
+        [im], ["robot", "horse"]
+    )
+    annotator.release()
