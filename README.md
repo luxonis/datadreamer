@@ -101,30 +101,35 @@ datadreamer --save_dir <directory> --class_names <objects> --prompts_number <num
 ### Main Parameters
 
 - `--save_dir` (required): Path to the directory for saving generated images and annotations.
-- `--class_names` (required): Space-separated list of object names for image generation and annotation. Example: person moon robot.
-- `--prompts_number` (optional): Number of prompts to generate for each object. Defaults to 10.
-- `--annotate_only` (optional): Only annotate the images without generating new ones, prompt and image generator will be skipped. Defaults to False.
+- `--class_names` (required): Space-separated list of object names for image generation and annotation. Example: `person moon robot`.
+- `--prompts_number` (optional): Number of prompts to generate for each object. Defaults to `10`.
+- `--annotate_only` (optional): Only annotate the images without generating new ones, prompt and image generator will be skipped. Defaults to `False`.
 
 <a name="additional-parameters"></a>
 
 ### Additional Parameters
 
-- `--task`: Choose between `detection` and `classification`. Default is `detection`.
+- `--task`: Choose between detection and classification. Default is `detection`.
 - `--num_objects_range`: Range of objects in a prompt. Default is 1 to 3.
 - `--prompt_generator`: Choose between `simple`, `lm` (language model) and `tiny` (tiny LM). Default is `simple`.
 - `--image_generator`: Choose image generator, e.g., `sdxl`, `sdxl-turbo` or `sdxl-lightning`. Default is `sdxl-turbo`.
 - `--image_annotator`: Specify the image annotator, like `owlv2` for object detection or `clip` for image classification. Default is `owlv2`.
-- `--conf_threshold`: Confidence threshold for annotation. Default is 0.15.
-- `--use_tta`: Toggle test time augmentation for object detection. Default is True.
+- `--conf_threshold`: Confidence threshold for annotation. Default is `0.15`.
+- `--annotation_iou_threshold`: Intersection over Union (IoU) threshold for annotation. Default is `0.2`.
+- `--prompt_prefix`: Prefix to add to every image generation prompt. Default is `""`.
+- `--prompt_suffix`: Suffix to add to every image generation prompt, e.g., for adding details like resolution. Default is `hd 8k "highly detailed"`.
+- `--negative_prompt`: List of of negative prompts to guide the generation away from certain features. Default is `cartoon "blue skin" painting scrispture golden illustration "worst quality" "low quality" "normal quality:2" "unrealistic dream" "low resolution" static "sd character" "low quality" "low resolution" greyscale monochrome nose cropped lowres "jpeg artifacts" "deformed iris" "deformed pupils" "bad eyes" "semi-realistic worst quality" "bad lips" "deformed mouth" "deformed face" "deformed fingers" "bad anatomy"`.
+- `--use_tta`: Toggle test time augmentation for object detection. Default is `True`.
 - `--synonym_generator`: Enhance class names with synonyms. Default is `none`. Other options are `llm`, `wordnet`.
-- `--use_image_tester`: Use image tester for image generation. Default is False.
-- `--image_tester_patience`: Patience level for image tester. Default is 1.
+- `--use_image_tester`: Use image tester for image generation. Default is `False`.
+- `--image_tester_patience`: Patience level for image tester. Default is `1`.
 - `--lm_quantization`: Quantization to use for Mistral language model. Choose between `none` and `4bit`. Default is `none`.
+- `--annotator_size`: Size of the annotator model to use. Choose between `base` and `large`. Default is `base`.
 - `--batch_size_prompt`: Batch size for prompt generation. Default is 64.
-- `--batch_size_annotation`: Batch size for annotation. Default is 8.
-- `--batch_size_image`: Batch size for image generation. Default is 1.
-- `--device`: Choose between `cuda` and `cpu`. Default is cuda.
-- `--seed`: Set a random seed for image and prompt generation. Default is 42.
+- `--batch_size_annotation`: Batch size for annotation. Default is `8`.
+- `--batch_size_image`: Batch size for image generation. Default is `1`.
+- `--device`: Choose between `cuda` and `cpu`. Default is `cuda`.
+- `--seed`: Set a random seed for image and prompt generation. Default is `42`.
 
 <a name="available-models"></a>
 
