@@ -136,13 +136,13 @@ def test_empty_class_names():
 
 def test_empty_negative_prompt():
     # Define the cmd
-    cmd = "datadreamer --negative_prompt []"
+    cmd = "datadreamer --negative_prompt --device cpu"
     _check_wrong_value(cmd)
 
 
 def test_empty_prompt_suffix():
     # Define the cmd
-    cmd = "datadreamer --prompt_suffix []"
+    cmd = "datadreamer --prompt_suffix --device cpu"
     _check_wrong_value(cmd)
 
 

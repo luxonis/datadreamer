@@ -320,20 +320,16 @@ def check_args(args):
             raise ValueError("CUDA is not available. Please use --device cpu")
 
     # Check negative_prompt
-    if (
-        not args.negative_prompt
-        or len(args.negative_prompt) < 1
-        or any(not isinstance(name, str) for name in args.negative_prompt)
+    if not args.negative_prompt or any(
+        not isinstance(name, str) for name in args.negative_prompt
     ):
-        raise ValueError("--negative_prompt must be a non-empty list of strings")
+        raise ValueError("--negative_prompt must be a list of strings")
 
     # Check prompt_suffix
-    if (
-        not args.prompt_suffix
-        or len(args.prompt_suffix) < 1
-        or any(not isinstance(name, str) for name in args.prompt_suffix)
+    if not args.prompt_suffix or any(
+        not isinstance(name, str) for name in args.prompt_suffix
     ):
-        raise ValueError("--prompt_suffix must be a non-empty list of strings")
+        raise ValueError("--prompt_suffix must be a list of strings")
 
     # Check for LM quantization availability
     if args.lm_quantization != "none" and (
