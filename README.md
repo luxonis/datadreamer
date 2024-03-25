@@ -118,7 +118,7 @@ datadreamer --save_dir <directory> --class_names <objects> --prompts_number <num
 - `--annotation_iou_threshold`: Intersection over Union (IoU) threshold for annotation. Default is `0.2`.
 - `--prompt_prefix`: Prefix to add to every image generation prompt. Default is `""`.
 - `--prompt_suffix`: Suffix to add to every image generation prompt, e.g., for adding details like resolution. Default is `hd 8k "highly detailed"`.
-- `--negative_prompt`: List of of negative prompts to guide the generation away from certain features. Default is `cartoon "blue skin" painting scrispture golden illustration "worst quality" "low quality" "normal quality:2" "unrealistic dream" "low resolution" static "sd character" "low quality" "low resolution" greyscale monochrome nose cropped lowres "jpeg artifacts" "deformed iris" "deformed pupils" "bad eyes" "semi-realistic worst quality" "bad lips" "deformed mouth" "deformed face" "deformed fingers" "bad anatomy"`.
+- `--negative_prompt`: Negative prompts to guide the generation away from certain features. Default is `cartoon "blue skin" painting scrispture golden illustration "worst quality" "low quality" "normal quality:2" "unrealistic dream" "low resolution" static "sd character" "low quality" "low resolution" greyscale monochrome nose cropped lowres "jpeg artifacts" "deformed iris" "deformed pupils" "bad eyes" "semi-realistic worst quality" "bad lips" "deformed mouth" "deformed face" "deformed fingers" "bad anatomy"`.
 - `--use_tta`: Toggle test time augmentation for object detection. Default is `True`.
 - `--synonym_generator`: Enhance class names with synonyms. Default is `none`. Other options are `llm`, `wordnet`.
 - `--use_image_tester`: Use image tester for image generation. Default is `False`.
