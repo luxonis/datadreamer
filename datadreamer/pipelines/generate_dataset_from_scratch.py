@@ -121,10 +121,38 @@ def parse_args():
     )
 
     parser.add_argument(
+        "--negative_prompt",
+        type=str,
+        default="cartoon, blue skin, painting, scrispture, golden, illustration, worst quality, low quality, normal quality:2, unrealistic dream, low resolution,  static, sd character, low quality, low resolution, greyscale, monochrome, nose, cropped, lowres, jpeg artifacts, deformed iris, deformed pupils, bad eyes, semi-realistic worst quality, bad lips, deformed mouth, deformed face, deformed fingers, bad anatomy",
+        help="Negative prompt to guide the generation away from certain features",
+    )
+
+    parser.add_argument(
+        "--prompt_suffix",
+        type=str,
+        default=", hd, 8k, highly detailed",
+        help="Suffix to add to every image generation prompt, e.g., for adding details like resolution",
+    )
+
+    parser.add_argument(
+        "--prompt_prefix",
+        type=str,
+        default="",
+        help="Prefix to add to every image generation prompt",
+    )
+
+    parser.add_argument(
         "--conf_threshold",
         type=float,
         default=0.15,
         help="Confidence threshold for annotation",
+    )
+
+    parser.add_argument(
+        "--annotation_iou_threshold",
+        type=float,
+        default=0.2,
+        help="Intersection over Union (IoU) threshold for annotation",
     )
 
     parser.add_argument(
@@ -154,6 +182,14 @@ def parse_args():
         default="none",
         choices=["none", "4bit"],
         help="Quantization to use for Mistral language model",
+    )
+
+    parser.add_argument(
+        "--annotator_size",
+        type=str,
+        default="base",
+        choices=["base", "large"],
+        help="Size of the annotator model to use",
     )
 
     parser.add_argument(
@@ -232,6 +268,10 @@ def check_args(args):
     # Check conf_threshold
     if not 0 <= args.conf_threshold <= 1:
         raise ValueError("--conf_threshold must be between 0 and 1")
+
+    # Check annotation_iou_threshold
+    if not 0 <= args.annotation_iou_threshold <= 1:
+        raise ValueError("--annotation_iou_threshold must be between 0 and 1")
 
     # Check image_tester_patience
     if args.image_tester_patience < 0:
@@ -359,6 +399,9 @@ def main():
         # Image generation
         image_generator_class = image_generators[args.image_generator]
         image_generator = image_generator_class(
+            prompt_prefix=args.prompt_prefix,
+            prompt_suffix=args.prompt_suffix,
+            negative_prompt=args.negative_prompt,
             seed=args.seed,
             use_clip_image_tester=args.use_image_tester,
             image_tester_patience=args.image_tester_patience,
@@ -402,7 +445,7 @@ def main():
     if args.task == "classification":
         # Classification annotation
         annotator_class = clf_annotators[args.image_annotator]
-        annotator = annotator_class(device=args.device)
+        annotator = annotator_class(device=args.device, size=args.annotator_size)
 
         labels_list = []
         # Split image_paths into batches
@@ -431,7 +474,7 @@ def main():
     else:
         # Annotation
         annotator_class = det_annotators[args.image_annotator]
-        annotator = annotator_class(device=args.device)
+        annotator = annotator_class(device=args.device, size=args.annotator_size)
 
         boxes_list = []
         scores_list = []
@@ -453,6 +496,7 @@ def main():
                 images,
                 args.class_names,
                 conf_threshold=args.conf_threshold,
+                iou_threshold=args.annotation_iou_threshold,
                 use_tta=args.use_tta,
                 synonym_dict=synonym_dict,
             )

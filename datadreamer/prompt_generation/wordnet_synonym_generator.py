@@ -25,7 +25,7 @@ class WordNetSynonymGenerator(SynonymGenerator):
 
     def __init__(
         self,
-        synonyms_number: int = 5,
+        synonyms_number: int = 3,
         seed: Optional[float] = 42,
         device: str = "cuda",
     ) -> None:

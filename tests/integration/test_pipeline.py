@@ -122,6 +122,12 @@ def test_invalid_device():
     _check_wrong_argument_choice(cmd)
 
 
+def test_invalid_annotator_size():
+    # Define the cmd
+    cmd = "datadreamer --annotator_size invalide_value"
+    _check_wrong_argument_choice(cmd)
+
+
 def test_empty_class_names():
     # Define the cmd
     cmd = "datadreamer --class_names []"
@@ -149,6 +155,18 @@ def test_negative_conf_threshold():
 def test_big_conf_threshold():
     # Define the cmd
     cmd = "datadreamer --conf_threshold 10"
+    _check_wrong_value(cmd)
+
+
+def test_negative_annotation_iou_threshold():
+    # Define the cmd
+    cmd = "datadreamer --annotation_iou_threshold -1"
+    _check_wrong_value(cmd)
+
+
+def test_big_annotation_iou_threshold():
+    # Define the cmd
+    cmd = "datadreamer --annotation_iou_threshold 10"
     _check_wrong_value(cmd)
 
 
@@ -651,6 +669,7 @@ def test_cpu_simple_sdxl_turbo_classification_pipeline():
         f"--prompts_number 1 "
         f"--prompt_generator simple "
         f"--num_objects_range 1 2 "
+        f"--image_annotator clip "
         f"--image_generator sdxl-turbo "
         f"--use_image_tester "
         f"--device cpu"
@@ -674,6 +693,7 @@ def test_cuda_simple_sdxl_turbo_classification_pipeline():
         f"--prompts_number 1 "
         f"--prompt_generator simple "
         f"--num_objects_range 1 2 "
+        f"--image_annotator clip "
         f"--image_generator sdxl-turbo "
         f"--use_image_tester "
         f"--device cuda"
@@ -698,6 +718,7 @@ def test_cuda_simple_llm_synonym_sdxl_turbo_classification_pipeline():
         f"--prompt_generator simple "
         f"--num_objects_range 1 2 "
         f"--image_generator sdxl-turbo "
+        f"--image_annotator clip "
         f"--use_image_tester "
         f"--synonym_generator llm "
         f"--device cuda"
@@ -721,6 +742,7 @@ def test_cuda_simple_wordnet_synonym_sdxl_turbo_classification_pipeline():
         f"--prompts_number 1 "
         f"--prompt_generator simple "
         f"--num_objects_range 1 2 "
+        f"--image_annotator clip "
         f"--image_generator sdxl-turbo "
         f"--use_image_tester "
         f"--synonym_generator wordnet "
@@ -744,6 +766,7 @@ def test_cpu_simple_sdxl_classification_pipeline():
         f"--class_names alien mars cat "
         f"--prompts_number 1 "
         f"--prompt_generator simple "
+        f"--image_annotator clip "
         f"--num_objects_range 1 2 "
         f"--image_generator sdxl "
         f"--use_image_tester "
@@ -767,6 +790,7 @@ def test_cuda_simple_sdxl_classification_pipeline():
         f"--class_names alien mars cat "
         f"--prompts_number 1 "
         f"--prompt_generator simple "
+        f"--image_annotator clip "
         f"--num_objects_range 1 2 "
         f"--image_generator sdxl "
         f"--use_image_tester "
@@ -794,6 +818,7 @@ def test_cpu_lm_sdxl_turbo_classification_pipeline():
         f"--prompts_number 1 "
         f"--prompt_generator lm "
         f"--num_objects_range 1 2 "
+        f"--image_annotator clip "
         f"--image_generator sdxl-turbo "
         f"--use_image_tester "
         f"--device cpu"
@@ -817,6 +842,7 @@ def test_cuda_lm_sdxl_turbo_classification_pipeline():
         f"--prompts_number 1 "
         f"--prompt_generator lm "
         f"--num_objects_range 1 2 "
+        f"--image_annotator clip "
         f"--image_generator sdxl-turbo "
         f"--use_image_tester "
         f"--device cuda"
@@ -840,6 +866,7 @@ def test_cuda_4bit_lm_sdxl_turbo_classification_pipeline():
         f"--prompts_number 1 "
         f"--prompt_generator lm "
         f"--num_objects_range 1 2 "
+        f"--image_annotator clip "
         f"--image_generator sdxl-turbo "
         f"--use_image_tester "
         f"--lm_quantization 4bit "
@@ -863,6 +890,7 @@ def test_cpu_lm_sdxl_classification_pipeline():
         f"--class_names alien mars cat "
         f"--prompts_number 1 "
         f"--prompt_generator lm "
+        f"--image_annotator clip "
         f"--num_objects_range 1 2 "
         f"--image_generator sdxl "
         f"--use_image_tester "
@@ -886,6 +914,7 @@ def test_cuda_lm_sdxl_classification_pipeline():
         f"--class_names alien mars cat "
         f"--prompts_number 1 "
         f"--prompt_generator lm "
+        f"--image_annotator clip "
         f"--num_objects_range 1 2 "
         f"--image_generator sdxl "
         f"--use_image_tester "
@@ -910,6 +939,7 @@ def test_cuda_4bit_lm_sdxl_classification_pipeline():
         f"--prompts_number 1 "
         f"--prompt_generator lm "
         f"--num_objects_range 1 2 "
+        f"--image_annotator clip "
         f"--image_generator sdxl "
         f"--use_image_tester "
         f"--lm_quantization 4bit "
@@ -936,6 +966,7 @@ def test_cpu_tiny_sdxl_turbo_classification_pipeline():
         f"--class_names alien mars cat "
         f"--prompts_number 1 "
         f"--prompt_generator tiny "
+        f"--image_annotator clip "
         f"--num_objects_range 1 2 "
         f"--image_generator sdxl-turbo "
         f"--use_image_tester "
@@ -960,6 +991,7 @@ def test_cuda_tiny_sdxl_turbo_classification_pipeline():
         f"--prompts_number 1 "
         f"--prompt_generator tiny "
         f"--num_objects_range 1 2 "
+        f"--image_annotator clip "
         f"--image_generator sdxl-turbo "
         f"--use_image_tester "
         f"--device cuda"
@@ -983,6 +1015,7 @@ def test_cpu_tiny_sdxl_classification_pipeline():
         f"--prompts_number 1 "
         f"--prompt_generator tiny "
         f"--num_objects_range 1 2 "
+        f"--image_annotator clip "
         f"--image_generator sdxl "
         f"--use_image_tester "
         f"--device cpu"
@@ -1006,6 +1039,7 @@ def test_cuda_tiny_sdxl_classification_pipeline():
         f"--prompts_number 1 "
         f"--prompt_generator tiny "
         f"--num_objects_range 1 2 "
+        f"--image_annotator clip "
         f"--image_generator sdxl "
         f"--use_image_tester "
         f"--device cuda"

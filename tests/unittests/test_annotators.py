@@ -14,10 +14,10 @@ from datadreamer.dataset_annotation.owlv2_annotator import OWLv2Annotator
 total_disk_space = psutil.disk_usage("/").total / (1024**3)
 
 
-def _check_owlv2_annotator(device: str):
+def _check_owlv2_annotator(device: str, size: str = "base"):
     url = "https://ultralytics.com/images/bus.jpg"
     im = Image.open(requests.get(url, stream=True).raw)
-    annotator = OWLv2Annotator(device=device)
+    annotator = OWLv2Annotator(device=device, size=size)
     final_boxes, final_scores, final_labels = annotator.annotate_batch(
         [im], ["bus", "people"]
     )
@@ -51,14 +51,14 @@ def test_cuda_owlv2_annotator():
     total_disk_space < 15,
     reason="Test requires at least 15GB of HDD",
 )
-def test_cou_owlv2_annotator():
+def test_cpu_owlv2_annotator():
     _check_owlv2_annotator("cpu")
 
 
-def _check_clip_annotator(device: str):
+def _check_clip_annotator(device: str, size: str = "base"):
     url = "https://ultralytics.com/images/bus.jpg"
     im = Image.open(requests.get(url, stream=True).raw)
-    annotator = CLIPAnnotator(device=device)
+    annotator = CLIPAnnotator(device=device, size=size)
     labels = annotator.annotate_batch([im], ["bus", "people"])
     # Check that the labels are lists
     assert isinstance(labels, list) and len(labels) == 1
@@ -70,7 +70,7 @@ def _check_clip_annotator(device: str):
     not torch.cuda.is_available() or total_disk_space < 15,
     reason="Test requires GPU and 15GB of HDD",
 )
-def test_cuda_clip_annotator():
+def test_cuda_clip_base_annotator():
     _check_clip_annotator("cuda")
 
 
@@ -78,5 +78,21 @@ def test_cuda_clip_annotator():
     total_disk_space < 15,
     reason="Test requires at least 15GB of HDD",
 )
-def test_cpu_clip_annotator():
+def test_cpu_clip_base_annotator():
+    _check_clip_annotator("cpu")
+
+
+@pytest.mark.skipif(
+    not torch.cuda.is_available() or total_disk_space < 15,
+    reason="Test requires GPU and 15GB of HDD",
+)
+def test_cuda_clip_large_annotator():
+    _check_clip_annotator("cuda")
+
+
+@pytest.mark.skipif(
+    total_disk_space < 15,
+    reason="Test requires at least 15GB of HDD",
+)
+def test_cpu_clip_large_annotator():
     _check_clip_annotator("cpu")
