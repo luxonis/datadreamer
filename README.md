@@ -69,19 +69,50 @@ datadreamer --class_names person moon robot
 
 ## Installation
 
+There are two ways to install the `datadreamer` library:
+
+**Using pip**:
+
 To install with pip:
 
 ```bash
 pip install datadreamer
 ```
 
-Docker build and run:
+**Using Docker**:
+
+Pull Docker Image from GHCR:
 
 ```bash
-docker build -t datadreamer .
-docker run --rm -v "$(pwd):/app" datadreamer --save_dir generated_dataset --device cpu # Run on CPU
-docker run --rm --gpus all -v "$(pwd):/app" datadreamer --save_dir generated_dataset --device cuda # Run on GPU, make sure to have nvidia-docker installed
+docker pull ghcr.io/luxonis/datadreamer:latest
 ```
+
+Or build Docker Image from source:
+
+```bash
+# Clone the repository
+git clone https://github.com/luxonis/datadreamer.git
+cd datadreamer
+
+# Build Docker Image
+docker build -t datadreamer .
+```
+
+**Run Docker Container (assuming it's GHCR image, otherwise replace `ghcr.io/luxonis/datadreamer:latest` with `datadreamer`)**
+
+Run on CPU:
+
+```bash
+docker run --rm -v "$(pwd):/app" ghcr.io/luxonis/datadreamer:latest --save_dir generated_dataset --device cpu
+```
+
+Run on GPU, make sure to have nvidia-docker installed:
+
+```bash
+docker run --rm --gpus all -v "$(pwd):/app" ghcr.io/luxonis/datadreamer:latest --save_dir generated_dataset --device cuda
+```
+
+These commands mount the current directory ($(pwd)) to the /app directory inside the container, allowing you to access files from your local machine.
 
 <a name="hardware-requirements"></a>
 
