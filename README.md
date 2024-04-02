@@ -79,7 +79,8 @@ Docker build and run:
 
 ```bash
 docker build -t datadreamer .
-docker run -v "$(pwd):/app" datadreamer --save_dir generated_dataset
+docker run --rm -v "$(pwd):/app" datadreamer --save_dir generated_dataset --device cpu # Run on CPU
+docker run --rm --gpus all -v "$(pwd):/app" datadreamer --save_dir generated_dataset --device cuda # Run on GPU, make sure to have nvidia-docker installed
 ```
 
 <a name="hardware-requirements"></a>
