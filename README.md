@@ -7,7 +7,9 @@
 
 ![DataDreamer examples](https://raw.githubusercontent.com/luxonis/datadreamer/main/images/grid_image_3x2_generated_dataset.jpg)
 
-## Quickstart
+<a name="quickstart"></a>
+
+## 🚀 Quickstart
 
 To generate your dataset with custom classes, you need to execute only two commands:
 
@@ -16,9 +18,11 @@ pip install datadreamer
 datadreamer --class_names person moon robot
 ```
 
-## Overview
+<a name ="overview"></a>
 
-<img src='images/datadreamer_scheme.gif' align="center">
+## 🌟 Overview
+
+<img src='https://raw.githubusercontent.com/luxonis/datadreamer/feature/docker-image/images/datadreamer_scheme.gif' align="center">
 
 `DataDreamer` is an advanced toolkit engineered to facilitate the development of edge AI models, irrespective of initial data availability. Distinctive features of DataDreamer include:
 
@@ -28,26 +32,27 @@ datadreamer --class_names person moon robot
 
 - **Efficient and Potent Models**: The primary objective of `DataDreamer` is to enable the creation of compact models that are both size-efficient for integration into any device and robust in performance for specialized tasks.
 
-## Table of Contents
+## 📜 Table of contents
 
-- [Features](#features)
-- [Installation](#installation)
-- [Hardware Requirements](#hardware-requirements)
-- [Usage](#usage)
-  - [Main Parameters](#main-parameters)
-  - [Additional Parameters](#additional-parameters)
-  - [Available models](#available-models)
-  - [Example](#example)
-  - [Output](#output)
-  - [Annotations Format](#annotations-format)
-  - [Note](#note)
-- [Limitations](#limitations)
-- [License](#license)
-- [Acknowledgements](#acknowledgements)
+- [🚀 Quickstart](#quickstart)
+- [🌟 Overview](#overview)
+- [🛠️ Features](#features)
+- [💻 Installation](#installation)
+- [⚙️ Hardware Requirements](#hardware-requirements)
+- [📋 Usage](#usage)
+  - [🎯 Main Parameters](#main-parameters)
+  - [🔧 Additional Parameters](#additional-parameters)
+  - [🤖 Available Models](#available-models)
+  - [💡 Example](#example)
+  - [📦 Output](#output)
+  - [📝 Annotations Format](#annotations-format)
+- [⚠️ Limitations](#limitations)
+- [📄 License](#license)
+- [🙏 Acknowledgements](#acknowledgements)
 
 <a name="features"></a>
 
-## Features
+## 🛠️ Features
 
 - **Prompt Generation**: Automate the creation of image prompts using powerful language models.
 
@@ -57,17 +62,16 @@ datadreamer --class_names person moon robot
 
 - **Image Generation**: Generate synthetic datasets with state-of-the-art generative models.
 
-<img src="https://raw.githubusercontent.com/luxonis/datadreamer/main/images/generated_image.jpg" width="512">
-
 - **Dataset Annotation**: Leverage foundation models to label datasets automatically.
-
-<img src="https://raw.githubusercontent.com/luxonis/datadreamer/main/images/annotated_image.jpg" width="512">
 
 - **Edge Model Training**: Train efficient small-scale neural networks for edge deployment. (not part of this library)
 
+<img src="https://raw.githubusercontent.com/luxonis/datadreamer/main/images/generated_image.jpg" width="512">
+<img src="https://raw.githubusercontent.com/luxonis/datadreamer/main/images/annotated_image.jpg" width="512">
+
 <a name="installation"></a>
 
-## Installation
+## 💻 Installation
 
 There are two ways to install the `datadreamer` library:
 
@@ -116,7 +120,7 @@ These commands mount the current directory ($(pwd)) to the /app directory inside
 
 <a name="hardware-requirements"></a>
 
-## Hardware Requirements
+## ⚙️ Hardware Requirements
 
 To ensure optimal performance and compatibility with the libraries used in this project, the following hardware specifications are recommended:
 
@@ -125,7 +129,7 @@ To ensure optimal performance and compatibility with the libraries used in this 
 
 <a name="usage"></a>
 
-## Usage
+## 📋 Usage
 
 The `datadreamer/pipelines/generate_dataset_from_scratch.py` (`datadreamer` command) script is a powerful tool for generating and annotating images with specific objects. It uses advanced models to both create images and accurately annotate them with bounding boxes for designated objects.
 
@@ -137,7 +141,7 @@ datadreamer --save_dir <directory> --class_names <objects> --prompts_number <num
 
 <a name="main-parameters"></a>
 
-### Main Parameters
+### 🎯 Main Parameters
 
 - `--save_dir` (required): Path to the directory for saving generated images and annotations.
 - `--class_names` (required): Space-separated list of object names for image generation and annotation. Example: `person moon robot`.
@@ -146,7 +150,7 @@ datadreamer --save_dir <directory> --class_names <objects> --prompts_number <num
 
 <a name="additional-parameters"></a>
 
-### Additional Parameters
+### 🔧 Additional Parameters
 
 - `--task`: Choose between detection and classification. Default is `detection`.
 - `--num_objects_range`: Range of objects in a prompt. Default is 1 to 3.
@@ -172,7 +176,7 @@ datadreamer --save_dir <directory> --class_names <objects> --prompts_number <num
 
 <a name="available-models"></a>
 
-### Available models
+### 🤖 Available Models
 
 | Model Category    | Model Names                                                                           | Description/Notes                       |
 | ----------------- | ------------------------------------------------------------------------------------- | --------------------------------------- |
@@ -187,7 +191,7 @@ datadreamer --save_dir <directory> --class_names <objects> --prompts_number <num
 
 <a name="example"></a>
 
-### Example
+### 💡 Example
 
 ```bash
 datadreamer --save_dir path/to/save_directory --class_names person moon robot --prompts_number 20 --prompt_generator simple --num_objects_range 1 3 --image_generator sdxl-turbo
@@ -197,7 +201,7 @@ This command generates images for the specified objects, saving them and their a
 
 <a name="output"></a>
 
-### Output
+### 📦 Output
 
 The dataset comprises two primary components: images and their corresponding annotations, stored as JSON files.
 
@@ -215,7 +219,7 @@ save_dir/
 
 <a name="annotations-format"></a>
 
-### Annotations Format
+### 📝 Annotations Format
 
 1. Detection Annotations (detection_annotations.json):
 
@@ -248,15 +252,9 @@ save_dir/
 }
 ```
 
-<a name="note"></a>
-
-### Note
-
-Please make sure that all dependencies are correctly installed and that the datadreamer package is properly set up in your Python environment before running the script.
-
 <a name="limitations"></a>
 
-## Limitations
+## ⚠️ Limitations
 
 While the datadreamer library leverages advanced Generative models to synthesize datasets and Foundation models for annotation, there are inherent limitations to consider:
 
@@ -268,7 +266,7 @@ Despite these limitations, the datasets created by datadreamer provide a valuabl
 
 <a name="license"></a>
 
-## License
+## 📄 License
 
 This project is licensed under the [Apache License, Version 2.0](https://opensource.org/license/apache-2-0/) - see the [LICENSE](LICENSE) file for details.
 
@@ -276,7 +274,7 @@ The above license does not cover the models. Please see the license of each mode
 
 <a name="acknowledgements"></a>
 
-## Acknowledgements
+## 🙏 Acknowledgements
 
 This library was made possible by the use of several open-source projects, including Transformers, Diffusers, and others listed in the requirements.txt.
 
