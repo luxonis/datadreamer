@@ -66,7 +66,7 @@ datadreamer --class_names person moon robot
 
 - **Edge Model Training**: Train efficient small-scale neural networks for edge deployment. (not part of this library)
 
-<img src="https://raw.githubusercontent.com/luxonis/datadreamer/main/images/generated_image.jpg" width="500"><img src="https://raw.githubusercontent.com/luxonis/datadreamer/main/images/annotated_image.jpg" width="500">
+<img src="https://raw.githubusercontent.com/luxonis/datadreamer/main/images/generated_image.jpg" width="400"><img src="https://raw.githubusercontent.com/luxonis/datadreamer/main/images/annotated_image.jpg" width="400">
 
 <a name="installation"></a>
 
