@@ -75,6 +75,13 @@ To install with pip:
 pip install datadreamer
 ```
 
+Docker build and run:
+
+```bash
+docker build -t datadreamer .
+docker run -v "$(pwd):/app" datadreamer --save_dir generated_dataset
+```
+
 <a name="hardware-requirements"></a>
 
 ## Hardware Requirements

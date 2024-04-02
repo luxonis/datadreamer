@@ -1,0 +1,12 @@
+## define a base image
+FROM pytorch/pytorch:2.1.0-cuda12.1-cudnn8-runtime
+
+## set working directory
+WORKDIR /app
+
+## instal
+RUN apt-get update && apt-get install ffmpeg libsm6 libxext6  -y
+RUN pip install datadreamer
+
+## define image execution
+ENTRYPOINT ["datadreamer"]
