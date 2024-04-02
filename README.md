@@ -22,7 +22,7 @@ datadreamer --class_names person moon robot
 
 ## 🌟 Overview
 
-<img src='https://raw.githubusercontent.com/luxonis/datadreamer/feature/docker-image/images/datadreamer_scheme.gif' align="center">
+<img src='https://raw.githubusercontent.com/luxonis/datadreamer/main/images/datadreamer_scheme.gif' align="center">
 
 `DataDreamer` is an advanced toolkit engineered to facilitate the development of edge AI models, irrespective of initial data availability. Distinctive features of DataDreamer include:
 
