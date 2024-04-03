@@ -82,7 +82,7 @@ To install with pip:
 pip install datadreamer
 ```
 
-**Using Docker**:
+**Using Docker (for Linux/Windows)**:
 
 Pull Docker Image from GHCR:
 
