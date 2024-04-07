@@ -1,13 +1,13 @@
 from __future__ import annotations
 
-
+import json
 import os
 import shutil
-import numpy as np
-import json
+
 from PIL import Image
 
 from datadreamer.utils.base_converter import BaseConverter
+
 
 class COCOConverter(BaseConverter):
     """Class for converting a dataset to COCO format.
@@ -45,8 +45,8 @@ class COCOConverter(BaseConverter):
         self.process_data(data, dataset_dir, output_dir, split_ratios, copy_files)
 
     def process_data(self, data, image_dir, output_dir, split_ratios, copy_files=True):
-        """Processes the data by dividing it into training and validation sets, and saves
-        the images and labels in COCO format.
+        """Processes the data by dividing it into training and validation sets, and
+        saves the images and labels in COCO format.
 
         Args:
         - data (dict): The dictionary containing image annotations.
@@ -61,14 +61,20 @@ class COCOConverter(BaseConverter):
         images = list(data.keys())
         images.remove("class_names")
 
-        train_images, val_images, test_images = BaseConverter.make_splits(images, split_ratios)
+        train_images, val_images, test_images = BaseConverter.make_splits(
+            images, split_ratios
+        )
 
-        for dataset_type, image_set in [("train", train_images), ("validation", val_images), ("test", test_images)]:
+        for dataset_type, image_set in [
+            ("train", train_images),
+            ("validation", val_images),
+            ("test", test_images),
+        ]:
             dataset_output_dir = os.path.join(output_dir, dataset_type)
             data_output_dir = os.path.join(dataset_output_dir, "data")
 
             if os.path.exists(data_output_dir):
-                shutil.rmtree(image_output_dir)
+                shutil.rmtree(data_output_dir)
 
             os.makedirs(data_output_dir)
 
@@ -77,37 +83,46 @@ class COCOConverter(BaseConverter):
             annotation_id = 0
 
             for image_name in image_set:
-
                 image_full_path = os.path.join(image_dir, image_name)
                 annotation = data[image_name]
                 image = Image.open(image_full_path)
                 image_width, image_height = image.size
 
-                images_info.append({
-                    "id": len(images_info) + 1,
-                    "file_name": image_name,
-                    "width": image_width,
-                    "height": image_height
-                })
+                images_info.append(
+                    {
+                        "id": len(images_info) + 1,
+                        "file_name": image_name,
+                        "width": image_width,
+                        "height": image_height,
+                    }
+                )
 
                 for box, label in zip(annotation["boxes"], annotation["labels"]):
-                    annotations.append({
-                        "id": annotation_id,
-                        "image_id": len(images_info),
-                        "category_id": label,
-                        "bbox": [box[0], box[1], box[2] - box[0], box[3] - box[1]],
-                        "segmentation": None, #[[box[0], box[1], box[2], box[1], box[2], box[3], box[0], box[3]]], # bbox mask
-                        "area": (box[2] - box[0]) * (box[3] - box[1]),
-                        "iscrowd": 0
-                    })
+                    annotations.append(
+                        {
+                            "id": annotation_id,
+                            "image_id": len(images_info),
+                            "category_id": label,
+                            "bbox": [box[0], box[1], box[2] - box[0], box[3] - box[1]],
+                            "segmentation": None,  # [[box[0], box[1], box[2], box[1], box[2], box[3], box[0], box[3]]], # bbox mask
+                            "area": (box[2] - box[0]) * (box[3] - box[1]),
+                            "iscrowd": 0,
+                        }
+                    )
                     annotation_id += 1
 
                 if copy_files:
-                    shutil.copy(image_full_path, os.path.join(data_output_dir, image_name))
+                    shutil.copy(
+                        image_full_path, os.path.join(data_output_dir, image_name)
+                    )
                 else:
-                    shutil.move(image_full_path, os.path.join(data_output_dir, image_name))
+                    shutil.move(
+                        image_full_path, os.path.join(data_output_dir, image_name)
+                    )
 
-            self.save_labels(dataset_output_dir, images_info, annotations, data["class_names"])
+            self.save_labels(
+                dataset_output_dir, images_info, annotations, data["class_names"]
+            )
 
     def save_labels(self, dataset_output_dir, images_info, annotations, class_names):
         """Saves the labels to a JSON file.
@@ -122,8 +137,13 @@ class COCOConverter(BaseConverter):
         """
 
         with open(os.path.join(dataset_output_dir, "labels.json"), "w") as f:
-                    json.dump({
-                        "images": images_info,
-                        "annotations": annotations,
-                        "categories": [{"id": i, "name": name} for i, name in enumerate(class_names)]
-                    }, f)
+            json.dump(
+                {
+                    "images": images_info,
+                    "annotations": annotations,
+                    "categories": [
+                        {"id": i, "name": name} for i, name in enumerate(class_names)
+                    ],
+                },
+                f,
+            )

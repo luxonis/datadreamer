@@ -2,10 +2,11 @@ from __future__ import annotations
 
 import os
 import shutil
-import json
+
 from PIL import Image
 
 from datadreamer.utils import BaseConverter
+
 
 class YOLOConverter(BaseConverter):
     """Class for converting a dataset to YOLO format.
@@ -27,8 +28,6 @@ class YOLOConverter(BaseConverter):
     │   ├── images
     │   ├── labels
     """
-
-
 
     def convert(self, dataset_dir, output_dir, split_ratios, copy_files=True):
         """Converts a dataset into a format suitable for training with YOLO, including
@@ -64,8 +63,8 @@ class YOLOConverter(BaseConverter):
         return [x_center, y_center, width, height]
 
     def process_data(self, data, image_dir, output_dir, split_ratios, copy_files=True):
-        """Processes the data by dividing it into training and validation sets, and saves
-        the images and labels in YOLO format.
+        """Processes the data by dividing it into training and validation sets, and
+        saves the images and labels in YOLO format.
 
         Args:
         - data (dict): The dictionary containing image annotations.
@@ -79,10 +78,16 @@ class YOLOConverter(BaseConverter):
         """
         images = list(data.keys())
         images.remove("class_names")
-        
-        train_images, val_images, test_images = BaseConverter.make_splits(images, split_ratios)
 
-        for dataset_type, image_set in [("train", train_images), ("val", val_images), ("test", test_images)]:
+        train_images, val_images, test_images = BaseConverter.make_splits(
+            images, split_ratios
+        )
+
+        for dataset_type, image_set in [
+            ("train", train_images),
+            ("val", val_images),
+            ("test", test_images),
+        ]:
             image_output_dir = os.path.join(output_dir, dataset_type, "images")
             label_output_dir = os.path.join(output_dir, dataset_type, "labels")
 
@@ -107,19 +112,25 @@ class YOLOConverter(BaseConverter):
                 )
                 with open(label_file, "w") as f:
                     for box, label in zip(annotation["boxes"], annotation["labels"]):
-                        yolo_box = self.convert_to_yolo_format(box, image_width, image_height)
+                        yolo_box = self.convert_to_yolo_format(
+                            box, image_width, image_height
+                        )
                         f.write(f"{label} {' '.join(map(str, yolo_box))}\n")
 
                 if copy_files:
-                    shutil.copy(image_full_path, os.path.join(image_output_dir, image_name))
+                    shutil.copy(
+                        image_full_path, os.path.join(image_output_dir, image_name)
+                    )
                 else:
-                    shutil.move(image_full_path, os.path.join(image_output_dir, image_name))
+                    shutil.move(
+                        image_full_path, os.path.join(image_output_dir, image_name)
+                    )
 
         self.create_data_yaml(output_dir, data["class_names"])
 
-
     def create_data_yaml(self, root_dir, class_names):
-        """Creates a YAML file for dataset configuration, specifying paths and class names.
+        """Creates a YAML file for dataset configuration, specifying paths and class
+        names.
 
         Args:
         - root_dir (str): The root directory where the dataset is located.

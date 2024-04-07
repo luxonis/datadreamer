@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 import argparse
-import os
 import json
+import os
 import shutil
 
+
 def merge_datasets(input_dirs, output_dir, copy_files=True):
-    
     config_tasks = []
     config_classes = []
     random_seeds = []
@@ -36,7 +36,6 @@ def merge_datasets(input_dirs, output_dir, copy_files=True):
 
     annotations_merged = {}
     for i, input_dir in enumerate(input_dirs):
-
         with open(os.path.join(input_dir, "annotations.json")) as f:
             annotations = json.load(f)
             class_names = annotations.pop("class_names")
@@ -44,28 +43,41 @@ def merge_datasets(input_dirs, output_dir, copy_files=True):
 
         # Copy or move generation_args.json files
         if copy_files:
-            shutil.copy(os.path.join(input_dir, "generation_args.json"), os.path.join(output_dir, f"generation_args_{i}.json"))
+            shutil.copy(
+                os.path.join(input_dir, "generation_args.json"),
+                os.path.join(output_dir, f"generation_args_{i}.json"),
+            )
         else:
-            shutil.move(os.path.join(input_dir, "generation_args.json"), os.path.join(output_dir, f"generation_args_{i}.json"))
+            shutil.move(
+                os.path.join(input_dir, "generation_args.json"),
+                os.path.join(output_dir, f"generation_args_{i}.json"),
+            )
 
         # Copy or move images
         for image_path in annotations:
             if copy_files:
-                shutil.copy(os.path.join(input_dir, image_path), os.path.join(output_dir, image_path))
+                shutil.copy(
+                    os.path.join(input_dir, image_path),
+                    os.path.join(output_dir, image_path),
+                )
             else:
-                shutil.move(os.path.join(input_dir, image_path), os.path.join(output_dir, image_path))
+                shutil.move(
+                    os.path.join(input_dir, image_path),
+                    os.path.join(output_dir, image_path),
+                )
 
     annotations_merged["class_names"] = class_names
     with open(os.path.join(output_dir, "annotations.json"), "w") as f:
         json.dump(annotations_merged, f, indent=4)
-   
+
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="Merge raw datasets"
-    )
+    parser = argparse.ArgumentParser(description="Merge raw datasets")
     parser.add_argument(
-        "--input_dirs", type=str, nargs="+", help="Directories containing the images and annotations."
+        "--input_dirs",
+        type=str,
+        nargs="+",
+        help="Directories containing the images and annotations.",
     )
     parser.add_argument(
         "--output_dir",
@@ -73,7 +85,10 @@ def main():
         help="Directory where the merged dataset will be saved.",
     )
     parser.add_argument(
-        "--copy_files", type=bool, default=True, help="Copy files to output directory, otherwise move them."
+        "--copy_files",
+        type=bool,
+        default=True,
+        help="Copy files to output directory, otherwise move them.",
     )
 
     args = parser.parse_args()

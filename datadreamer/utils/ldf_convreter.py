@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-import json
 import os
-from PIL import Image
+
 from luxonis_ml.data import LuxonisDataset
+from PIL import Image
 
 from datadreamer.utils import BaseConverter
 
@@ -32,7 +32,7 @@ class LDFConverter(BaseConverter):
 
         def dataset_generator():
             # find image paths and load COCO annotations
-            
+
             for image_path in image_paths:
                 image_full_path = os.path.join(dataset_dir, image_path)
                 width, height = Image.open(image_full_path).size
@@ -55,7 +55,7 @@ class LDFConverter(BaseConverter):
                             "type": "box",
                             "value": (x / width, y / height, w / width, h / height),
                         }
-        
+
         dataset_name = os.path.basename(output_dir)
         if LuxonisDataset.exists(dataset_name):
             dataset = LuxonisDataset(dataset_name)

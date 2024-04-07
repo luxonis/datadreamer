@@ -1,16 +1,13 @@
 from __future__ import annotations
 
 import json
-import numpy as np
-
 from abc import ABC, abstractmethod
 
-class BaseConverter(ABC):
-    """Abstract base class for converter.
-    """
+import numpy as np
 
-    def __init__(self):
-        pass
+
+class BaseConverter(ABC):
+    """Abstract base class for converter."""
 
     @abstractmethod
     def convert(self, dataset_dir, output_dir, split_ratios, copy_files=True):
@@ -27,7 +24,7 @@ class BaseConverter(ABC):
         No return value.
         """
         pass
-    
+
     @staticmethod
     def read_annotations(annotation_path):
         """Reads annotations from a JSON file located at the specified path.

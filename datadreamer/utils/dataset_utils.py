@@ -1,9 +1,9 @@
 import json
 import os
-from PIL import Image
-
 
 from luxonis_ml.data import LuxonisDataset
+from PIL import Image
+
 
 def save_annotations_to_json(
     image_paths,
@@ -15,9 +15,9 @@ def save_annotations_to_json(
 ):
     annotations = {}
     for i in range(len(image_paths)):
-    #for image_path, bboxes, labels in zip(image_paths, boxes_list, labels_list):
+        # for image_path, bboxes, labels in zip(image_paths, boxes_list, labels_list):
         image_name = os.path.basename(image_paths[i])
-        #image_name = os.path.basename(image_path)
+        # image_name = os.path.basename(image_path)
         labels = labels_list[i]
         annotations[image_name] = {
             "labels": labels.tolist(),
@@ -32,11 +32,15 @@ def save_annotations_to_json(
     with open(os.path.join(save_dir, file_name), "w") as f:
         json.dump(annotations, f, indent=4)
 
-def convert_to_ldf(image_paths, labels_list, boxes_list, save_dir, class_names, split_ratios):
+
+def convert_to_ldf(
+    image_paths, labels_list, boxes_list, save_dir, class_names, split_ratios
+):
     width, height = Image.open(image_paths[0]).size
+
     def dataset_generator():
         # find image paths and load COCO annotations
-        
+
         for i in range(len(image_paths)):
             image_path = image_paths[i]
             labels = labels_list[i]
@@ -58,7 +62,7 @@ def convert_to_ldf(image_paths, labels_list, boxes_list, save_dir, class_names, 
                         "type": "box",
                         "value": (x / width, y / height, w / width, h / height),
                     }
-    
+
     dataset_name = os.path.basename(save_dir)
     if LuxonisDataset.exists(dataset_name):
         dataset = LuxonisDataset(dataset_name)
@@ -70,5 +74,3 @@ def convert_to_ldf(image_paths, labels_list, boxes_list, save_dir, class_names, 
     dataset.add(dataset_generator)
 
     dataset.make_splits(split_ratios)
-
-
