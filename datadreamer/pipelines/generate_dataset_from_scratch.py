@@ -579,7 +579,11 @@ def main():
     # Convert annotations to LuxonisDataset format
     if args.dataset_format == "luxonis-dataset":
         convert_dataset.convert_dataset(
-            args.save_dir, args.save_dir, "luxonis-dataset", args.split_ratios, copy_files=False
+            args.save_dir,
+            args.save_dir,
+            "luxonis-dataset",
+            args.split_ratios,
+            copy_files=False,
         )
 
 

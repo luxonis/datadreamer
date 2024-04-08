@@ -1,9 +1,6 @@
 import json
 import os
 
-from luxonis_ml.data import LuxonisDataset
-from PIL import Image
-
 
 def save_annotations_to_json(
     image_paths,
@@ -31,4 +28,3 @@ def save_annotations_to_json(
     # Save to JSON file
     with open(os.path.join(save_dir, file_name), "w") as f:
         json.dump(annotations, f, indent=4)
-
