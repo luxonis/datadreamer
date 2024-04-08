@@ -18,8 +18,7 @@ jobs:
           context: .
           push: true
           tags: |
-            ghcr.io/${{ github.repository_owner }}/${{ github.repository_name }}:${{ github.event.release.tag_name }}
-            ghcr.io/${{ github.repository_owner }}/${{ github.repository_name }}:latest
+            ghcr.io/luxonis/datadreamer:latest
         env:
           DOCKER_BUILDKIT: 1
           DOCKER_USERNAME: ${{ github.repository_owner }}
