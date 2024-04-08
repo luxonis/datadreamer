@@ -10,8 +10,7 @@ from datadreamer.utils import BaseConverter
 
 class LDFConverter(BaseConverter):
     def convert(self, dataset_dir, output_dir, split_ratios, copy_files=True):
-        """Converts a dataset into a format suitable for training with YOLO, including
-        creating training and validation splits.
+        """Converts a dataset into a LuxonisDataset format.
 
         Args:
         - dataset_dir (str): The directory where the source dataset is located.
