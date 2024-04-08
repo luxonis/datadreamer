@@ -152,7 +152,7 @@ datadreamer --save_dir <directory> --class_names <objects> --prompts_number <num
 ### 🔧 Additional Parameters
 
 - `--task`: Choose between detection and classification. Default is `detection`.
-- `--dataset_format`: Format of the dataset. Defaults to `raw`. Supported values: `raw`, `yolo`, `coco`, `ldf`.
+- `--dataset_format`: Format of the dataset. Defaults to `raw`. Supported values: `raw`, `yolo`, `coco`, `luxonis-dataset`.
 - `--split_ratios`: Split ratios for train, validation, and test sets. Defaults to `[0.8, 0.1, 0.1]`.
 - `--num_objects_range`: Range of objects in a prompt. Default is 1 to 3.
 - `--prompt_generator`: Choose between `simple`, `lm` (language model) and `tiny` (tiny LM). Default is `simple`.

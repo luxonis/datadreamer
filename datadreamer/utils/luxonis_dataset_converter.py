@@ -8,7 +8,7 @@ from PIL import Image
 from datadreamer.utils import BaseConverter
 
 
-class LDFConverter(BaseConverter):
+class LuxonisDatasetConverter(BaseConverter):
     def convert(self, dataset_dir, output_dir, split_ratios, copy_files=True):
         """Converts a dataset into a LuxonisDataset format.
 

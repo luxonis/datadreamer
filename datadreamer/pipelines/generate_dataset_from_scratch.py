@@ -120,7 +120,7 @@ def parse_args():
         "--dataset_format",
         type=str,
         default="raw",
-        choices=["raw", "yolo", "coco", "ldf"],
+        choices=["raw", "yolo", "coco", "luxonis-dataset"],
         help="Dataset format to use",
     )
     parser.add_argument(
@@ -576,10 +576,10 @@ def main():
                 copy_files=False,
             )
 
-    # Convert annotations to LDF format
-    if args.dataset_format == "ldf":
+    # Convert annotations to LuxonisDataset format
+    if args.dataset_format == "luxonis-dataset":
         convert_dataset.convert_dataset(
-            args.save_dir, args.save_dir, "ldf", args.split_ratios, copy_files=False
+            args.save_dir, args.save_dir, "luxonis-dataset", args.split_ratios, copy_files=False
         )
 
 
