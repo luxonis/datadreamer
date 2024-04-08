@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import List, Tuple
 
 import numpy as np
@@ -18,6 +20,7 @@ class OWLv2Annotator(BaseAnnotator):
         model (Owlv2ForObjectDetection): The OWLv2 model for object detection.
         processor (Owlv2Processor): The processor for the OWLv2 model.
         device (str): The device on which the model will run ('cuda' for GPU, 'cpu' for CPU).
+        size (str): The size of the OWLv2 model to use ('base' or 'large').
 
     Methods:
         _init_model(): Initializes the OWLv2 model.
@@ -30,6 +33,7 @@ class OWLv2Annotator(BaseAnnotator):
         self,
         seed: float = 42,
         device: str = "cuda",
+        size: str = "base",
     ) -> None:
         """Initializes the OWLv2Annotator with a specific seed and device.
 
@@ -38,6 +42,7 @@ class OWLv2Annotator(BaseAnnotator):
             device (str): The device to run the model on. Defaults to 'cuda'.
         """
         super().__init__(seed)
+        self.size = size
         self.model = self._init_model()
         self.processor = self._init_processor()
         self.device = device
@@ -49,6 +54,10 @@ class OWLv2Annotator(BaseAnnotator):
         Returns:
             Owlv2ForObjectDetection: The initialized OWLv2 model.
         """
+        if self.size == "large":
+            return Owlv2ForObjectDetection.from_pretrained(
+                "google/owlv2-large-patch14-ensemble"
+            )
         return Owlv2ForObjectDetection.from_pretrained(
             "google/owlv2-base-patch16-ensemble"
         )
@@ -59,6 +68,10 @@ class OWLv2Annotator(BaseAnnotator):
         Returns:
             Owlv2Processor: The initialized processor.
         """
+        if self.size == "large":
+            return Owlv2Processor.from_pretrained(
+                "google/owlv2-large-patch14-ensemble", do_pad=False, do_resize=False
+            )
         return Owlv2Processor.from_pretrained(
             "google/owlv2-base-patch16-ensemble", do_pad=False, do_resize=False
         )
@@ -84,7 +97,8 @@ class OWLv2Annotator(BaseAnnotator):
         target_sizes = torch.Tensor(images[0].size[::-1]).repeat((n, 1)).to(self.device)
 
         # resize the images to the model's input size
-        images = [images[i].resize((960, 960)) for i in range(n)]
+        img_size = (1008, 1008) if self.size == "large" else (960, 960)
+        images = [images[i].resize(img_size) for i in range(n)]
         inputs = self.processor(
             text=batched_prompts,
             images=images,
@@ -143,6 +157,7 @@ class OWLv2Annotator(BaseAnnotator):
         images: List[PIL.Image.Image],
         prompts: List[str],
         conf_threshold: float = 0.1,
+        iou_threshold: float = 0.2,
         use_tta: bool = False,
         synonym_dict: dict[str, List[str]] | None = None,
     ) -> Tuple[List[np.ndarray], List[np.ndarray], List[np.ndarray]]:
@@ -152,6 +167,7 @@ class OWLv2Annotator(BaseAnnotator):
             images: The images to be annotated.
             prompts: Prompts to guide the annotation.
             conf_threshold (float, optional): Confidence threshold for the annotations. Defaults to 0.1.
+            iou_threshold (float, optional): Intersection over union threshold for non-maximum suppression. Defaults to 0.2.
             use_tta (bool, optional): Flag to apply test-time augmentation. Defaults to False.
             synonym_dict (dict, optional): Dictionary for handling synonyms in labels. Defaults to None.
 
@@ -231,7 +247,9 @@ class OWLv2Annotator(BaseAnnotator):
 
             # output is a list of detections, each item is one tensor with shape (num_boxes, 6), 6 is for [xyxy, conf, cls].
             output = non_max_suppression(
-                all_boxes_cat.unsqueeze(0), conf_thres=conf_threshold, iou_thres=0.2
+                all_boxes_cat.unsqueeze(0),
+                conf_thres=conf_threshold,
+                iou_thres=iou_threshold,
             )
 
             output_boxes = output[0][:, :4]
@@ -266,3 +284,16 @@ class OWLv2Annotator(BaseAnnotator):
         if empty_cuda_cache:
             with torch.no_grad():
                 torch.cuda.empty_cache()
+
+
+if __name__ == "__main__":
+    import requests
+    from PIL import Image
+
+    url = "https://ultralytics.com/images/bus.jpg"
+    im = Image.open(requests.get(url, stream=True).raw)
+    annotator = OWLv2Annotator(device="cpu", size="large")
+    final_boxes, final_scores, final_labels = annotator.annotate_batch(
+        [im], ["robot", "horse"]
+    )
+    annotator.release()

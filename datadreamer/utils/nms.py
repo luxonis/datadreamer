@@ -2,6 +2,7 @@
 # -*- coding:utf-8 -*-
 # The code is based on
 # https://github.com/ultralytics/yolov5/blob/master/utils/general.py
+from __future__ import annotations
 
 import os
 import time

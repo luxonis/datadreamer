@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import argparse
 import json
 import os
@@ -9,7 +11,7 @@ import torch
 from PIL import Image
 from tqdm import tqdm
 
-from datadreamer.dataset_annotation import OWLv2Annotator
+from datadreamer.dataset_annotation import CLIPAnnotator, OWLv2Annotator
 from datadreamer.image_generation import (
     StableDiffusionImageGenerator,
     StableDiffusionLightningImageGenerator,
@@ -17,9 +19,10 @@ from datadreamer.image_generation import (
 )
 from datadreamer.prompt_generation import (
     LMPromptGenerator,
+    LMSynonymGenerator,
     SimplePromptGenerator,
-    SynonymGenerator,
     TinyLlamaLMPromptGenerator,
+    WordNetSynonymGenerator,
 )
 
 prompt_generators = {
@@ -28,13 +31,19 @@ prompt_generators = {
     "tiny": TinyLlamaLMPromptGenerator,
 }
 
+synonym_generators = {
+    "llm": LMSynonymGenerator,
+    "wordnet": WordNetSynonymGenerator,
+}
+
 image_generators = {
     "sdxl": StableDiffusionImageGenerator,
     "sdxl-turbo": StableDiffusionTurboImageGenerator,
     "sdxl-lightning": StableDiffusionLightningImageGenerator,
 }
 
-annotators = {"owlv2": OWLv2Annotator}
+det_annotators = {"owlv2": OWLv2Annotator}
+clf_annotators = {"clip": CLIPAnnotator}
 
 
 def parse_args():
@@ -61,6 +70,12 @@ def parse_args():
         nargs="+",
         default=["bear", "bicycle", "bird", "person"],
         help="List of object names for prompt generation",
+    )
+
+    parser.add_argument(
+        "--annotate_only",
+        action="store_true",
+        help="Only annotate the images without generating new ones, prompt and image generator will be skipped.",
     )
 
     parser.add_argument(
@@ -93,15 +108,51 @@ def parse_args():
         "--image_annotator",
         type=str,
         default="owlv2",
-        choices=["owlv2"],
+        choices=["owlv2", "clip"],
         help="Image annotator to use",
+    )
+
+    parser.add_argument(
+        "--synonym_generator",
+        type=str,
+        default="none",
+        choices=["none", "llm", "wordnet"],
+        help="Image annotator to use",
+    )
+
+    parser.add_argument(
+        "--negative_prompt",
+        type=str,
+        default="cartoon, blue skin, painting, scrispture, golden, illustration, worst quality, low quality, normal quality:2, unrealistic dream, low resolution,  static, sd character, low quality, low resolution, greyscale, monochrome, nose, cropped, lowres, jpeg artifacts, deformed iris, deformed pupils, bad eyes, semi-realistic worst quality, bad lips, deformed mouth, deformed face, deformed fingers, bad anatomy",
+        help="Negative prompt to guide the generation away from certain features",
+    )
+
+    parser.add_argument(
+        "--prompt_suffix",
+        type=str,
+        default=", hd, 8k, highly detailed",
+        help="Suffix to add to every image generation prompt, e.g., for adding details like resolution",
+    )
+
+    parser.add_argument(
+        "--prompt_prefix",
+        type=str,
+        default="",
+        help="Prefix to add to every image generation prompt",
     )
 
     parser.add_argument(
         "--conf_threshold",
         type=float,
         default=0.15,
-        help="Confidence threshold for object detection",
+        help="Confidence threshold for annotation",
+    )
+
+    parser.add_argument(
+        "--annotation_iou_threshold",
+        type=float,
+        default=0.2,
+        help="Intersection over Union (IoU) threshold for annotation",
     )
 
     parser.add_argument(
@@ -109,13 +160,6 @@ def parse_args():
         default=False,
         action="store_true",
         help="Whether to use test time augmentation for object detection",
-    )
-
-    parser.add_argument(
-        "--enhance_class_names",
-        default=False,
-        action="store_true",
-        help="Whether to enhance class names with synonyms",
     )
 
     parser.add_argument(
@@ -138,6 +182,14 @@ def parse_args():
         default="none",
         choices=["none", "4bit"],
         help="Quantization to use for Mistral language model",
+    )
+
+    parser.add_argument(
+        "--annotator_size",
+        type=str,
+        default="base",
+        choices=["base", "large"],
+        help="Size of the annotator model to use",
     )
 
     parser.add_argument(
@@ -190,6 +242,9 @@ def check_args(args):
     ):
         raise ValueError("--class_names must be a non-empty list of strings")
 
+    if args.annotate_only and not args.task == "detection":
+        raise ValueError("--annotate_only can only be used with --task=detection")
+
     # Check prompts_number
     if args.prompts_number <= 0:
         raise ValueError("--prompts_number must be a positive integer")
@@ -213,6 +268,10 @@ def check_args(args):
     # Check conf_threshold
     if not 0 <= args.conf_threshold <= 1:
         raise ValueError("--conf_threshold must be between 0 and 1")
+
+    # Check annotation_iou_threshold
+    if not 0 <= args.annotation_iou_threshold <= 1:
+        raise ValueError("--annotation_iou_threshold must be between 0 and 1")
 
     # Check image_tester_patience
     if args.image_tester_patience < 0:
@@ -248,6 +307,17 @@ def check_args(args):
     # Check seed
     if args.seed < 0:
         raise ValueError("--seed must be a non-negative integer")
+
+    # Check correct annotation and task
+    if args.task == "detection" and args.image_annotator not in det_annotators:
+        raise ValueError(
+            "--image_annotator must be one of the available annotators for detection task"
+        )
+
+    if args.task == "classification" and args.image_annotator not in clf_annotators:
+        raise ValueError(
+            "--image_annotator must be one of the available annotators for classification task"
+        )
 
 
 def save_det_annotations_to_json(
@@ -305,75 +375,106 @@ def main():
     with open(os.path.join(save_dir, "generation_args.json"), "w") as f:
         json.dump(vars(args), f, indent=4)
 
-    # Prompt generation
-    prompt_generator_class = prompt_generators[args.prompt_generator]
-    prompt_generator = prompt_generator_class(
-        class_names=args.class_names,
-        prompts_number=args.prompts_number,
-        num_objects_range=args.num_objects_range,
-        seed=args.seed,
-        device=args.device,
-        quantization=args.lm_quantization,
-        batch_size=args.batch_size_prompt,
-    )
-    generated_prompts = prompt_generator.generate_prompts()
-    prompt_generator.save_prompts(
-        generated_prompts, os.path.join(save_dir, "prompts.json")
-    )
-    prompt_generator.release(empty_cuda_cache=True)
+    generated_prompts = None
+    image_paths = []
+
+    if not args.annotate_only:
+        # Prompt generation
+        prompt_generator_class = prompt_generators[args.prompt_generator]
+        prompt_generator = prompt_generator_class(
+            class_names=args.class_names,
+            prompts_number=args.prompts_number,
+            num_objects_range=args.num_objects_range,
+            seed=args.seed,
+            device=args.device,
+            quantization=args.lm_quantization,
+            batch_size=args.batch_size_prompt,
+        )
+        generated_prompts = prompt_generator.generate_prompts()
+        prompt_generator.save_prompts(
+            generated_prompts, os.path.join(save_dir, "prompts.json")
+        )
+        prompt_generator.release(empty_cuda_cache=True)
+
+        # Image generation
+        image_generator_class = image_generators[args.image_generator]
+        image_generator = image_generator_class(
+            prompt_prefix=args.prompt_prefix,
+            prompt_suffix=args.prompt_suffix,
+            negative_prompt=args.negative_prompt,
+            seed=args.seed,
+            use_clip_image_tester=args.use_image_tester,
+            image_tester_patience=args.image_tester_patience,
+            batch_size=args.batch_size_image,
+            device=args.device,
+        )
+
+        prompts = [p[1] for p in generated_prompts]
+        prompt_objects = [p[0] for p in generated_prompts]
+
+        num_generated_images = 0
+        for generated_images_batch in image_generator.generate_images(
+            prompts, prompt_objects
+        ):
+            for generated_image in generated_images_batch:
+                image_path = os.path.join(save_dir, f"image_{num_generated_images}.jpg")
+                generated_image.save(image_path)
+                image_paths.append(image_path)
+                num_generated_images += 1
+
+        image_generator.release(empty_cuda_cache=True)
+
+    else:
+        # Load image paths for annotation
+        for image_path in os.listdir(save_dir):
+            # Check file extension: jpg, png, jpeg
+            if image_path.lower().endswith((".jpg", ".png", ".jpeg", ".bmp", "webp")):
+                image_paths.append(os.path.join(save_dir, image_path))
 
     # Synonym generation
     synonym_dict = None
-    if args.enhance_class_names:
-        synonym_generator = SynonymGenerator(device=args.device)
+    if args.synonym_generator != "none":
+        synonym_generator_class = synonym_generators[args.synonym_generator]
+        synonym_generator = synonym_generator_class(device=args.device)
         synonym_dict = synonym_generator.generate_synonyms_for_list(args.class_names)
         synonym_generator.release(empty_cuda_cache=True)
         synonym_generator.save_synonyms(
             synonym_dict, os.path.join(save_dir, "synonyms.json")
         )
 
-    # Image generation
-    image_generator_class = image_generators[args.image_generator]
-    image_generator = image_generator_class(
-        seed=args.seed,
-        use_clip_image_tester=args.use_image_tester,
-        image_tester_patience=args.image_tester_patience,
-        batch_size=args.batch_size_image,
-        device=args.device,
-    )
-
-    prompts = [p[1] for p in generated_prompts]
-    prompt_objects = [p[0] for p in generated_prompts]
-
-    image_paths = []
-    num_generated_images = 0
-    for generated_images_batch in image_generator.generate_images(
-        prompts, prompt_objects
-    ):
-        for generated_image in generated_images_batch:
-            image_path = os.path.join(save_dir, f"image_{num_generated_images}.jpg")
-            generated_image.save(image_path)
-            image_paths.append(image_path)
-            num_generated_images += 1
-
-    image_generator.release(empty_cuda_cache=True)
-
     if args.task == "classification":
         # Classification annotation
+        annotator_class = clf_annotators[args.image_annotator]
+        annotator = annotator_class(device=args.device, size=args.annotator_size)
+
         labels_list = []
-        for prompt_objs in prompt_objects:
-            labels = []
-            for obj in prompt_objs:
-                labels.append(args.class_names.index(obj))
-            labels_list.append(np.unique(labels))
+        # Split image_paths into batches
+        image_batches = [
+            image_paths[i : i + args.batch_size_annotation]
+            for i in range(0, len(image_paths), args.batch_size_annotation)
+        ]
+
+        for image_batch in tqdm(
+            image_batches,
+            desc="Annotating images",
+            total=len(image_batches),
+        ):
+            images = [Image.open(image_path) for image_path in image_batch]
+            batch_labels = annotator.annotate_batch(
+                images,
+                args.class_names,
+                conf_threshold=args.conf_threshold,
+                synonym_dict=synonym_dict,
+            )
+            labels_list.extend(batch_labels)
 
         save_clf_annotations_to_json(
             image_paths, labels_list, args.class_names, save_dir
         )
     else:
         # Annotation
-        annotator_class = annotators[args.image_annotator]
-        annotator = annotator_class(device=args.device)
+        annotator_class = det_annotators[args.image_annotator]
+        annotator = annotator_class(device=args.device, size=args.annotator_size)
 
         boxes_list = []
         scores_list = []
@@ -395,6 +496,7 @@ def main():
                 images,
                 args.class_names,
                 conf_threshold=args.conf_threshold,
+                iou_threshold=args.annotation_iou_threshold,
                 use_tta=args.use_tta,
                 synonym_dict=synonym_dict,
             )
@@ -429,7 +531,10 @@ def main():
                         bbox=dict(facecolor="yellow", alpha=0.5),
                     )
                     # Add prompt text as title
+                if generated_prompts:
                     plt.title(generated_prompts[i * args.batch_size_annotation + j][1])
+                else:
+                    plt.title("Annotated image")
 
                 labels_list.append(np.array(labels))
 
