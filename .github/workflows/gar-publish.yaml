@@ -3,6 +3,7 @@
 name: Deploy single image to GAR (Google Artifact Registry)
 
 on:
+  workflow_dispatch:
   release:
     types: [created]
 env:
