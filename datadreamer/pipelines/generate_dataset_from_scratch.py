@@ -361,11 +361,14 @@ def main():
 
     # Directories for saving images and bboxes
     save_dir = args.save_dir
-    if os.path.exists(save_dir):
-        shutil.rmtree(save_dir)
-    os.makedirs(save_dir)
+    if not args.annotate_only:
+        if os.path.exists(save_dir):
+            shutil.rmtree(save_dir)
+        os.makedirs(save_dir)
 
     bbox_dir = os.path.join(save_dir, "bboxes_visualization")
+    if os.path.exists(bbox_dir):
+        shutil.rmtree(bbox_dir)
     os.makedirs(bbox_dir)
 
     # Save arguments
