@@ -1,6 +1,7 @@
 name: Docker Build and Publish
 
 on:
+  workflow_dispatch:
   release:
     types: [created]
 
