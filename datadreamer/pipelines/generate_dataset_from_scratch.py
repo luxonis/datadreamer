@@ -3,6 +3,8 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import shutil
+import uuid
 
 import matplotlib.patches as patches
 import matplotlib.pyplot as plt
@@ -24,6 +26,8 @@ from datadreamer.prompt_generation import (
     TinyLlamaLMPromptGenerator,
     WordNetSynonymGenerator,
 )
+from datadreamer.utils import convert_dataset
+from datadreamer.utils.dataset_utils import save_annotations_to_json
 
 prompt_generators = {
     "simple": SimplePromptGenerator,
@@ -110,6 +114,21 @@ def parse_args():
         default="owlv2",
         choices=["owlv2", "clip"],
         help="Image annotator to use",
+    )
+
+    parser.add_argument(
+        "--dataset_format",
+        type=str,
+        default="raw",
+        choices=["raw", "yolo", "coco", "luxonis-dataset"],
+        help="Dataset format to use",
+    )
+    parser.add_argument(
+        "--split_ratios",
+        type=float,
+        nargs="+",
+        default=[0.8, 0.1, 0.1],
+        help="Train-validation-test split ratios (default: 0.8, 0.1, 0.1).",
     )
 
     parser.add_argument(
@@ -319,57 +338,38 @@ def check_args(args):
             "--image_annotator must be one of the available annotators for classification task"
         )
 
+    # Check coorect task and dataset_format
+    if args.task == "classification" and args.dataset_format in ["coco", "yolo"]:
+        raise ValueError(
+            "--dataset_format must be one of the available dataset formats for classification task"
+        )
 
-def save_det_annotations_to_json(
-    image_paths,
-    boxes_list,
-    labels_list,
-    class_names,
-    save_dir,
-    file_name="annotations.json",
-):
-    annotations = {}
-    for image_path, bboxes, labels in zip(image_paths, boxes_list, labels_list):
-        image_name = os.path.basename(image_path)
-        annotations[image_name] = {
-            "boxes": bboxes.tolist(),
-            "labels": labels.tolist(),
-        }
-    annotations["class_names"] = class_names
-
-    # Save to JSON file
-    with open(os.path.join(save_dir, file_name), "w") as f:
-        json.dump(annotations, f, indent=4)
-
-
-def save_clf_annotations_to_json(
-    image_paths, labels_list, class_names, save_dir, file_name="annotations.json"
-):
-    annotations = {}
-    for image_path, labels in zip(image_paths, labels_list):
-        image_name = os.path.basename(image_path)
-        annotations[image_name] = {
-            "labels": labels.tolist(),
-        }
-    annotations["class_names"] = class_names
-
-    # Save to JSON file
-    with open(os.path.join(save_dir, file_name), "w") as f:
-        json.dump(annotations, f, indent=4)
+    # Check split_ratios
+    if (
+        len(args.split_ratios) != 3
+        or not all(0 <= ratio <= 1 for ratio in args.split_ratios)
+        or sum(args.split_ratios) != 1
+    ):
+        raise ValueError(
+            "--split_ratios must be a list of three floats that sum up to 1"
+        )
 
 
 def main():
     args = parse_args()
     check_args(args)
 
-    save_dir = args.save_dir
-
     # Directories for saving images and bboxes
-    bbox_dir = os.path.join(save_dir, "bboxes_visualization")
-    if not os.path.exists(save_dir):
+    save_dir = args.save_dir
+    if not args.annotate_only:
+        if os.path.exists(save_dir):
+            shutil.rmtree(save_dir)
         os.makedirs(save_dir)
-    if not os.path.exists(bbox_dir):
-        os.makedirs(bbox_dir)
+
+    bbox_dir = os.path.join(save_dir, "bboxes_visualization")
+    if os.path.exists(bbox_dir):
+        shutil.rmtree(bbox_dir)
+    os.makedirs(bbox_dir)
 
     # Save arguments
     with open(os.path.join(save_dir, "generation_args.json"), "w") as f:
@@ -417,7 +417,9 @@ def main():
             prompts, prompt_objects
         ):
             for generated_image in generated_images_batch:
-                image_path = os.path.join(save_dir, f"image_{num_generated_images}.jpg")
+                unique_id = uuid.uuid4().hex
+                unique_filename = f"image_{num_generated_images}_{unique_id}.jpg"
+                image_path = os.path.join(save_dir, unique_filename)
                 generated_image.save(image_path)
                 image_paths.append(image_path)
                 num_generated_images += 1
@@ -442,12 +444,15 @@ def main():
             synonym_dict, os.path.join(save_dir, "synonyms.json")
         )
 
+    boxes_list = []
+    scores_list = []
+    labels_list = []
+
     if args.task == "classification":
         # Classification annotation
         annotator_class = clf_annotators[args.image_annotator]
         annotator = annotator_class(device=args.device, size=args.annotator_size)
 
-        labels_list = []
         # Split image_paths into batches
         image_batches = [
             image_paths[i : i + args.batch_size_annotation]
@@ -468,24 +473,22 @@ def main():
             )
             labels_list.extend(batch_labels)
 
-        save_clf_annotations_to_json(
-            image_paths, labels_list, args.class_names, save_dir
+        save_annotations_to_json(
+            image_paths=image_paths,
+            labels_list=labels_list,
+            class_names=args.class_names,
+            save_dir=save_dir,
         )
     else:
         # Annotation
         annotator_class = det_annotators[args.image_annotator]
         annotator = annotator_class(device=args.device, size=args.annotator_size)
 
-        boxes_list = []
-        scores_list = []
-        labels_list = []
-
         # Split image_paths into batches
         image_batches = [
             image_paths[i : i + args.batch_size_annotation]
             for i in range(0, len(image_paths), args.batch_size_annotation)
         ]
-
         for i, image_batch in tqdm(
             enumerate(image_batches),
             desc="Annotating images",
@@ -546,8 +549,44 @@ def main():
                 plt.close()
 
         # Save annotations as JSON files
-        save_det_annotations_to_json(
-            image_paths, boxes_list, labels_list, args.class_names, save_dir
+        save_annotations_to_json(
+            image_paths=image_paths,
+            labels_list=labels_list,
+            boxes_list=boxes_list,
+            class_names=args.class_names,
+            save_dir=save_dir,
+        )
+
+        if args.dataset_format == "yolo":
+            # Convert annotations to YOLO format
+            convert_dataset.convert_dataset(
+                args.save_dir,
+                args.save_dir,
+                "yolo",
+                args.split_ratios,
+                copy_files=False,
+                seed=args.seed,
+            )
+        # Convert annotations to COCO format
+        elif args.dataset_format == "coco":
+            convert_dataset.convert_dataset(
+                args.save_dir,
+                args.save_dir,
+                "coco",
+                args.split_ratios,
+                copy_files=False,
+                seed=args.seed,
+            )
+
+    # Convert annotations to LuxonisDataset format
+    if args.dataset_format == "luxonis-dataset":
+        convert_dataset.convert_dataset(
+            args.save_dir,
+            args.save_dir,
+            "luxonis-dataset",
+            args.split_ratios,
+            copy_files=False,
+            seed=args.seed,
         )
 
 
