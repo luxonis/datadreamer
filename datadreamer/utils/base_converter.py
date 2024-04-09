@@ -9,6 +9,9 @@ import numpy as np
 class BaseConverter(ABC):
     """Abstract base class for converter."""
 
+    def __init__(self, seed=42):
+        np.random.seed(seed)
+
     @abstractmethod
     def convert(self, dataset_dir, output_dir, split_ratios, copy_files=True):
         """Converts a dataset into another format.
@@ -39,19 +42,21 @@ class BaseConverter(ABC):
         return data
 
     @staticmethod
-    def make_splits(images, split_ratios):
+    def make_splits(images, split_ratios, shuffle=True):
         """Splits the list of images into training, validation, and test sets.
 
         Args:
         - images (list of str): A list of image paths.
         - split_ratios (list of float): The ratios to split the data into training, validation, and test sets.
+        - shuffle (bool, optional): Whether to shuffle the list of images. Defaults to True.
 
         Returns:
         - list of str: A list of image paths for the training set.
         - list of str: A list of image paths for the validation set.
         - list of str: A list of image paths for the test set.
         """
-        np.random.shuffle(images)
+        if shuffle:
+            np.random.shuffle(images)
 
         train_images = images[: int(len(images) * split_ratios[0])]
         val_images = images[

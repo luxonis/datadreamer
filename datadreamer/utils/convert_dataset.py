@@ -6,14 +6,14 @@ from datadreamer.utils import COCOConverter, LuxonisDatasetConverter, YOLOConver
 
 
 def convert_dataset(
-    input_dir, output_dir, dataset_format, split_ratios, copy_files=True
+    input_dir, output_dir, dataset_format, split_ratios, copy_files=True, seed=42
 ):
     if dataset_format == "yolo":
-        converter = YOLOConverter()
+        converter = YOLOConverter(seed=seed)
     elif dataset_format == "coco":
-        converter = COCOConverter()
+        converter = COCOConverter(seed=seed)
     elif dataset_format == "luxonis-dataset":
-        converter = LuxonisDatasetConverter()
+        converter = LuxonisDatasetConverter(seed=seed)
     else:
         raise ValueError(f"Invalid dataset format: {dataset_format}")
 
@@ -50,6 +50,12 @@ def main():
         type=bool,
         default=True,
         help="Copy files to output directory, otherwise move them.",
+    )
+    parser.add_argument(
+        "--seed",
+        type=int,
+        default=42,
+        help="Random seed for reproducibility.",
     )
 
     args = parser.parse_args()

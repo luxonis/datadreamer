@@ -565,6 +565,7 @@ def main():
                 "yolo",
                 args.split_ratios,
                 copy_files=False,
+                seed=args.seed,
             )
         # Convert annotations to COCO format
         elif args.dataset_format == "coco":
@@ -574,6 +575,7 @@ def main():
                 "coco",
                 args.split_ratios,
                 copy_files=False,
+                seed=args.seed,
             )
 
     # Convert annotations to LuxonisDataset format
@@ -584,6 +586,7 @@ def main():
             "luxonis-dataset",
             args.split_ratios,
             copy_files=False,
+            seed=args.seed,
         )
 
 

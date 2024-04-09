@@ -29,6 +29,9 @@ class YOLOConverter(BaseConverter):
     │   ├── labels
     """
 
+    def __init__(self, seed=42):
+        super().__init__(seed)
+
     def convert(self, dataset_dir, output_dir, split_ratios, copy_files=True):
         """Converts a dataset into a format suitable for training with YOLO, including
         creating training and validation splits.

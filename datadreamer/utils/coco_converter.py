@@ -28,6 +28,9 @@ class COCOConverter(BaseConverter):
     │   ├── labels.json
     """
 
+    def __init__(self, seed=42):
+        super().__init__(seed)
+
     def convert(self, dataset_dir, output_dir, split_ratios, copy_files=True):
         """Converts a dataset into a COCO format.
 
