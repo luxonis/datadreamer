@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import os
 import shutil
-from PIL import Image
+
 from datadreamer.utils import BaseConverter
+
 
 class SingleLabelClsConverter(BaseConverter):
     """Class for converting a dataset for single-label classification task.
@@ -47,8 +48,8 @@ class SingleLabelClsConverter(BaseConverter):
         self.process_data(data, dataset_dir, output_dir, split_ratios, copy_files)
 
     def process_data(self, data, image_dir, output_dir, split_ratios, copy_files=True):
-        """Processes the data by removing images with multiple labels, then dividing it into training and validation sets, and
-        saves the images with single labels.
+        """Processes the data by removing images with multiple labels, then dividing it
+        into training and validation sets, and saves the images with single labels.
 
         Args:
         - data (dict): The dictionary containing image annotations.
@@ -69,7 +70,6 @@ class SingleLabelClsConverter(BaseConverter):
         single_label_images = [img for img in images if len(data[img]["labels"]) == 1]
 
         print(f"Number of images with single label: {len(single_label_images)}")
-
 
         # Split the data into training, validation, and test sets
         train_images, val_images, test_images = BaseConverter.make_splits(
@@ -101,4 +101,3 @@ class SingleLabelClsConverter(BaseConverter):
                         image_full_path,
                         os.path.join(output_dir, dataset_type, label, image_name),
                     )
-
