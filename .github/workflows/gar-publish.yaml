@@ -13,6 +13,7 @@ env:
 jobs:
   push-store:
     name: Push the image to GAR
+    runs-on: ubuntu-latest
 
     steps:
       - name: 'Checkout GitHub Action'
