@@ -1,11 +1,15 @@
-import os
 import json
+import os
 import shutil
 import unittest
-from unittest.mock import patch, MagicMock
+
 from PIL import Image
-from datadreamer.utils import BaseConverter, COCOConverter, YOLOConverter, LuxonisDatasetConverter
-from luxonis_ml.data import LuxonisDataset
+
+from datadreamer.utils import (
+    BaseConverter,
+    COCOConverter,
+    YOLOConverter,
+)
 
 
 class TestBaseConverter(unittest.TestCase):
@@ -40,7 +44,9 @@ class TestBaseConverter(unittest.TestCase):
     def test_make_splits(self):
         images = ["0.jpg", "1.jpg"]
         split_ratios = [0.5, 0.5, 0.0]
-        train_images, val_images, test_images = BaseConverter.make_splits(images, split_ratios, shuffle=False)
+        train_images, val_images, test_images = BaseConverter.make_splits(
+            images, split_ratios, shuffle=False
+        )
 
         self.assertEqual(len(train_images), 1)
         self.assertEqual(len(val_images), 1)
@@ -70,7 +76,7 @@ class TestCOCOConverter(unittest.TestCase):
 
     def tearDown(self):
         shutil.rmtree(self.test_dir)
-        if hasattr(self, 'output_dir') and os.path.exists(self.output_dir):
+        if hasattr(self, "output_dir") and os.path.exists(self.output_dir):
             shutil.rmtree(self.output_dir)
 
     def create_sample_image(self, filename):
@@ -89,11 +95,15 @@ class TestCOCOConverter(unittest.TestCase):
         self.assertTrue(os.path.exists(os.path.join(self.output_dir, "test")))
 
         # Test whether labels.json files exist in all output directories
-        self.assertTrue(os.path.exists(os.path.join(self.output_dir, "train", "labels.json")))
+        self.assertTrue(
+            os.path.exists(os.path.join(self.output_dir, "train", "labels.json"))
+        )
         self.assertTrue(
             os.path.exists(os.path.join(self.output_dir, "validation", "labels.json"))
         )
-        self.assertTrue(os.path.exists(os.path.join(self.output_dir, "test", "labels.json")))
+        self.assertTrue(
+            os.path.exists(os.path.join(self.output_dir, "test", "labels.json"))
+        )
 
     def test_process_data(self):
         self.output_dir = "output_dir"
@@ -109,11 +119,15 @@ class TestCOCOConverter(unittest.TestCase):
         self.assertTrue(os.path.exists(os.path.join(self.output_dir, "test")))
 
         # Test whether labels.json files exist in all output directories
-        self.assertTrue(os.path.exists(os.path.join(self.output_dir, "train", "labels.json")))
+        self.assertTrue(
+            os.path.exists(os.path.join(self.output_dir, "train", "labels.json"))
+        )
         self.assertTrue(
             os.path.exists(os.path.join(self.output_dir, "validation", "labels.json"))
         )
-        self.assertTrue(os.path.exists(os.path.join(self.output_dir, "test", "labels.json")))
+        self.assertTrue(
+            os.path.exists(os.path.join(self.output_dir, "test", "labels.json"))
+        )
 
     def test_save_labels(self):
         self.output_dir = "output_dir"
@@ -156,8 +170,10 @@ class TestCOCOConverter(unittest.TestCase):
         self.assertEqual(saved_labels["images"], images_info)
         self.assertEqual(saved_labels["annotations"], annotations)
         self.assertEqual(
-            saved_labels["categories"], [{"id": i, "name": name} for i, name in enumerate(class_names)]
+            saved_labels["categories"],
+            [{"id": i, "name": name} for i, name in enumerate(class_names)],
         )
+
 
 class TestYOLOConverter(unittest.TestCase):
     def setUp(self):
@@ -180,7 +196,7 @@ class TestYOLOConverter(unittest.TestCase):
 
     def tearDown(self):
         shutil.rmtree(self.test_dir)
-        if hasattr(self, 'output_dir') and os.path.exists(self.output_dir):
+        if hasattr(self, "output_dir") and os.path.exists(self.output_dir):
             shutil.rmtree(self.output_dir)
 
     def create_sample_image(self, filename):
@@ -229,6 +245,7 @@ class TestYOLOConverter(unittest.TestCase):
             self.assertIn("test:", content)
             self.assertIn("nc: 2", content)
             self.assertIn("names: ['cat', 'dog']", content)
+
 
 if __name__ == "__main__":
     unittest.main()
