@@ -12,8 +12,7 @@ env:
 
 jobs:
   push-store:
-    name: Push single images
-    runs-on: buildjet-4vcpu-ubuntu-2204
+    name: Push the image to GAR
 
     steps:
       - name: 'Checkout GitHub Action'
