@@ -341,12 +341,12 @@ def check_args(args):
     # Check coorect task and dataset_format
     if args.task == "classification" and args.dataset_format in ["coco", "yolo"]:
         raise ValueError(
-            "--dataset_format must be one of the available dataset formats for classification task"
+            "--dataset_format must be one of the available dataset formats for classification task: raw, cls-single, luxonis-dataset"
         )
 
     if args.task == "detection" and args.dataset_format in ["cls-single"]:
         raise ValueError(
-            "--dataset_format must be one of the available dataset formats for detection task"
+            "--dataset_format must be one of the available dataset formats for detection task: raw, coco, yolo, luxonis-dataset"
         )
 
     # Check split_ratios
