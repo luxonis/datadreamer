@@ -2,7 +2,12 @@ from __future__ import annotations
 
 import argparse
 
-from datadreamer.utils import COCOConverter, LuxonisDatasetConverter, YOLOConverter
+from datadreamer.utils import (
+    COCOConverter,
+    LuxonisDatasetConverter,
+    SingleLabelClsConverter,
+    YOLOConverter,
+)
 
 
 def convert_dataset(
@@ -14,6 +19,8 @@ def convert_dataset(
         converter = COCOConverter(seed=seed)
     elif dataset_format == "luxonis-dataset":
         converter = LuxonisDatasetConverter(seed=seed)
+    elif dataset_format == "cls-single":
+        converter = SingleLabelClsConverter(seed=seed)
     else:
         raise ValueError(f"Invalid dataset format: {dataset_format}")
 
@@ -36,7 +43,7 @@ def main():
         "--dataset_format",
         type=str,
         default="yolo",
-        choices=["yolo", "coco", "luxonis-dataset"],
+        choices=["yolo", "coco", "luxonis-dataset", "cls-single"],
     )
     parser.add_argument(
         "--split_ratios",

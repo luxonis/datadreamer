@@ -8,6 +8,7 @@ from PIL import Image
 from datadreamer.utils import (
     BaseConverter,
     COCOConverter,
+    SingleLabelClsConverter,
     YOLOConverter,
 )
 
@@ -245,6 +246,84 @@ class TestYOLOConverter(unittest.TestCase):
             self.assertIn("test:", content)
             self.assertIn("nc: 2", content)
             self.assertIn("names: ['cat', 'dog']", content)
+
+
+class TestSingleLabelClsConverter(unittest.TestCase):
+    def setUp(self):
+        self.converter = SingleLabelClsConverter()
+        self.output_dir = "output_dir"
+        self.split_ratios = [0.6, 0.2, 0.2]
+        self.class_names = ["class_1", "class_2"]
+
+        # Create a temporary test dataset directory with annotations.json
+        self.dataset_dir = "test_dataset"
+        os.makedirs(self.dataset_dir)
+        self.image_size = (100, 100)
+        self.create_sample_image("image1.jpg")
+        self.create_sample_image("image2.jpg")
+        self.create_sample_image("image3.jpg")
+        annotations = {
+            "class_names": self.class_names,
+            "image1.jpg": {"labels": [0]},
+            "image2.jpg": {"labels": [1]},
+            "image3.jpg": {"labels": [0, 1]},  # Image with multiple labels
+        }
+        with open(os.path.join(self.dataset_dir, "annotations.json"), "w") as f:
+            json.dump(annotations, f)
+
+    def tearDown(self):
+        if os.path.exists(self.output_dir):
+            shutil.rmtree(self.output_dir)
+        if os.path.exists(self.dataset_dir):
+            shutil.rmtree(self.dataset_dir)
+
+    def create_sample_image(self, filename):
+        image = Image.new("RGB", self.image_size, color="white")
+        image.save(os.path.join(self.dataset_dir, filename))
+
+    def test_convert(self):
+        # Call the convert method
+        self.converter.convert(self.dataset_dir, self.output_dir, self.split_ratios)
+
+        # Check if output directories are created
+        for dataset_type in ["train", "val", "test"]:
+            for label in self.class_names:
+                self.assertTrue(
+                    os.path.exists(os.path.join(self.output_dir, dataset_type, label))
+                )
+
+        # Check if images with multiple labels are removed
+        self.assertFalse(
+            os.path.exists(
+                os.path.join(self.output_dir, "train", "class_1", "image3.jpg")
+            )
+        )
+        # Create a dummy annotations file
+        annotations = {
+            "class_names": self.class_names,
+            "image1.jpg": {"labels": [0]},
+            "image2.jpg": {"labels": [1]},
+            "image3.jpg": {"labels": [0, 1]},  # Image with multiple labels
+        }
+        with open(os.path.join(self.dataset_dir, "annotations.json"), "w") as f:
+            json.dump(annotations, f)
+
+        # Call the convert method
+        self.converter.convert(self.dataset_dir, self.output_dir, self.split_ratios)
+
+        # Check if output directories are created
+        for dataset_type in ["train", "val", "test"]:
+            for label in self.class_names:
+                self.assertTrue(
+                    os.path.exists(os.path.join(self.output_dir, dataset_type, label))
+                )
+
+        # Check if images with multiple labels are removed
+        self.assertFalse(
+            os.path.exists(
+                os.path.join(self.output_dir, "train", "class_1", "image3.jpg")
+            )
+        )
 
 
 if __name__ == "__main__":

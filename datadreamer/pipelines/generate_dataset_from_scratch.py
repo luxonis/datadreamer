@@ -120,7 +120,7 @@ def parse_args():
         "--dataset_format",
         type=str,
         default="raw",
-        choices=["raw", "yolo", "coco", "luxonis-dataset"],
+        choices=["raw", "yolo", "coco", "luxonis-dataset", "cls-single"],
         help="Dataset format to use",
     )
     parser.add_argument(
@@ -341,7 +341,12 @@ def check_args(args):
     # Check coorect task and dataset_format
     if args.task == "classification" and args.dataset_format in ["coco", "yolo"]:
         raise ValueError(
-            "--dataset_format must be one of the available dataset formats for classification task"
+            "--dataset_format must be one of the available dataset formats for classification task: raw, cls-single, luxonis-dataset"
+        )
+
+    if args.task == "detection" and args.dataset_format in ["cls-single"]:
+        raise ValueError(
+            "--dataset_format must be one of the available dataset formats for detection task: raw, coco, yolo, luxonis-dataset"
         )
 
     # Check split_ratios
@@ -479,6 +484,16 @@ def main():
             class_names=args.class_names,
             save_dir=save_dir,
         )
+
+        if args.dataset_format == "cls-single":
+            convert_dataset.convert_dataset(
+                args.save_dir,
+                args.save_dir,
+                "cls-single",
+                args.split_ratios,
+                copy_files=False,
+                seed=args.seed,
+            )
     else:
         # Annotation
         annotator_class = det_annotators[args.image_annotator]
