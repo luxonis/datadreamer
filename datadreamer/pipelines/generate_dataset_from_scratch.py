@@ -57,14 +57,12 @@ def parse_args():
     parser.add_argument(
         "--save_dir",
         type=str,
-        # default="generated_dataset",
         help="Directory to save generated images and annotations",
     )
 
     parser.add_argument(
         "--task",
         type=str,
-        # default="detection",
         choices=["detection", "classification"],
         help="Task to generate data for",
     )
@@ -73,7 +71,6 @@ def parse_args():
         "--class_names",
         type=str,
         nargs="+",
-        # default=["bear", "bicycle", "bird", "person"],
         help="List of object names for prompt generation",
     )
 
@@ -85,7 +82,6 @@ def parse_args():
     )
 
     parser.add_argument(
-        # "--prompts_number", type=int, default=10, help="Number of prompts to generate"
         "--prompts_number",
         type=int,
         help="Number of prompts to generate",
@@ -95,28 +91,24 @@ def parse_args():
         "--num_objects_range",
         type=int,
         nargs="+",
-        # default=[1, 3],
         help="Range of number of objects in a prompt",
     )
 
     parser.add_argument(
         "--prompt_generator",
         type=str,
-        # default="simple",
         choices=["simple", "lm", "tiny"],
         help="Prompt generator to use: simple or language model",
     )
     parser.add_argument(
         "--image_generator",
         type=str,
-        # default="sdxl-turbo",
         choices=["sdxl", "sdxl-turbo", "sdxl-lightning"],
         help="Image generator to use",
     )
     parser.add_argument(
         "--image_annotator",
         type=str,
-        # default="owlv2",
         choices=["owlv2", "clip"],
         help="Image annotator to use",
     )
@@ -124,7 +116,6 @@ def parse_args():
     parser.add_argument(
         "--dataset_format",
         type=str,
-        # default="raw",
         choices=["raw", "yolo", "coco", "luxonis-dataset", "cls-single"],
         help="Dataset format to use",
     )
@@ -132,14 +123,12 @@ def parse_args():
         "--split_ratios",
         type=float,
         nargs="+",
-        # default=[0.8, 0.1, 0.1],
         help="Train-validation-test split ratios (default: 0.8, 0.1, 0.1).",
     )
 
     parser.add_argument(
         "--synonym_generator",
         type=str,
-        # default="none",
         choices=["none", "llm", "wordnet"],
         help="Image annotator to use",
     )
@@ -147,35 +136,30 @@ def parse_args():
     parser.add_argument(
         "--negative_prompt",
         type=str,
-        # default="cartoon, blue skin, painting, scrispture, golden, illustration, worst quality, low quality, normal quality:2, unrealistic dream, low resolution,  static, sd character, low quality, low resolution, greyscale, monochrome, nose, cropped, lowres, jpeg artifacts, deformed iris, deformed pupils, bad eyes, semi-realistic worst quality, bad lips, deformed mouth, deformed face, deformed fingers, bad anatomy",
         help="Negative prompt to guide the generation away from certain features",
     )
 
     parser.add_argument(
         "--prompt_suffix",
         type=str,
-        # default=", hd, 8k, highly detailed",
         help="Suffix to add to every image generation prompt, e.g., for adding details like resolution",
     )
 
     parser.add_argument(
         "--prompt_prefix",
         type=str,
-        # default="",
         help="Prefix to add to every image generation prompt",
     )
 
     parser.add_argument(
         "--conf_threshold",
         type=float,
-        # default=0.15,
         help="Confidence threshold for annotation",
     )
 
     parser.add_argument(
         "--annotation_iou_threshold",
         type=float,
-        # default=0.2,
         help="Intersection over Union (IoU) threshold for annotation",
     )
 
@@ -196,14 +180,12 @@ def parse_args():
     parser.add_argument(
         "--image_tester_patience",
         type=int,
-        # default=1,
         help="Patience for image tester",
     )
 
     parser.add_argument(
         "--lm_quantization",
         type=str,
-        # default="none",
         choices=["none", "4bit"],
         help="Quantization to use for Mistral language model",
     )
@@ -211,7 +193,6 @@ def parse_args():
     parser.add_argument(
         "--annotator_size",
         type=str,
-        # default="base",
         choices=["base", "large"],
         help="Size of the annotator model to use",
     )
@@ -219,28 +200,24 @@ def parse_args():
     parser.add_argument(
         "--batch_size_prompt",
         type=int,
-        # default=64,
         help="Batch size for prompt generation",
     )
 
     parser.add_argument(
         "--batch_size_annotation",
         type=int,
-        # default=1,
         help="Batch size for annotation",
     )
 
     parser.add_argument(
         "--batch_size_image",
         type=int,
-        # default=1,
         help="Batch size for image generation",
     )
 
     parser.add_argument(
         "--device",
         type=str,
-        # default="cuda",
         choices=["cuda", "cpu"],
         help="Device to use",
     )
@@ -248,12 +225,10 @@ def parse_args():
     parser.add_argument(
         "--config",
         type=str,
-        # default=None,
         help="Path to the configuration file",
     )
 
     parser.add_argument(
-        # "--seed", type=int, default=42, help="Random seed for image generation"
         "--seed",
         type=int,
         help="Random seed for image generation",
