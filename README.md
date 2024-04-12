@@ -138,6 +138,12 @@ Run the following command in your terminal to use the script:
 datadreamer --save_dir <directory> --class_names <objects> --prompts_number <number> [additional options]
 ```
 
+or using a `.yaml` config file
+
+```bash
+datadreamer --config <path-to-config>
+```
+
 <a name="main-parameters"></a>
 
 ### 🎯 Main Parameters
@@ -174,6 +180,7 @@ datadreamer --save_dir <directory> --class_names <objects> --prompts_number <num
 - `--batch_size_image`: Batch size for image generation. Default is `1`.
 - `--device`: Choose between `cuda` and `cpu`. Default is `cuda`.
 - `--seed`: Set a random seed for image and prompt generation. Default is `42`.
+- `--config`: A path to an optional `.yaml` config file specifying the pipeline's arguments.
 
 <a name="available-models"></a>
 
@@ -198,7 +205,15 @@ datadreamer --save_dir <directory> --class_names <objects> --prompts_number <num
 datadreamer --save_dir path/to/save_directory --class_names person moon robot --prompts_number 20 --prompt_generator simple --num_objects_range 1 3 --image_generator sdxl-turbo
 ```
 
+or using a `.yaml` config file
+
+```bash
+datadreamer --save_dir path/to/save_directory --config configs/det_config.yaml
+```
+
 This command generates images for the specified objects, saving them and their annotations in the given directory. The script allows customization of the generation process through various parameters, adapting to different needs and hardware configurations.
+
+See `/configs` folder for some examples of the `.yaml` config files.
 
 <a name="output"></a>
 
