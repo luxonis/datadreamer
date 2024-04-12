@@ -163,14 +163,14 @@ datadreamer --save_dir <directory> --class_names <objects> --prompts_number <num
 - `--prompt_prefix`: Prefix to add to every image generation prompt. Default is `""`.
 - `--prompt_suffix`: Suffix to add to every image generation prompt, e.g., for adding details like resolution. Default is `", hd, 8k, highly detailed"`.
 - `--negative_prompt`: Negative prompts to guide the generation away from certain features. Default is `"cartoon, blue skin, painting, scrispture, golden, illustration, worst quality, low quality, normal quality:2, unrealistic dream, low resolution,  static, sd character, low quality, low resolution, greyscale, monochrome, nose, cropped, lowres, jpeg artifacts, deformed iris, deformed pupils, bad eyes, semi-realistic worst quality, bad lips, deformed mouth, deformed face, deformed fingers, bad anatomy"`.
-- `--use_tta`: Toggle test time augmentation for object detection. Default is `True`.
+- `--use_tta`: Toggle test time augmentation for object detection. Default is `False`.
 - `--synonym_generator`: Enhance class names with synonyms. Default is `none`. Other options are `llm`, `wordnet`.
 - `--use_image_tester`: Use image tester for image generation. Default is `False`.
 - `--image_tester_patience`: Patience level for image tester. Default is `1`.
 - `--lm_quantization`: Quantization to use for Mistral language model. Choose between `none` and `4bit`. Default is `none`.
 - `--annotator_size`: Size of the annotator model to use. Choose between `base` and `large`. Default is `base`.
 - `--batch_size_prompt`: Batch size for prompt generation. Default is 64.
-- `--batch_size_annotation`: Batch size for annotation. Default is `8`.
+- `--batch_size_annotation`: Batch size for annotation. Default is `1`.
 - `--batch_size_image`: Batch size for image generation. Default is `1`.
 - `--device`: Choose between `cuda` and `cpu`. Default is `cuda`.
 - `--seed`: Set a random seed for image and prompt generation. Default is `42`.

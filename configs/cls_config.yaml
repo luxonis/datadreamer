@@ -1,0 +1,10 @@
+class_names: [city, see, skyscrapers]
+prompts_number: 2
+prompt_generator: simple
+num_objects_range: [2, 3]
+image_generator: sdxl-turbo
+task: classification
+image_annotator: clip
+annotator_size: large
+conf_threshold: 0.15
+seed: 43
