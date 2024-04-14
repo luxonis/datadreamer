@@ -41,15 +41,15 @@ def merge_datasets(input_dirs, output_dir, copy_files=True):
             class_names = annotations.pop("class_names")
             annotations_merged = {**annotations_merged, **annotations}
 
-        # Copy or move generation_args.json files
+        # Copy or move generation_args.yaml files
         if copy_files:
             shutil.copy(
-                os.path.join(input_dir, "generation_args.json"),
+                os.path.join(input_dir, "generation_args.yaml"),
                 os.path.join(output_dir, f"generation_args_{i}.json"),
             )
         else:
             shutil.move(
-                os.path.join(input_dir, "generation_args.json"),
+                os.path.join(input_dir, "generation_args.yaml"),
                 os.path.join(output_dir, f"generation_args_{i}.json"),
             )
 

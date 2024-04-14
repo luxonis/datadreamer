@@ -21,7 +21,7 @@ def _check_detection_pipeline(cmd: str, target_folder: str):
     assert os.path.isdir(target_folder), "Directory not created"
     files = [
         "annotations.json",
-        "generation_args.json",
+        "generation_args.yaml",
         "prompts.json",
     ]
     # Check that all the files were created
