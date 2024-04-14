@@ -205,7 +205,7 @@ datadreamer --config <path-to-config>
 datadreamer --save_dir path/to/save_directory --class_names person moon robot --prompts_number 20 --prompt_generator simple --num_objects_range 1 3 --image_generator sdxl-turbo
 ```
 
-or using a `.yaml` config file
+or using a `.yaml` config file (if arguments are provided with the config file in the command, they will override the ones in the config file):
 
 ```bash
 datadreamer --save_dir path/to/save_directory --config configs/det_config.yaml
