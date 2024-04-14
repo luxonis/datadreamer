@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import argparse
-import json
 import os
 import shutil
 import uuid
@@ -372,8 +371,7 @@ def main():
     os.makedirs(bbox_dir)
 
     # Save arguments
-    with open(os.path.join(save_dir, "generation_args.json"), "w") as f:
-        json.dump(args, f, indent=4)
+    config.save_data(os.path.join(save_dir, "generation_args.yaml"))
 
     generated_prompts = None
     image_paths = []
