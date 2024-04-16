@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 
 from luxonis_ml.data import LuxonisDataset
+from luxonis_ml.data.utils.enums import BucketStorage
 from PIL import Image
 
 from datadreamer.utils import BaseConverter
@@ -65,7 +66,16 @@ class LuxonisDatasetConverter(BaseConverter):
             dataset = LuxonisDataset(dataset_name)
             dataset.delete_dataset()
 
-        dataset = LuxonisDataset(dataset_name)
+        # if LUXONISML_BUCKET and GOOGLE_APPLICATION_CREDENTIALS are set, use GCS bucket
+        if (
+            "LUXONISML_BUCKET" in os.environ
+            and "GOOGLE_APPLICATION_CREDENTIALS" in os.environ
+        ):
+            dataset = LuxonisDataset(dataset_name, bucket_storage=BucketStorage.GCS)
+            print("Using GCS bucket")
+        else:
+            dataset = LuxonisDataset(dataset_name)
+            print("Using local dataset")
         dataset.set_classes(class_names)
 
         dataset.add(dataset_generator)
