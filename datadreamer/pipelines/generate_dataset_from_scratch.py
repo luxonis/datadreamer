@@ -250,9 +250,6 @@ def check_args(args):
     ):
         raise ValueError("--class_names must be a non-empty list of strings")
 
-    if args.annotate_only and not args.task == "detection":
-        raise ValueError("--annotate_only can only be used with --task=detection")
-
     # Check prompts_number
     if args.prompts_number <= 0:
         raise ValueError("--prompts_number must be a positive integer")
