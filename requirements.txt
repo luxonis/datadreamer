@@ -13,3 +13,4 @@ scipy>=1.10.0
 bitsandbytes>=0.42.0
 nltk>=3.8.1
 luxonis-ml[all]>=0.1.0
+python-box>=7.1.1

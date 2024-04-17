@@ -1,0 +1,6 @@
+class_names: [person, moon, robot]
+prompts_number: 20
+prompt_generator: simple
+num_objects_range: [1, 3]
+image_generator: sdxl-turbo
+task: detection
