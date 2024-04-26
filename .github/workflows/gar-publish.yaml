@@ -3,6 +3,7 @@
 name: Deploy single image to GAR (Google Artifact Registry)
 
 on:
+  workflow_dispatch:
   release:
     types: [created]
 env:
@@ -11,8 +12,8 @@ env:
 
 jobs:
   push-store:
-    name: Push single images
-    runs-on: buildjet-4vcpu-ubuntu-2204
+    name: Push the image to GAR
+    runs-on: ubuntu-latest
 
     steps:
       - name: 'Checkout GitHub Action'
@@ -33,7 +34,7 @@ jobs:
           password: '${{ steps.auth.outputs.access_token }}'
             
       - name: 'Build Inventory Image'
-        working-directory: ./images/${{github.repository_name}}
+        working-directory: .
         run: |
-          docker build --build-arg GITHUB_TOKEN=${{secrets.GHCR_PAT}} . --tag $GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/internal/${{github.repository_name}}:latest --tag $GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/internal/${{github.repository_name}}:${{ github.event.release.tag_name }}
-          docker push $GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/internal/${{github.repository_name}} --all-tags
+          docker build --build-arg GITHUB_TOKEN=${{secrets.GHCR_PAT}} . --tag $GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/internal/datadreamer:latest
+          docker push $GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/internal/datadreamer --all-tags
