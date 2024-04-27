@@ -1,13 +1,15 @@
 from __future__ import annotations
 
 import argparse
-import json
 import os
+import shutil
+import uuid
 
 import matplotlib.patches as patches
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
+from box import Box
 from PIL import Image
 from tqdm import tqdm
 
@@ -24,6 +26,8 @@ from datadreamer.prompt_generation import (
     TinyLlamaLMPromptGenerator,
     WordNetSynonymGenerator,
 )
+from datadreamer.utils import Config, convert_dataset
+from datadreamer.utils.dataset_utils import save_annotations_to_json
 
 prompt_generators = {
     "simple": SimplePromptGenerator,
@@ -52,14 +56,12 @@ def parse_args():
     parser.add_argument(
         "--save_dir",
         type=str,
-        default="generated_dataset",
         help="Directory to save generated images and annotations",
     )
 
     parser.add_argument(
         "--task",
         type=str,
-        default="detection",
         choices=["detection", "classification"],
         help="Task to generate data for",
     )
@@ -68,54 +70,64 @@ def parse_args():
         "--class_names",
         type=str,
         nargs="+",
-        default=["bear", "bicycle", "bird", "person"],
         help="List of object names for prompt generation",
     )
 
     parser.add_argument(
         "--annotate_only",
         action="store_true",
+        default=None,
         help="Only annotate the images without generating new ones, prompt and image generator will be skipped.",
     )
 
     parser.add_argument(
-        "--prompts_number", type=int, default=10, help="Number of prompts to generate"
+        "--prompts_number",
+        type=int,
+        help="Number of prompts to generate",
     )
 
     parser.add_argument(
         "--num_objects_range",
         type=int,
         nargs="+",
-        default=[1, 3],
         help="Range of number of objects in a prompt",
     )
 
     parser.add_argument(
         "--prompt_generator",
         type=str,
-        default="simple",
         choices=["simple", "lm", "tiny"],
         help="Prompt generator to use: simple or language model",
     )
     parser.add_argument(
         "--image_generator",
         type=str,
-        default="sdxl-turbo",
         choices=["sdxl", "sdxl-turbo", "sdxl-lightning"],
         help="Image generator to use",
     )
     parser.add_argument(
         "--image_annotator",
         type=str,
-        default="owlv2",
         choices=["owlv2", "clip"],
         help="Image annotator to use",
     )
 
     parser.add_argument(
+        "--dataset_format",
+        type=str,
+        choices=["raw", "yolo", "coco", "luxonis-dataset", "cls-single"],
+        help="Dataset format to use",
+    )
+    parser.add_argument(
+        "--split_ratios",
+        type=float,
+        nargs="+",
+        help="Train-validation-test split ratios (default: 0.8, 0.1, 0.1).",
+    )
+
+    parser.add_argument(
         "--synonym_generator",
         type=str,
-        default="none",
         choices=["none", "llm", "wordnet"],
         help="Image annotator to use",
     )
@@ -123,48 +135,43 @@ def parse_args():
     parser.add_argument(
         "--negative_prompt",
         type=str,
-        default="cartoon, blue skin, painting, scrispture, golden, illustration, worst quality, low quality, normal quality:2, unrealistic dream, low resolution,  static, sd character, low quality, low resolution, greyscale, monochrome, nose, cropped, lowres, jpeg artifacts, deformed iris, deformed pupils, bad eyes, semi-realistic worst quality, bad lips, deformed mouth, deformed face, deformed fingers, bad anatomy",
         help="Negative prompt to guide the generation away from certain features",
     )
 
     parser.add_argument(
         "--prompt_suffix",
         type=str,
-        default=", hd, 8k, highly detailed",
         help="Suffix to add to every image generation prompt, e.g., for adding details like resolution",
     )
 
     parser.add_argument(
         "--prompt_prefix",
         type=str,
-        default="",
         help="Prefix to add to every image generation prompt",
     )
 
     parser.add_argument(
         "--conf_threshold",
         type=float,
-        default=0.15,
         help="Confidence threshold for annotation",
     )
 
     parser.add_argument(
         "--annotation_iou_threshold",
         type=float,
-        default=0.2,
         help="Intersection over Union (IoU) threshold for annotation",
     )
 
     parser.add_argument(
         "--use_tta",
-        default=False,
+        default=None,
         action="store_true",
         help="Whether to use test time augmentation for object detection",
     )
 
     parser.add_argument(
         "--use_image_tester",
-        default=False,
+        default=None,
         action="store_true",
         help="Whether to use image tester for image generation",
     )
@@ -172,14 +179,12 @@ def parse_args():
     parser.add_argument(
         "--image_tester_patience",
         type=int,
-        default=1,
         help="Patience for image tester",
     )
 
     parser.add_argument(
         "--lm_quantization",
         type=str,
-        default="none",
         choices=["none", "4bit"],
         help="Quantization to use for Mistral language model",
     )
@@ -187,7 +192,6 @@ def parse_args():
     parser.add_argument(
         "--annotator_size",
         type=str,
-        default="base",
         choices=["base", "large"],
         help="Size of the annotator model to use",
     )
@@ -195,34 +199,38 @@ def parse_args():
     parser.add_argument(
         "--batch_size_prompt",
         type=int,
-        default=64,
         help="Batch size for prompt generation",
     )
 
     parser.add_argument(
         "--batch_size_annotation",
         type=int,
-        default=1,
         help="Batch size for annotation",
     )
 
     parser.add_argument(
         "--batch_size_image",
         type=int,
-        default=1,
         help="Batch size for image generation",
     )
 
     parser.add_argument(
         "--device",
         type=str,
-        default="cuda",
         choices=["cuda", "cpu"],
         help="Device to use",
     )
 
     parser.add_argument(
-        "--seed", type=int, default=42, help="Random seed for image generation"
+        "--config",
+        type=str,
+        help="Path to the configuration file",
+    )
+
+    parser.add_argument(
+        "--seed",
+        type=int,
+        help="Random seed for image generation",
     )
 
     return parser.parse_args()
@@ -241,9 +249,6 @@ def check_args(args):
         not isinstance(name, str) for name in args.class_names
     ):
         raise ValueError("--class_names must be a non-empty list of strings")
-
-    if args.annotate_only and not args.task == "detection":
-        raise ValueError("--annotate_only can only be used with --task=detection")
 
     # Check prompts_number
     if args.prompts_number <= 0:
@@ -319,61 +324,51 @@ def check_args(args):
             "--image_annotator must be one of the available annotators for classification task"
         )
 
+    # Check coorect task and dataset_format
+    if args.task == "classification" and args.dataset_format in ["coco", "yolo"]:
+        raise ValueError(
+            "--dataset_format must be one of the available dataset formats for classification task: raw, cls-single, luxonis-dataset"
+        )
 
-def save_det_annotations_to_json(
-    image_paths,
-    boxes_list,
-    labels_list,
-    class_names,
-    save_dir,
-    file_name="annotations.json",
-):
-    annotations = {}
-    for image_path, bboxes, labels in zip(image_paths, boxes_list, labels_list):
-        image_name = os.path.basename(image_path)
-        annotations[image_name] = {
-            "boxes": bboxes.tolist(),
-            "labels": labels.tolist(),
-        }
-    annotations["class_names"] = class_names
+    if args.task == "detection" and args.dataset_format in ["cls-single"]:
+        raise ValueError(
+            "--dataset_format must be one of the available dataset formats for detection task: raw, coco, yolo, luxonis-dataset"
+        )
 
-    # Save to JSON file
-    with open(os.path.join(save_dir, file_name), "w") as f:
-        json.dump(annotations, f, indent=4)
-
-
-def save_clf_annotations_to_json(
-    image_paths, labels_list, class_names, save_dir, file_name="annotations.json"
-):
-    annotations = {}
-    for image_path, labels in zip(image_paths, labels_list):
-        image_name = os.path.basename(image_path)
-        annotations[image_name] = {
-            "labels": labels.tolist(),
-        }
-    annotations["class_names"] = class_names
-
-    # Save to JSON file
-    with open(os.path.join(save_dir, file_name), "w") as f:
-        json.dump(annotations, f, indent=4)
+    # Check split_ratios
+    if (
+        len(args.split_ratios) != 3
+        or not all(0 <= ratio <= 1 for ratio in args.split_ratios)
+        or sum(args.split_ratios) != 1
+    ):
+        raise ValueError(
+            "--split_ratios must be a list of three floats that sum up to 1"
+        )
 
 
 def main():
     args = parse_args()
+    # Get the None args without the config
+    args_dict = {k: v for k, v in vars(args).items() if k != "config" and v is not None}
+    config = Config.get_config(args.config, args_dict)
+    args = Box(config.model_dump(exclude_none=True, by_alias=True))
+    # Check arguments
     check_args(args)
 
-    save_dir = args.save_dir
-
     # Directories for saving images and bboxes
-    bbox_dir = os.path.join(save_dir, "bboxes_visualization")
-    if not os.path.exists(save_dir):
+    save_dir = args.save_dir
+    if not args.annotate_only:
+        if os.path.exists(save_dir):
+            shutil.rmtree(save_dir)
         os.makedirs(save_dir)
-    if not os.path.exists(bbox_dir):
-        os.makedirs(bbox_dir)
+
+    bbox_dir = os.path.join(save_dir, "bboxes_visualization")
+    if os.path.exists(bbox_dir):
+        shutil.rmtree(bbox_dir)
+    os.makedirs(bbox_dir)
 
     # Save arguments
-    with open(os.path.join(save_dir, "generation_args.json"), "w") as f:
-        json.dump(vars(args), f, indent=4)
+    config.save_data(os.path.join(save_dir, "generation_args.yaml"))
 
     generated_prompts = None
     image_paths = []
@@ -417,7 +412,9 @@ def main():
             prompts, prompt_objects
         ):
             for generated_image in generated_images_batch:
-                image_path = os.path.join(save_dir, f"image_{num_generated_images}.jpg")
+                unique_id = uuid.uuid4().hex
+                unique_filename = f"image_{num_generated_images}_{unique_id}.jpg"
+                image_path = os.path.join(save_dir, unique_filename)
                 generated_image.save(image_path)
                 image_paths.append(image_path)
                 num_generated_images += 1
@@ -442,12 +439,15 @@ def main():
             synonym_dict, os.path.join(save_dir, "synonyms.json")
         )
 
+    boxes_list = []
+    scores_list = []
+    labels_list = []
+
     if args.task == "classification":
         # Classification annotation
         annotator_class = clf_annotators[args.image_annotator]
         annotator = annotator_class(device=args.device, size=args.annotator_size)
 
-        labels_list = []
         # Split image_paths into batches
         image_batches = [
             image_paths[i : i + args.batch_size_annotation]
@@ -468,24 +468,32 @@ def main():
             )
             labels_list.extend(batch_labels)
 
-        save_clf_annotations_to_json(
-            image_paths, labels_list, args.class_names, save_dir
+        save_annotations_to_json(
+            image_paths=image_paths,
+            labels_list=labels_list,
+            class_names=args.class_names,
+            save_dir=save_dir,
         )
+
+        if args.dataset_format == "cls-single":
+            convert_dataset.convert_dataset(
+                args.save_dir,
+                args.save_dir,
+                "cls-single",
+                args.split_ratios,
+                copy_files=False,
+                seed=args.seed,
+            )
     else:
         # Annotation
         annotator_class = det_annotators[args.image_annotator]
         annotator = annotator_class(device=args.device, size=args.annotator_size)
-
-        boxes_list = []
-        scores_list = []
-        labels_list = []
 
         # Split image_paths into batches
         image_batches = [
             image_paths[i : i + args.batch_size_annotation]
             for i in range(0, len(image_paths), args.batch_size_annotation)
         ]
-
         for i, image_batch in tqdm(
             enumerate(image_batches),
             desc="Annotating images",
@@ -546,8 +554,44 @@ def main():
                 plt.close()
 
         # Save annotations as JSON files
-        save_det_annotations_to_json(
-            image_paths, boxes_list, labels_list, args.class_names, save_dir
+        save_annotations_to_json(
+            image_paths=image_paths,
+            labels_list=labels_list,
+            boxes_list=boxes_list,
+            class_names=args.class_names,
+            save_dir=save_dir,
+        )
+
+        if args.dataset_format == "yolo":
+            # Convert annotations to YOLO format
+            convert_dataset.convert_dataset(
+                args.save_dir,
+                args.save_dir,
+                "yolo",
+                args.split_ratios,
+                copy_files=False,
+                seed=args.seed,
+            )
+        # Convert annotations to COCO format
+        elif args.dataset_format == "coco":
+            convert_dataset.convert_dataset(
+                args.save_dir,
+                args.save_dir,
+                "coco",
+                args.split_ratios,
+                copy_files=False,
+                seed=args.seed,
+            )
+
+    # Convert annotations to LuxonisDataset format
+    if args.dataset_format == "luxonis-dataset":
+        convert_dataset.convert_dataset(
+            args.save_dir,
+            args.save_dir,
+            "luxonis-dataset",
+            args.split_ratios,
+            copy_files=False,
+            seed=args.seed,
         )
 
 

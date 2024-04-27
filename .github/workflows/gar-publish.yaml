@@ -5,7 +5,7 @@ name: Deploy single image to GAR (Google Artifact Registry)
 on:
   workflow_dispatch:
   release:
-    types: [created]
+    types: [published]
 env:
   PROJECT_ID: easyml-394818
   GAR_LOCATION: us-central1
@@ -36,5 +36,5 @@ jobs:
       - name: 'Build Inventory Image'
         working-directory: .
         run: |
-          docker build --build-arg GITHUB_TOKEN=${{secrets.GHCR_PAT}} . --tag $GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/internal/datadreamer:latest
+          docker build --build-arg GITHUB_TOKEN=${{secrets.GHCR_PAT}} . --tag $GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/internal/datadreamer:latest --tag $GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/internal/datadreamer:${{ github.event.release.tag_name }}
           docker push $GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/internal/datadreamer --all-tags

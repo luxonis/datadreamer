@@ -138,6 +138,12 @@ Run the following command in your terminal to use the script:
 datadreamer --save_dir <directory> --class_names <objects> --prompts_number <number> [additional options]
 ```
 
+or using a `.yaml` config file
+
+```bash
+datadreamer --config <path-to-config>
+```
+
 <a name="main-parameters"></a>
 
 ### 🎯 Main Parameters
@@ -152,6 +158,8 @@ datadreamer --save_dir <directory> --class_names <objects> --prompts_number <num
 ### 🔧 Additional Parameters
 
 - `--task`: Choose between detection and classification. Default is `detection`.
+- `--dataset_format`: Format of the dataset. Defaults to `raw`. Supported values: `raw`, `yolo`, `coco`, `luxonis-dataset`, `cls-single`.
+- `--split_ratios`: Split ratios for train, validation, and test sets. Defaults to `[0.8, 0.1, 0.1]`.
 - `--num_objects_range`: Range of objects in a prompt. Default is 1 to 3.
 - `--prompt_generator`: Choose between `simple`, `lm` (language model) and `tiny` (tiny LM). Default is `simple`.
 - `--image_generator`: Choose image generator, e.g., `sdxl`, `sdxl-turbo` or `sdxl-lightning`. Default is `sdxl-turbo`.
@@ -161,17 +169,18 @@ datadreamer --save_dir <directory> --class_names <objects> --prompts_number <num
 - `--prompt_prefix`: Prefix to add to every image generation prompt. Default is `""`.
 - `--prompt_suffix`: Suffix to add to every image generation prompt, e.g., for adding details like resolution. Default is `", hd, 8k, highly detailed"`.
 - `--negative_prompt`: Negative prompts to guide the generation away from certain features. Default is `"cartoon, blue skin, painting, scrispture, golden, illustration, worst quality, low quality, normal quality:2, unrealistic dream, low resolution,  static, sd character, low quality, low resolution, greyscale, monochrome, nose, cropped, lowres, jpeg artifacts, deformed iris, deformed pupils, bad eyes, semi-realistic worst quality, bad lips, deformed mouth, deformed face, deformed fingers, bad anatomy"`.
-- `--use_tta`: Toggle test time augmentation for object detection. Default is `True`.
+- `--use_tta`: Toggle test time augmentation for object detection. Default is `False`.
 - `--synonym_generator`: Enhance class names with synonyms. Default is `none`. Other options are `llm`, `wordnet`.
 - `--use_image_tester`: Use image tester for image generation. Default is `False`.
 - `--image_tester_patience`: Patience level for image tester. Default is `1`.
 - `--lm_quantization`: Quantization to use for Mistral language model. Choose between `none` and `4bit`. Default is `none`.
 - `--annotator_size`: Size of the annotator model to use. Choose between `base` and `large`. Default is `base`.
 - `--batch_size_prompt`: Batch size for prompt generation. Default is 64.
-- `--batch_size_annotation`: Batch size for annotation. Default is `8`.
+- `--batch_size_annotation`: Batch size for annotation. Default is `1`.
 - `--batch_size_image`: Batch size for image generation. Default is `1`.
 - `--device`: Choose between `cuda` and `cpu`. Default is `cuda`.
 - `--seed`: Set a random seed for image and prompt generation. Default is `42`.
+- `--config`: A path to an optional `.yaml` config file specifying the pipeline's arguments.
 
 <a name="available-models"></a>
 
@@ -196,7 +205,15 @@ datadreamer --save_dir <directory> --class_names <objects> --prompts_number <num
 datadreamer --save_dir path/to/save_directory --class_names person moon robot --prompts_number 20 --prompt_generator simple --num_objects_range 1 3 --image_generator sdxl-turbo
 ```
 
+or using a `.yaml` config file (if arguments are provided with the config file in the command, they will override the ones in the config file):
+
+```bash
+datadreamer --save_dir path/to/save_directory --config configs/det_config.yaml
+```
+
 This command generates images for the specified objects, saving them and their annotations in the given directory. The script allows customization of the generation process through various parameters, adapting to different needs and hardware configurations.
+
+See `/configs` folder for some examples of the `.yaml` config files.
 
 <a name="output"></a>
 

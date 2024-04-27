@@ -1,0 +1,7 @@
+class_names: [alien, mars, cat]
+prompts_number: 1
+prompt_generator: simple
+num_objects_range: [2, 3]
+image_generator: sdxl-turbo
+conf_threshold: 0.15
+seed: 43
