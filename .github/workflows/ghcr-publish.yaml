@@ -22,4 +22,4 @@ jobs:
     - name: Publish
       run: |
         docker build -t ghcr.io/luxonis/datadreamer:latest -t ghcr.io/luxonis/datadreamer:${{ github.event.release.tag_name }} .
-        docker push --all-tags
+        docker push ghcr.io/luxonis/datadreamer --all-tags
