@@ -11,14 +11,20 @@ from datadreamer.utils import (
 
 
 def convert_dataset(
-    input_dir, output_dir, dataset_format, split_ratios, copy_files=True, seed=42
+    input_dir,
+    output_dir,
+    dataset_format,
+    split_ratios,
+    dataset_plugin=None,
+    copy_files=True,
+    seed=42,
 ):
     if dataset_format == "yolo":
         converter = YOLOConverter(seed=seed)
     elif dataset_format == "coco":
         converter = COCOConverter(seed=seed)
     elif dataset_format == "luxonis-dataset":
-        converter = LuxonisDatasetConverter(seed=seed)
+        converter = LuxonisDatasetConverter(dataset_plugin=dataset_plugin, seed=seed)
     elif dataset_format == "cls-single":
         converter = SingleLabelClsConverter(seed=seed)
     else:
@@ -53,6 +59,12 @@ def main():
         help="Train-validation-test split ratios (default: 0.8, 0.1, 0.1).",
     )
     parser.add_argument(
+        "--dataset_plugin",
+        type=str,
+        default=None,
+        help="Dataset plugin to use for luxonis-dataset format.",
+    )
+    parser.add_argument(
         "--copy_files",
         type=bool,
         default=True,
@@ -72,7 +84,9 @@ def main():
         args.output_dir,
         args.dataset_format,
         args.split_ratios,
+        args.dataset_plugin,
         args.copy_files,
+        args.seed,
     )
 
 
