@@ -231,7 +231,7 @@ def parse_args():
     parser.add_argument(
         "--dataset_plugin",
         type=str,
-        help="Dataset plugin for luxonis-dataset",
+        help="LuxonisDataset plugin for the luxonis-dataset format",
     )
 
     parser.add_argument(
