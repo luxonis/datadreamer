@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import torch
 from box import Box
+from luxonis_ml.data import DATASETS_REGISTRY
 from PIL import Image
 from tqdm import tqdm
 
@@ -228,6 +229,12 @@ def parse_args():
     )
 
     parser.add_argument(
+        "--dataset_plugin",
+        type=str,
+        help="LuxonisDataset plugin for the luxonis-dataset format",
+    )
+
+    parser.add_argument(
         "--seed",
         type=int,
         help="Random seed for image generation",
@@ -344,6 +351,17 @@ def check_args(args):
         raise ValueError(
             "--split_ratios must be a list of three floats that sum up to 1"
         )
+
+    # Check if dataset_plugin is valid
+    if args.dataset_plugin is not None:
+        if args.dataset_format != "luxonis-dataset":
+            raise ValueError(
+                "--dataset_format must be 'luxonis-dataset' if --dataset_plugin is specified"
+            )
+        if args.dataset_plugin not in DATASETS_REGISTRY.module_dict:
+            raise ValueError(
+                f"Invalid dataset plugin: {args.dataset_plugin}. Available plugins: {list(DATASETS_REGISTRY.module_dict.keys())}"
+            )
 
 
 def main():
@@ -590,6 +608,7 @@ def main():
             args.save_dir,
             "luxonis-dataset",
             args.split_ratios,
+            dataset_plugin=args.dataset_plugin,
             copy_files=False,
             seed=args.seed,
         )

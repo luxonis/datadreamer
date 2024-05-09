@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import os
 
-from luxonis_ml.data import LuxonisDataset
+from luxonis_ml.data import DATASETS_REGISTRY, LuxonisDataset
 from luxonis_ml.data.utils.enums import BucketStorage
 from PIL import Image
 
@@ -12,8 +12,9 @@ from datadreamer.utils import BaseConverter
 class LuxonisDatasetConverter(BaseConverter):
     """Class for converting a dataset to LuxonisDataset format."""
 
-    def __init__(self, seed=42):
+    def __init__(self, dataset_plugin=None, seed=42):
         super().__init__(seed)
+        self.dataset_plugin = dataset_plugin
 
     def convert(self, dataset_dir, output_dir, split_ratios, copy_files=True):
         """Converts a dataset into a LuxonisDataset format.
@@ -66,16 +67,21 @@ class LuxonisDatasetConverter(BaseConverter):
             dataset = LuxonisDataset(dataset_name)
             dataset.delete_dataset()
 
+        # if dataset_plugin is set, use that
+        if self.dataset_plugin:
+            print(f"Using {self.dataset_plugin} dataset")
+            dataset_constructor = DATASETS_REGISTRY.get(self.dataset_plugin)
+            dataset = dataset_constructor(dataset_name)
         # if LUXONISML_BUCKET and GOOGLE_APPLICATION_CREDENTIALS are set, use GCS bucket
-        if (
+        elif (
             "LUXONISML_BUCKET" in os.environ
             and "GOOGLE_APPLICATION_CREDENTIALS" in os.environ
         ):
-            dataset = LuxonisDataset(dataset_name, bucket_storage=BucketStorage.GCS)
             print("Using GCS bucket")
+            dataset = LuxonisDataset(dataset_name, bucket_storage=BucketStorage.GCS)
         else:
-            dataset = LuxonisDataset(dataset_name)
             print("Using local dataset")
+            dataset = LuxonisDataset(dataset_name)
         dataset.set_classes(class_names)
 
         dataset.add(dataset_generator)
