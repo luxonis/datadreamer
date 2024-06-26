@@ -44,4 +44,4 @@ class Config(LuxonisConfig):
     use_tta: bool = False
     annotator_size: Literal["base", "large"] = "base"
     batch_size_annotation: int = 1
-    dataset_plugin: str = None
+    dataset_plugin: str = ""

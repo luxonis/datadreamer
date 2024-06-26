@@ -353,7 +353,7 @@ def check_args(args):
         )
 
     # Check if dataset_plugin is valid
-    if args.dataset_plugin is not None:
+    if args.dataset_plugin:
         if args.dataset_format != "luxonis-dataset":
             raise ValueError(
                 "--dataset_format must be 'luxonis-dataset' if --dataset_plugin is specified"
