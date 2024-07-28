@@ -1,9 +1,8 @@
 from __future__ import annotations
 
-from typing_extensions import Annotated, List, Literal
-
 from luxonis_ml.utils import LuxonisConfig
 from pydantic import Field
+from typing_extensions import Annotated, List, Literal
 
 
 class Config(LuxonisConfig):
