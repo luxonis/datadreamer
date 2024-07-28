@@ -12,9 +12,13 @@ from datadreamer.utils import BaseConverter
 class LuxonisDatasetConverter(BaseConverter):
     """Class for converting a dataset to LuxonisDataset format."""
 
-    def __init__(self, dataset_plugin=None, seed=42):
+    def __init__(
+        self, dataset_plugin=None, dataset_name=None, dataset_id=None, seed=42
+    ):
         super().__init__(seed)
         self.dataset_plugin = dataset_plugin
+        self.dataset_name = dataset_name
+        self.dataset_id = dataset_id
 
     def convert(self, dataset_dir, output_dir, split_ratios, copy_files=True):
         """Converts a dataset into a LuxonisDataset format.
@@ -46,32 +50,50 @@ class LuxonisDatasetConverter(BaseConverter):
                 for label in labels:
                     yield {
                         "file": image_full_path,
-                        "class": class_names[label],
-                        "type": "classification",
-                        "value": True,
+                        "annotation": {
+                            "class": class_names[label],
+                            "type": "classification",
+                            # "value": True,
+                        },
                     }
 
                 if "boxes" in data[image_path]:
                     boxes = data[image_path]["boxes"]
                     for box in boxes:
                         x, y, w, h = box[0], box[1], box[2] - box[0], box[3] - box[1]
+                        x = max(0, x)
+                        y = max(0, y)
                         yield {
                             "file": image_full_path,
-                            "class": class_names[label],
-                            "type": "box",
-                            "value": (x / width, y / height, w / width, h / height),
+                            "annotation": {
+                                "class": class_names[label],
+                                "type": "boundingbox",
+                                "x": x / width,
+                                "y": y / height,
+                                "w": w / width,
+                                "h": h / height,
+                            },
                         }
 
-        dataset_name = os.path.basename(output_dir)
+        dataset_name = (
+            os.path.basename(output_dir)
+            if self.dataset_name is None
+            else self.dataset_name
+        )
         if LuxonisDataset.exists(dataset_name):
             dataset = LuxonisDataset(dataset_name)
             dataset.delete_dataset()
 
         # if dataset_plugin is set, use that
         if self.dataset_plugin:
-            print(f"Using {self.dataset_plugin} dataset")
-            dataset_constructor = DATASETS_REGISTRY.get(self.dataset_plugin)
-            dataset = dataset_constructor(dataset_name)
+            if "GOOGLE_APPLICATION_CREDENTIALS" in os.environ:
+                print(f"Using {self.dataset_plugin} dataset")
+                dataset_constructor = DATASETS_REGISTRY.get(self.dataset_plugin)
+                dataset = dataset_constructor(dataset_name, self.dataset_id)
+            else:
+                raise ValueError(
+                    "GOOGLE_APPLICATION_CREDENTIALS environment variable is not set for using the dataset plugin."
+                )
         # if LUXONISML_BUCKET and GOOGLE_APPLICATION_CREDENTIALS are set, use GCS bucket
         elif (
             "LUXONISML_BUCKET" in os.environ
@@ -82,8 +104,13 @@ class LuxonisDatasetConverter(BaseConverter):
         else:
             print("Using local dataset")
             dataset = LuxonisDataset(dataset_name)
-        dataset.set_classes(class_names)
 
-        dataset.add(dataset_generator)
+        # NOTE: Not implemented in the LuxonisOnlineDataset yet
+        # dataset.set_classes(class_names, task = "classification")
+        # if is_detection:
+        #     print("Setting task to boundingbox")
+        #     dataset.set_classes(class_names, task = "boundingbox")
+
+        dataset.add(dataset_generator())
 
         dataset.make_splits(split_ratios)
