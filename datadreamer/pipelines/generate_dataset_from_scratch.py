@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import torch
 from box import Box
-from luxonis_ml.data import DATASETS_REGISTRY
+from luxonis_ml.data import DATASETS_REGISTRY, LOADERS_REGISTRY
 from PIL import Image
 from tqdm import tqdm
 
@@ -235,6 +235,24 @@ def parse_args():
     )
 
     parser.add_argument(
+        "--loader_plugin",
+        type=str,
+        help="Loader plugin for the LuxonisLoader",
+    )
+
+    parser.add_argument(
+        "--dataset_name",
+        type=str,
+        help="Name of the dataset to create if dataset_plugin or loader_plugin is used",
+    )
+
+    parser.add_argument(
+        "--dataset_id",
+        type=str,
+        help="ID of the dataset to create if dataset_plugin or loader_plugin is used",
+    )
+
+    parser.add_argument(
         "--seed",
         type=int,
         help="Random seed for image generation",
@@ -391,6 +409,12 @@ def main():
     generated_prompts = None
     image_paths = []
 
+    def split_image_paths(image_paths, batch_size):
+        return [
+            image_paths[i : i + batch_size]
+            for i in range(0, len(image_paths), batch_size)
+        ]
+
     if not args.annotate_only:
         # Prompt generation
         prompt_generator_class = prompt_generators[args.prompt_generator]
@@ -439,12 +463,31 @@ def main():
 
         image_generator.release(empty_cuda_cache=True)
 
+        # Split image_paths into batches
+        image_batches = split_image_paths(image_paths, args.batch_size_annotation)
+
     else:
-        # Load image paths for annotation
-        for image_path in os.listdir(save_dir):
-            # Check file extension: jpg, png, jpeg
-            if image_path.lower().endswith((".jpg", ".png", ".jpeg", ".bmp", "webp")):
-                image_paths.append(os.path.join(save_dir, image_path))
+        if args.loader_plugin:
+            if "GOOGLE_APPLICATION_CREDENTIALS" in os.environ:
+                image_batches = LOADERS_REGISTRY.get(args.loader_plugin)(
+                    view="all", dataset_id=args.dataset_id
+                )
+                print(len(image_batches))
+            else:
+                raise ValueError(
+                    "GOOGLE_APPLICATION_CREDENTIALS environment variable is not set for using the loader plugin"
+                )
+
+        else:
+            # Load image paths for annotation
+            for image_path in os.listdir(save_dir):
+                # Check file extension: jpg, png, jpeg
+                if image_path.lower().endswith(
+                    (".jpg", ".png", ".jpeg", ".bmp", "webp")
+                ):
+                    image_paths.append(os.path.join(save_dir, image_path))
+            # Split image_paths into batches
+            image_batches = split_image_paths(image_paths, args.batch_size_annotation)
 
     # Synonym generation
     synonym_dict = None
@@ -457,6 +500,13 @@ def main():
             synonym_dict, os.path.join(save_dir, "synonyms.json")
         )
 
+    def read_image_batch(image_batch):
+        if type(image_batch[0]) == np.ndarray:
+            images = [Image.fromarray(image) for image in image_batch[:-1]]
+        else:
+            images = [Image.open(image_path) for image_path in image_batch]
+        return images
+
     boxes_list = []
     scores_list = []
     labels_list = []
@@ -466,18 +516,13 @@ def main():
         annotator_class = clf_annotators[args.image_annotator]
         annotator = annotator_class(device=args.device, size=args.annotator_size)
 
-        # Split image_paths into batches
-        image_batches = [
-            image_paths[i : i + args.batch_size_annotation]
-            for i in range(0, len(image_paths), args.batch_size_annotation)
-        ]
-
         for image_batch in tqdm(
             image_batches,
             desc="Annotating images",
             total=len(image_batches),
         ):
-            images = [Image.open(image_path) for image_path in image_batch]
+            images = read_image_batch(image_batch)
+
             batch_labels = annotator.annotate_batch(
                 images,
                 args.class_names,
@@ -507,17 +552,13 @@ def main():
         annotator_class = det_annotators[args.image_annotator]
         annotator = annotator_class(device=args.device, size=args.annotator_size)
 
-        # Split image_paths into batches
-        image_batches = [
-            image_paths[i : i + args.batch_size_annotation]
-            for i in range(0, len(image_paths), args.batch_size_annotation)
-        ]
         for i, image_batch in tqdm(
             enumerate(image_batches),
             desc="Annotating images",
             total=len(image_batches),
         ):
-            images = [Image.open(image_path) for image_path in image_batch]
+            images = read_image_batch(image_batch)
+
             boxes_batch, scores_batch, local_labels_batch = annotator.annotate_batch(
                 images,
                 args.class_names,
@@ -609,6 +650,8 @@ def main():
             "luxonis-dataset",
             args.split_ratios,
             dataset_plugin=args.dataset_plugin,
+            dataset_name=args.dataset_name,
+            dataset_id=args.dataset_id,
             copy_files=False,
             seed=args.seed,
         )
