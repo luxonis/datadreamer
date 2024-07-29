@@ -247,12 +247,6 @@ def parse_args():
     )
 
     parser.add_argument(
-        "--dataset_id",
-        type=str,
-        help="ID of the dataset to create if dataset_plugin or loader_plugin is used",
-    )
-
-    parser.add_argument(
         "--seed",
         type=int,
         help="Random seed for image generation",
@@ -469,10 +463,14 @@ def main():
     else:
         if args.loader_plugin:
             if "GOOGLE_APPLICATION_CREDENTIALS" in os.environ:
-                image_batches = LOADERS_REGISTRY.get(args.loader_plugin)(
-                    view="all", dataset_id=args.dataset_id
-                )
-                print(len(image_batches))
+                if "DATASET_ID" in os.environ:
+                    image_batches = LOADERS_REGISTRY.get(args.loader_plugin)(
+                        view="all", dataset_id=os.getenv("DATASET_ID")
+                    )
+                else:
+                    raise ValueError(
+                        "DATASET_ID environment variable is not set for using the loader plugin"
+                    )
             else:
                 raise ValueError(
                     "GOOGLE_APPLICATION_CREDENTIALS environment variable is not set for using the loader plugin"
@@ -651,7 +649,6 @@ def main():
             args.split_ratios,
             dataset_plugin=args.dataset_plugin,
             dataset_name=args.dataset_name,
-            dataset_id=args.dataset_id,
             copy_files=False,
             seed=args.seed,
         )

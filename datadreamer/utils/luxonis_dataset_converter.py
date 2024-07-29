@@ -13,12 +13,11 @@ class LuxonisDatasetConverter(BaseConverter):
     """Class for converting a dataset to LuxonisDataset format."""
 
     def __init__(
-        self, dataset_plugin=None, dataset_name=None, dataset_id=None, seed=42
+        self, dataset_plugin=None, dataset_name=None, seed=42
     ):
         super().__init__(seed)
         self.dataset_plugin = dataset_plugin
         self.dataset_name = dataset_name
-        self.dataset_id = dataset_id
 
     def convert(self, dataset_dir, output_dir, split_ratios, copy_files=True):
         """Converts a dataset into a LuxonisDataset format.
@@ -89,7 +88,7 @@ class LuxonisDatasetConverter(BaseConverter):
             if "GOOGLE_APPLICATION_CREDENTIALS" in os.environ:
                 print(f"Using {self.dataset_plugin} dataset")
                 dataset_constructor = DATASETS_REGISTRY.get(self.dataset_plugin)
-                dataset = dataset_constructor(dataset_name, self.dataset_id)
+                dataset = dataset_constructor(dataset_name)
             else:
                 raise ValueError(
                     "GOOGLE_APPLICATION_CREDENTIALS environment variable is not set for using the dataset plugin."
