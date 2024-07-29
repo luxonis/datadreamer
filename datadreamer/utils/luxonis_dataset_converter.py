@@ -105,12 +105,6 @@ class LuxonisDatasetConverter(BaseConverter):
             print("Using local dataset")
             dataset = LuxonisDataset(dataset_name)
 
-        # NOTE: Not implemented in the LuxonisOnlineDataset yet
-        # dataset.set_classes(class_names, task = "classification")
-        # if is_detection:
-        #     print("Setting task to boundingbox")
-        #     dataset.set_classes(class_names, task = "boundingbox")
-
         dataset.add(dataset_generator())
 
         dataset.make_splits(split_ratios)
