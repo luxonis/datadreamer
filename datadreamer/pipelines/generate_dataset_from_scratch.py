@@ -462,18 +462,13 @@ def main():
 
     else:
         if args.loader_plugin:
-            if "GOOGLE_APPLICATION_CREDENTIALS" in os.environ:
-                if "DATASET_ID" in os.environ:
-                    image_batches = LOADERS_REGISTRY.get(args.loader_plugin)(
-                        view="all", dataset_id=os.getenv("DATASET_ID")
-                    )
-                else:
-                    raise ValueError(
-                        "DATASET_ID environment variable is not set for using the loader plugin"
-                    )
+            if "DATASET_ID" in os.environ:
+                image_batches = LOADERS_REGISTRY.get(args.loader_plugin)(
+                    view="all", dataset_id=os.getenv("DATASET_ID")
+                )
             else:
                 raise ValueError(
-                    "GOOGLE_APPLICATION_CREDENTIALS environment variable is not set for using the loader plugin"
+                    "DATASET_ID environment variable is not set for using the loader plugin"
                 )
 
         else:
@@ -546,7 +541,7 @@ def main():
                 seed=args.seed,
             )
     else:
-        # Annotation
+        # Detection annotation
         annotator_class = det_annotators[args.image_annotator]
         annotator = annotator_class(device=args.device, size=args.annotator_size)
 
