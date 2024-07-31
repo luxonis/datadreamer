@@ -526,8 +526,10 @@ def main():
             enumerate(image_batches),
             desc="Annotating images",
             total=len(image_batches),
-        ): 
-            images, batch_image_paths = read_image_batch(image_batch, i, args.batch_size_annotation)
+        ):
+            images, batch_image_paths = read_image_batch(
+                image_batch, i, args.batch_size_annotation
+            )
             image_paths.extend(batch_image_paths)
 
             batch_labels = annotator.annotate_batch(
@@ -563,8 +565,10 @@ def main():
             enumerate(image_batches),
             desc="Annotating images",
             total=len(image_batches),
-        ):  
-            images, batch_image_paths = read_image_batch(image_batch, i, args.batch_size_annotation)
+        ):
+            images, batch_image_paths = read_image_batch(
+                image_batch, i, args.batch_size_annotation
+            )
             image_paths.extend(batch_image_paths)
 
             boxes_batch, scores_batch, local_labels_batch = annotator.annotate_batch(

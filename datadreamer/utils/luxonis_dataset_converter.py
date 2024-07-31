@@ -12,9 +12,7 @@ from datadreamer.utils import BaseConverter
 class LuxonisDatasetConverter(BaseConverter):
     """Class for converting a dataset to LuxonisDataset format."""
 
-    def __init__(
-        self, dataset_plugin=None, dataset_name=None, seed=42
-    ):
+    def __init__(self, dataset_plugin=None, dataset_name=None, seed=42):
         super().__init__(seed)
         self.dataset_plugin = dataset_plugin
         self.dataset_name = dataset_name
