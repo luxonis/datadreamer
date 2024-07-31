@@ -271,7 +271,9 @@ class TestLuxonisDatasetConverter(TestYOLOConverter):
 
     def tearDown(self):
         shutil.rmtree(self.test_dir)
-        if hasattr(self, self.dataset_name) and LuxonisDataset.exists(self.dataset_name):
+        if hasattr(self, self.dataset_name) and LuxonisDataset.exists(
+            self.dataset_name
+        ):
             dataset = LuxonisDataset(self.dataset_name)
             dataset.delete_dataset()
 
