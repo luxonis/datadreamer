@@ -250,7 +250,7 @@ class TestYOLOConverter(unittest.TestCase):
             self.assertIn("names: ['cat', 'dog']", content)
 
 
-class TestLuxonisDatasetConverter(TestYOLOConverter):
+class TestLuxonisDatasetConverter(unittest.TestCase):
     def setUp(self):
         self.test_dir = "test_dataset"
         os.makedirs(self.test_dir, exist_ok=True)
