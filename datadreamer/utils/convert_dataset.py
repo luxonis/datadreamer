@@ -16,6 +16,7 @@ def convert_dataset(
     dataset_format,
     split_ratios,
     dataset_plugin=None,
+    dataset_name=None,
     copy_files=True,
     seed=42,
 ):
@@ -24,7 +25,11 @@ def convert_dataset(
     elif dataset_format == "coco":
         converter = COCOConverter(seed=seed)
     elif dataset_format == "luxonis-dataset":
-        converter = LuxonisDatasetConverter(dataset_plugin=dataset_plugin, seed=seed)
+        converter = LuxonisDatasetConverter(
+            dataset_plugin=dataset_plugin,
+            dataset_name=dataset_name,
+            seed=seed,
+        )
     elif dataset_format == "cls-single":
         converter = SingleLabelClsConverter(seed=seed)
     else:
@@ -65,6 +70,11 @@ def main():
         help="Dataset plugin to use for luxonis-dataset format.",
     )
     parser.add_argument(
+        "--dataset_name",
+        type=str,
+        help="Name of the dataset to create if dataset_plugin is used",
+    )
+    parser.add_argument(
         "--copy_files",
         type=bool,
         default=True,
@@ -85,6 +95,7 @@ def main():
         args.dataset_format,
         args.split_ratios,
         args.dataset_plugin,
+        args.dataset_name,
         args.copy_files,
         args.seed,
     )

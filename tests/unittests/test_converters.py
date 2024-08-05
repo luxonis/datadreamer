@@ -3,11 +3,13 @@ import os
 import shutil
 import unittest
 
+from luxonis_ml.data import LuxonisDataset
 from PIL import Image
 
 from datadreamer.utils import (
     BaseConverter,
     COCOConverter,
+    LuxonisDatasetConverter,
     SingleLabelClsConverter,
     YOLOConverter,
 )
@@ -246,6 +248,45 @@ class TestYOLOConverter(unittest.TestCase):
             self.assertIn("test:", content)
             self.assertIn("nc: 2", content)
             self.assertIn("names: ['cat', 'dog']", content)
+
+
+class TestLuxonisDatasetConverter(unittest.TestCase):
+    def setUp(self):
+        self.test_dir = "test_dataset"
+        os.makedirs(self.test_dir, exist_ok=True)
+
+        # Create sample images
+        self.image_size = (100, 100)
+        self.create_sample_image("0.jpg")
+        self.create_sample_image("1.jpg")
+
+        # Create sample labels
+        self.labels = {
+            "class_names": ["cat", "dog"],
+            "0.jpg": {"boxes": [(10, 10, 50, 50)], "labels": [0]},
+            "1.jpg": {"boxes": [(20, 20, 70, 70)], "labels": [1]},
+        }
+        with open(os.path.join(self.test_dir, "annotations.json"), "w") as f:
+            json.dump(self.labels, f)
+
+    def tearDown(self):
+        shutil.rmtree(self.test_dir)
+        if hasattr(self, self.dataset_name) and LuxonisDataset.exists(
+            self.dataset_name
+        ):
+            dataset = LuxonisDataset(self.dataset_name)
+            dataset.delete_dataset()
+
+    def create_sample_image(self, filename):
+        image = Image.new("RGB", self.image_size, color="white")
+        image.save(os.path.join(self.test_dir, filename))
+
+    def test_convert(self):
+        self.dataset_name = "test_dataset"
+        converter = LuxonisDatasetConverter(dataset_name=self.dataset_name)
+        split_ratios = [1, 0, 0]
+        converter.convert(self.test_dir, self.dataset_name, split_ratios)
+        self.assertTrue(LuxonisDataset.exists(self.dataset_name))
 
 
 class TestSingleLabelClsConverter(unittest.TestCase):

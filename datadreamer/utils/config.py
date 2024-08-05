@@ -1,9 +1,8 @@
 from __future__ import annotations
 
-from typing import Annotated, List, Literal
-
 from luxonis_ml.utils import LuxonisConfig
 from pydantic import Field
+from typing_extensions import Annotated, List, Literal
 
 
 class Config(LuxonisConfig):
@@ -45,3 +44,6 @@ class Config(LuxonisConfig):
     annotator_size: Literal["base", "large"] = "base"
     batch_size_annotation: int = 1
     dataset_plugin: str = ""
+    loader_plugin: str = ""
+    dataset_name: str = ""
+    dataset_id: str = ""
