@@ -7,7 +7,12 @@ WORKDIR /app
 ## instal
 RUN apt-get update && apt-get install ffmpeg libsm6 libxext6 -y
 RUN apt-get install -y git
-RUN git clone https://github.com/luxonis/datadreamer.git -b main
+
+## Define a build argument for the branch, defaulting to "main"
+ARG BRANCH=main
+
+## Clone the repository with the specified branch
+RUN git clone --branch ${BRANCH} https://github.com/luxonis/datadreamer.git
 
 RUN cd datadreamer && pip install .
 
