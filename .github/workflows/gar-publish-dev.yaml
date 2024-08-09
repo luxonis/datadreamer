@@ -16,6 +16,8 @@ jobs:
     steps:
       - name: 'Checkout GitHub Action'
         uses: actions/checkout@main
+        with:
+          ref: dev  # Checkout the dev branch
         
       - id: 'auth'
         name: 'Authenticate to Google Cloud'
