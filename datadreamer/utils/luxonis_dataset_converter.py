@@ -103,5 +103,4 @@ class LuxonisDatasetConverter(BaseConverter):
             dataset = LuxonisDataset(dataset_name)
 
         dataset.add(dataset_generator())
-
-        dataset.make_splits(split_ratios)
+        dataset.make_splits(tuple(split_ratios))
