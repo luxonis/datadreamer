@@ -56,7 +56,7 @@ class LuxonisDatasetConverter(BaseConverter):
 
                 if "boxes" in data[image_path]:
                     boxes = data[image_path]["boxes"]
-                    for box in boxes:
+                    for box, label in zip(boxes, labels):
                         x, y, w, h = box[0], box[1], box[2] - box[0], box[3] - box[1]
                         x = max(0, x)
                         y = max(0, y)
