@@ -501,9 +501,9 @@ def main():
                 image = Image.fromarray(image)
                 unique_id = uuid.uuid4().hex
                 image_path = os.path.join(
-                    save_dir, f"image_{batch_num * batch_size + i}_{unique_id}.jpg"
+                    save_dir, f"image_{batch_num * batch_size + i}_{unique_id}.png"
                 )
-                image.save(image_path)
+                image.save(image_path, quality=100)
                 images.append(image)
                 batch_image_paths.append(image_path)
 
