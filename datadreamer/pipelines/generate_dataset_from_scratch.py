@@ -464,7 +464,9 @@ def main():
         if args.loader_plugin:
             if "DATASET_ID" in os.environ:
                 image_batches = LOADERS_REGISTRY.get(args.loader_plugin)(
-                    view="all", dataset_id=os.getenv("DATASET_ID"), load_image_paths=True
+                    view="all",
+                    dataset_id=os.getenv("DATASET_ID"),
+                    load_image_paths=True,
                 )
             else:
                 raise ValueError(
