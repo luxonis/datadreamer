@@ -466,6 +466,7 @@ def main():
                 image_batches = LOADERS_REGISTRY.get(args.loader_plugin)(
                     view="all",
                     dataset_id=os.getenv("DATASET_ID"),
+                    sync_target_directory=save_dir,
                     load_image_paths=True,
                 )
             else:
