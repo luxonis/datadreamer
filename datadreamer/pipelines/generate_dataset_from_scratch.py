@@ -464,7 +464,10 @@ def main():
         if args.loader_plugin:
             if "DATASET_ID" in os.environ:
                 image_batches = LOADERS_REGISTRY.get(args.loader_plugin)(
-                    view="all", dataset_id=os.getenv("DATASET_ID")
+                    view="all",
+                    dataset_id=os.getenv("DATASET_ID"),
+                    sync_target_directory=save_dir,
+                    load_image_paths=True,
                 )
             else:
                 raise ValueError(
@@ -501,9 +504,9 @@ def main():
                 image = Image.fromarray(image)
                 unique_id = uuid.uuid4().hex
                 image_path = os.path.join(
-                    save_dir, f"image_{batch_num * batch_size + i}_{unique_id}.png"
+                    save_dir, f"image_{batch_num * batch_size + i}_{unique_id}.jpg"
                 )
-                image.save(image_path, quality=100)
+                image.save(image_path)
                 images.append(image)
                 batch_image_paths.append(image_path)
 
