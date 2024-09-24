@@ -1,10 +1,13 @@
 from __future__ import annotations
 
+import logging
 from typing import List
 
 import torch
 from PIL import Image
 from transformers import CLIPModel, CLIPProcessor
+
+logger = logging.getLogger(__name__)
 
 
 class ClipImageTester:
@@ -22,6 +25,7 @@ class ClipImageTester:
 
     def __init__(self, device: str = "cuda") -> None:
         """Initializes the ClipImageTester with the CLIP model and processor."""
+        logger.info("Initializing CLIP image tester...")
         self.clip = CLIPModel.from_pretrained("openai/clip-vit-base-patch32")
         self.clip_processor = CLIPProcessor.from_pretrained(
             "openai/clip-vit-base-patch32"

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 import os
 
 from luxonis_ml.data import DATASETS_REGISTRY, LuxonisDataset
@@ -7,6 +8,8 @@ from luxonis_ml.data.utils.enums import BucketStorage
 from PIL import Image
 
 from datadreamer.utils import BaseConverter
+
+logger = logging.getLogger(__name__)
 
 
 class LuxonisDatasetConverter(BaseConverter):
@@ -84,7 +87,7 @@ class LuxonisDatasetConverter(BaseConverter):
         # if dataset_plugin is set, use that
         if self.dataset_plugin:
             if "GOOGLE_APPLICATION_CREDENTIALS" in os.environ:
-                print(f"Using {self.dataset_plugin} dataset")
+                logger.info(f"Using {self.dataset_plugin} dataset")
                 dataset_constructor = DATASETS_REGISTRY.get(self.dataset_plugin)
                 dataset = dataset_constructor(dataset_name)
             else:
@@ -96,10 +99,10 @@ class LuxonisDatasetConverter(BaseConverter):
             "LUXONISML_BUCKET" in os.environ
             and "GOOGLE_APPLICATION_CREDENTIALS" in os.environ
         ):
-            print("Using GCS bucket")
+            logger.info("Using GCS bucket")
             dataset = LuxonisDataset(dataset_name, bucket_storage=BucketStorage.GCS)
         else:
-            print("Using local dataset")
+            logger.info("Using local dataset")
             dataset = LuxonisDataset(dataset_name)
 
         dataset.add(dataset_generator())

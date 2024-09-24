@@ -1,9 +1,12 @@
 from __future__ import annotations
 
+import logging
 import os
 import shutil
 
 from datadreamer.utils import BaseConverter
+
+logger = logging.getLogger(__name__)
 
 
 class SingleLabelClsConverter(BaseConverter):
@@ -64,12 +67,12 @@ class SingleLabelClsConverter(BaseConverter):
         class_names = data["class_names"]
         images.remove("class_names")
 
-        print(f"Number of images: {len(images)}")
+        logger.info(f"Number of images: {len(images)}")
 
         # Remove images with multiple labels
         single_label_images = [img for img in images if len(data[img]["labels"]) == 1]
 
-        print(f"Number of images with single label: {len(single_label_images)}")
+        logger.info(f"Number of images with single label: {len(single_label_images)}")
 
         # Split the data into training, validation, and test sets
         train_images, val_images, test_images = BaseConverter.make_splits(

@@ -2,8 +2,11 @@ from __future__ import annotations
 
 import argparse
 import json
+import logging
 import os
 import shutil
+
+logger = logging.getLogger(__name__)
 
 
 def merge_datasets(input_dirs, output_dir, copy_files=True):
@@ -29,7 +32,7 @@ def merge_datasets(input_dirs, output_dir, copy_files=True):
         raise ValueError("All datasets must have different random seeds")
 
     # Create output directory
-    print(f"Output directory: {output_dir}")
+    logger.info(f"Output directory: {output_dir}")
     if os.path.exists(output_dir):
         shutil.rmtree(output_dir)
     os.makedirs(output_dir)

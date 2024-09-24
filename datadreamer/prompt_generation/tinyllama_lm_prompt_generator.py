@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 import re
 from typing import List, Literal, Optional
 
@@ -7,6 +8,8 @@ import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer, Pipeline, pipeline
 
 from datadreamer.prompt_generation.lm_prompt_generator import LMPromptGenerator
+
+logger = logging.getLogger(__name__)
 
 
 class TinyLlamaLMPromptGenerator(LMPromptGenerator):
@@ -53,8 +56,8 @@ class TinyLlamaLMPromptGenerator(LMPromptGenerator):
         Returns:
             tuple: The initialized language model, tokenizer and pipeline.
         """
+        logger.info(f"Initializing TinyLlama-1.1B language model on {self.device}...")
         if self.device == "cpu":
-            print("Loading language model on CPU...")
             model = AutoModelForCausalLM.from_pretrained(
                 "TinyLlama/TinyLlama-1.1B-Chat-v1.0",
                 torch_dtype="auto",
@@ -62,7 +65,6 @@ class TinyLlamaLMPromptGenerator(LMPromptGenerator):
                 low_cpu_mem_usage=True,
             )
         else:
-            print("Loading language model on GPU...")
             model = AutoModelForCausalLM.from_pretrained(
                 "TinyLlama/TinyLlama-1.1B-Chat-v1.0",
                 torch_dtype=torch.float16,
@@ -82,7 +84,6 @@ class TinyLlamaLMPromptGenerator(LMPromptGenerator):
             device_map=self.device,
             batch_size=self.batch_size,
         )
-        print("Done!")
         return model, tokenizer, pipe
 
     def _remove_caption_sentences(self, text: str) -> str:

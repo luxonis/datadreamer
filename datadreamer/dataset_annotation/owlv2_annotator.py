@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from typing import List, Tuple
 
 import numpy as np
@@ -10,6 +11,8 @@ from transformers import Owlv2ForObjectDetection, Owlv2Processor
 from datadreamer.dataset_annotation.image_annotator import BaseAnnotator
 from datadreamer.dataset_annotation.utils import apply_tta
 from datadreamer.utils.nms import non_max_suppression
+
+logger = logging.getLogger(__name__)
 
 
 class OWLv2Annotator(BaseAnnotator):
@@ -54,6 +57,7 @@ class OWLv2Annotator(BaseAnnotator):
         Returns:
             Owlv2ForObjectDetection: The initialized OWLv2 model.
         """
+        logger.info(f"Initializing OWLv2 {self.size} model...")
         if self.size == "large":
             return Owlv2ForObjectDetection.from_pretrained(
                 "google/owlv2-large-patch14-ensemble"
@@ -107,7 +111,6 @@ class OWLv2Annotator(BaseAnnotator):
         ).to(self.device)
         with torch.no_grad():
             outputs = self.model(**inputs)
-        # print(outputs)
         preds = self.processor.post_process_object_detection(
             outputs=outputs, target_sizes=target_sizes, threshold=conf_threshold
         )

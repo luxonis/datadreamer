@@ -1,12 +1,16 @@
 from __future__ import annotations
 
+import logging
 from typing import List, Optional
 
 import torch
 from compel import Compel, ReturnedEmbeddingsType
 from diffusers import DiffusionPipeline
+from PIL import Image
 
 from datadreamer.image_generation.image_generator import ImageGenerator
+
+logger = logging.getLogger(__name__)
 
 
 class StableDiffusionImageGenerator(ImageGenerator):
@@ -38,8 +42,8 @@ class StableDiffusionImageGenerator(ImageGenerator):
         Returns:
             tuple: The base and refiner models.
         """
+        logger.info(f"Initializing SDXL on {self.device}...")
         if self.device == "cpu":
-            print("Loading SDXL on CPU...")
             base = DiffusionPipeline.from_pretrained(
                 "stabilityai/stable-diffusion-xl-base-1.0",
                 # variant="fp16",
@@ -57,7 +61,6 @@ class StableDiffusionImageGenerator(ImageGenerator):
             )
             refiner.to("cpu")
         else:
-            print("Loading SDXL on GPU...")
             base = DiffusionPipeline.from_pretrained(
                 "stabilityai/stable-diffusion-xl-base-1.0",
                 torch_dtype=torch.float16,
@@ -102,7 +105,7 @@ class StableDiffusionImageGenerator(ImageGenerator):
         prompts: List[str],
         negative_prompt: str,
         prompt_objects: Optional[List[List[str]]] = None,
-    ):
+    ) -> List[Image.Image]:
         """Generates a batch of images based on the provided prompts.
 
         Args:

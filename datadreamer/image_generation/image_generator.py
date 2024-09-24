@@ -30,7 +30,7 @@ class ImageGenerator:
         set_seed(seed): Sets the seed for random number generators.
         generate_images(prompts, prompt_objects): Generates images based on provided prompts and optional object prompts.
         release(empty_cuda_cache): Releases resources and optionally empties the CUDA cache. (Abstract method)
-        generate_image(prompt, negative_prompt, prompt_objects): Generates a single image based on the provided prompt. (Abstract method)
+        generate_images_batch(prompts, negative_prompt, prompt_objects): Generates a batch of images based on the provided prompts. Abstract method)
 
     Note:
         The actual model for image generation needs to be defined in the subclass.
@@ -151,20 +151,20 @@ class ImageGenerator:
         pass
 
     @abstractmethod
-    def generate_image(
+    def generate_images_batch(
         self,
-        prompt: str,
+        prompts: List[str],
         negative_prompt: str,
-        prompt_objects: Optional[List[str]] = None,
-    ) -> Image.Image:
-        """Generates a single image based on the provided prompt.
+        prompt_objects: Optional[List[List[str]]] = None,
+    ) -> List[Image.Image]:
+        """Generates a batch of images based on the provided prompts.
 
         Args:
-            prompt (str): The positive prompt to guide image generation.
+            prompts (List[str]): A list of positive prompts to guide image generation.
             negative_prompt (str): The negative prompt to avoid certain features in the image.
-            prompt_objects (Optional[List[str]]): Optional list of objects to be used in CLIP model testing.
+            prompt_objects (Optional[List[List[str]]]): Optional list of objects to be used in CLIP model testing.
 
         Returns:
-            Image.Image: The generated image.
+            List[Image.Image]: A list of generated images.
         """
         pass

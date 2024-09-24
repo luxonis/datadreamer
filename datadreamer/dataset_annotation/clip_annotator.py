@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from typing import List
 
 import numpy as np
@@ -9,6 +10,8 @@ from PIL import Image
 from transformers import CLIPModel, CLIPProcessor
 
 from datadreamer.dataset_annotation.image_annotator import BaseAnnotator, TaskList
+
+logger = logging.getLogger(__name__)
 
 
 class CLIPAnnotator(BaseAnnotator):
@@ -63,6 +66,7 @@ class CLIPAnnotator(BaseAnnotator):
         Returns:
             CLIPModel: The initialized CLIP model.
         """
+        logger.info(f"Initializing CLIP {self.size} model...")
         if self.size == "large":
             return CLIPModel.from_pretrained("openai/clip-vit-large-patch14")
         return CLIPModel.from_pretrained("openai/clip-vit-base-patch32")

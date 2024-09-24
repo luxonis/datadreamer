@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 import re
 from typing import List, Optional
 
@@ -12,6 +13,8 @@ from transformers import (
 )
 
 from datadreamer.prompt_generation.synonym_generator import SynonymGenerator
+
+logger = logging.getLogger(__name__)
 
 
 class LMSynonymGenerator(SynonymGenerator):
@@ -48,8 +51,8 @@ class LMSynonymGenerator(SynonymGenerator):
         Returns:
             tuple: The initialized language model, tokenizer and pipeline.
         """
+        logger.info(f"Initializing Mistral-7B language model on {self.device}...")
         if self.device == "cpu":
-            print("Loading language model on CPU...")
             model = AutoModelForCausalLM.from_pretrained(
                 "mistralai/Mistral-7B-Instruct-v0.1",
                 torch_dtype="auto",
@@ -57,7 +60,7 @@ class LMSynonymGenerator(SynonymGenerator):
                 low_cpu_mem_usage=True,
             )
         else:
-            print("Loading FP16 language model on GPU...")
+            logger.info("Loading FP16 language model...")
             model = AutoModelForCausalLM.from_pretrained(
                 "mistralai/Mistral-7B-Instruct-v0.1",
                 torch_dtype=torch.float16,
@@ -73,7 +76,7 @@ class LMSynonymGenerator(SynonymGenerator):
             torch_dtype=torch.float16 if self.device == "cuda" else "auto",
             device_map=self.device,
         )
-        print("Done!")
+        logger.info("Done!")
         return model, tokenizer, pipe
 
     def _generate_synonyms(self, prompt_text: str) -> List[str]:

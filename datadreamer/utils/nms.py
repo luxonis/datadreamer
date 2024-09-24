@@ -4,6 +4,7 @@
 # https://github.com/ultralytics/yolov5/blob/master/utils/general.py
 from __future__ import annotations
 
+import logging
 import os
 import time
 
@@ -21,6 +22,8 @@ cv2.setNumThreads(
     0
 )  # prevent OpenCV from multithreading (incompatible with PyTorch DataLoader)
 os.environ["NUMEXPR_MAX_THREADS"] = str(min(os.cpu_count(), 8))  # NumExpr max threads
+
+logger = logging.getLogger(__name__)
 
 
 def xywh2xyxy(x):
@@ -131,7 +134,7 @@ def non_max_suppression(
 
         output[img_idx] = x[keep_box_idx]
         if (time.time() - tik) > time_limit:
-            print(f"WARNING: NMS cost time exceed the limited {time_limit}s.")
+            logger.warning(f"WARNING: NMS cost time exceed the limited {time_limit}s.")
             break  # time limit exceeded
 
     return output
