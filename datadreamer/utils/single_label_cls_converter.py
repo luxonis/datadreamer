@@ -35,7 +35,7 @@ class SingleLabelClsConverter(BaseConverter):
     def __init__(self, seed=42):
         super().__init__(seed)
 
-    def convert(self, dataset_dir, output_dir, split_ratios, copy_files=True):
+    def convert(self, dataset_dir, output_dir, split_ratios, copy_files=True) -> None:
         """Converts a dataset into a format suitable for single-label classification.
 
         Args:
@@ -50,7 +50,9 @@ class SingleLabelClsConverter(BaseConverter):
         data = BaseConverter.read_annotations(annotation_path)
         self.process_data(data, dataset_dir, output_dir, split_ratios, copy_files)
 
-    def process_data(self, data, image_dir, output_dir, split_ratios, copy_files=True):
+    def process_data(
+        self, data, image_dir, output_dir, split_ratios, copy_files=True
+    ) -> None:
         """Processes the data by removing images with multiple labels, then dividing it
         into training and validation sets, and saves the images with single labels.
 

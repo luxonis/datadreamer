@@ -33,7 +33,9 @@ class ClipImageTester:
         self.device = device
         self.clip.to(self.device)
 
-    def test_image(self, image: Image.Image, objects: List[str], conf_threshold=0.05):
+    def test_image(
+        self, image: Image.Image, objects: List[str], conf_threshold=0.05
+    ) -> tuple:
         """Tests the generated image against a set of objects using the CLIP model.
 
         Args:

@@ -31,7 +31,7 @@ class COCOConverter(BaseConverter):
     def __init__(self, seed=42):
         super().__init__(seed)
 
-    def convert(self, dataset_dir, output_dir, split_ratios, copy_files=True):
+    def convert(self, dataset_dir, output_dir, split_ratios, copy_files=True) -> None:
         """Converts a dataset into a COCO format.
 
         Args:
@@ -46,7 +46,9 @@ class COCOConverter(BaseConverter):
         data = BaseConverter.read_annotations(annotation_path)
         self.process_data(data, dataset_dir, output_dir, split_ratios, copy_files)
 
-    def process_data(self, data, image_dir, output_dir, split_ratios, copy_files=True):
+    def process_data(
+        self, data, image_dir, output_dir, split_ratios, copy_files=True
+    ) -> None:
         """Processes the data by dividing it into training and validation sets, and
         saves the images and labels in COCO format.
 
@@ -126,7 +128,9 @@ class COCOConverter(BaseConverter):
                 dataset_output_dir, images_info, annotations, data["class_names"]
             )
 
-    def save_labels(self, dataset_output_dir, images_info, annotations, class_names):
+    def save_labels(
+        self, dataset_output_dir, images_info, annotations, class_names
+    ) -> None:
         """Saves the labels to a JSON file.
 
         Args:

@@ -51,7 +51,7 @@ class OWLv2Annotator(BaseAnnotator):
         self.device = device
         self.model.to(self.device)
 
-    def _init_model(self):
+    def _init_model(self) -> Owlv2ForObjectDetection:
         """Initializes the OWLv2 model for object detection.
 
         Returns:
@@ -66,7 +66,7 @@ class OWLv2Annotator(BaseAnnotator):
             "google/owlv2-base-patch16-ensemble"
         )
 
-    def _init_processor(self):
+    def _init_processor(self) -> Owlv2Processor:
         """Initializes the processor for the OWLv2 model.
 
         Returns:

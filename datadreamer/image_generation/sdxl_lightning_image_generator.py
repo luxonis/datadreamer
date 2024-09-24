@@ -40,7 +40,7 @@ class StableDiffusionLightningImageGenerator(ImageGenerator):
         self.pipe = self._init_gen_model()
         self.compel = self._init_compel()
 
-    def _init_gen_model(self):
+    def _init_gen_model(self) -> StableDiffusionXLPipeline:
         """Initializes the Stable Diffusion Lightning model for image generation.
 
         Returns:
@@ -75,7 +75,7 @@ class StableDiffusionLightningImageGenerator(ImageGenerator):
 
         return pipe
 
-    def _init_compel(self):
+    def _init_compel(self) -> Compel:
         """Initializes the Compel model for text prompt weighting.
 
         Returns:

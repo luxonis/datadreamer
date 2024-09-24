@@ -13,7 +13,7 @@ class BaseConverter(ABC):
         np.random.seed(seed)
 
     @abstractmethod
-    def convert(self, dataset_dir, output_dir, split_ratios, copy_files=True):
+    def convert(self, dataset_dir, output_dir, split_ratios, copy_files=True) -> None:
         """Converts a dataset into another format.
 
         Args:
@@ -28,7 +28,7 @@ class BaseConverter(ABC):
         pass
 
     @staticmethod
-    def read_annotations(annotation_path):
+    def read_annotations(annotation_path) -> dict:
         """Reads annotations from a JSON file located at the specified path.
 
         Args:
@@ -42,7 +42,7 @@ class BaseConverter(ABC):
         return data
 
     @staticmethod
-    def make_splits(images, split_ratios, shuffle=True):
+    def make_splits(images, split_ratios, shuffle=True) -> tuple:
         """Splits the list of images into training, validation, and test sets.
 
         Args:

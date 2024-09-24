@@ -20,7 +20,7 @@ class LuxonisDatasetConverter(BaseConverter):
         self.dataset_plugin = dataset_plugin
         self.dataset_name = dataset_name
 
-    def convert(self, dataset_dir, output_dir, split_ratios, copy_files=True):
+    def convert(self, dataset_dir, output_dir, split_ratios, copy_files=True) -> None:
         """Converts a dataset into a LuxonisDataset format.
 
         Args:
@@ -35,7 +35,19 @@ class LuxonisDatasetConverter(BaseConverter):
         data = BaseConverter.read_annotations(annotation_path)
         self.process_data(data, dataset_dir, output_dir, split_ratios)
 
-    def process_data(self, data, dataset_dir, output_dir, split_ratios):
+    def process_data(self, data, dataset_dir, output_dir, split_ratios) -> None:
+        """Processes the data into LuxonisDataset format.
+
+        Args:
+        - data (dict): The data to process.
+        - dataset_dir (str): The directory where the source dataset is located.
+        - output_dir (str): The directory where the processed dataset should be saved.
+        - split_ratios (list of float): The ratios to split the data into training, validation, and test sets.
+
+        No return value.
+        """
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
         class_names = data["class_names"]
         image_paths = list(data.keys())
         image_paths.remove("class_names")

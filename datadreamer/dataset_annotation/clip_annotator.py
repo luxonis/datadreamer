@@ -50,7 +50,7 @@ class CLIPAnnotator(BaseAnnotator):
         self.device = device
         self.model.to(self.device)
 
-    def _init_processor(self):
+    def _init_processor(self) -> CLIPProcessor:
         """Initializes the CLIP processor.
 
         Returns:
@@ -60,7 +60,7 @@ class CLIPAnnotator(BaseAnnotator):
             return CLIPProcessor.from_pretrained("openai/clip-vit-large-patch14")
         return CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32")
 
-    def _init_model(self):
+    def _init_model(self) -> CLIPModel:
         """Initializes the CLIP model.
 
         Returns:
@@ -87,7 +87,7 @@ class CLIPAnnotator(BaseAnnotator):
             synonym_dict (dict, optional): Dictionary for handling synonyms in labels. Defaults to None.
 
         Returns:
-            List[List[int]]: A list of lists of labels for each image.
+            List[np.ndarray]: A list of the annotations for each image.
         """
         if synonym_dict is not None:
             objs_syn = set()

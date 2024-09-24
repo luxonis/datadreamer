@@ -64,7 +64,7 @@ class ImageGenerator:
             self.set_seed(seed)
 
     @staticmethod
-    def set_seed(seed: int):
+    def set_seed(seed: int) -> None:
         """Sets the seed for random number generators in Python and PyTorch.
 
         Args:
@@ -78,7 +78,7 @@ class ImageGenerator:
         self,
         prompts: Union[str, List[str]],
         prompt_objects: Optional[List[List[str]]] = None,
-    ):
+    ) -> List[Image.Image]:
         """Generates images based on the provided prompts and optional object prompts.
 
         Args:

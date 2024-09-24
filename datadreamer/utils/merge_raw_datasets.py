@@ -9,7 +9,18 @@ import shutil
 logger = logging.getLogger(__name__)
 
 
-def merge_datasets(input_dirs, output_dir, copy_files=True):
+def merge_datasets(input_dirs, output_dir, copy_files=True) -> None:
+    """Merges multiple raw datasets into a single dataset.
+
+    Args:
+        input_dirs (List[str]): A list of input directories containing raw datasets.
+        output_dir (str): The output directory where the merged dataset will be saved.
+        copy_files (bool, optional): Whether to copy the files from the input directories
+            to the output directory. Defaults to True.
+
+    No return value.
+    """
+    # Check if all input directories exist
     config_tasks = []
     config_classes = []
     random_seeds = []

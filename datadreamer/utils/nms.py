@@ -45,7 +45,7 @@ def non_max_suppression(
     agnostic=False,
     multi_label=False,
     max_det=300,
-):
+) -> list:
     """Runs Non-Maximum Suppression (NMS) on inference results.
     This code is borrowed from: https://github.com/ultralytics/yolov5/blob/47233e1698b89fc437a4fb9463c815e9171be955/utils/general.py#L775
     Args:

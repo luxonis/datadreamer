@@ -31,7 +31,7 @@ class StableDiffusionTurboImageGenerator(ImageGenerator):
         super().__init__(*args, **kwargs)
         self.base = self._init_gen_model()
 
-    def _init_gen_model(self):
+    def _init_gen_model(self) -> AutoPipelineForText2Image:
         """Initializes the Stable Diffusion Turbo model for image generation.
 
         Returns:
