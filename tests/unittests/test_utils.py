@@ -3,20 +3,20 @@ import os
 import shutil
 import unittest
 
-from luxonis_ml.data import LuxonisDataset
-from PIL import Image
 import numpy as np
-import torch
+from PIL import Image
 
 from datadreamer.utils import (
     dataset_utils,
     merge_raw_datasets,
 )
 
-def create_sample_image(image_name, image_size=(100, 100), color=(255, 0, 0), save_dir="test_images"):
-    """
-    Create and save a simple image with a solid color.
-    
+
+def create_sample_image(
+    image_name, image_size=(100, 100), color=(255, 0, 0), save_dir="test_images"
+):
+    """Create and save a simple image with a solid color.
+
     Args:
         image_name (str): The name of the image file.
         image_size (tuple): The size of the image (width, height).
@@ -25,16 +25,15 @@ def create_sample_image(image_name, image_size=(100, 100), color=(255, 0, 0), sa
     """
     # Create the directory if it doesn't exist
     os.makedirs(save_dir, exist_ok=True)
-    
+
     # Create a blank image with the given color
-    img = Image.new('RGB', image_size, color)
-    
+    img = Image.new("RGB", image_size, color)
+
     # Save the image to the specified directory
     img.save(os.path.join(save_dir, image_name))
 
 
 class TestSaveAnnotationsToJson(unittest.TestCase):
-
     def setUp(self):
         # Create a temporary directory for saving images and JSON file
         self.test_dir = "test_dir"
@@ -95,8 +94,8 @@ class TestSaveAnnotationsToJson(unittest.TestCase):
         self.assertEqual(annotations["image2.jpg"]["labels"], [1])
         self.assertEqual(annotations["class_names"], self.class_names)
 
-class TestMergeDatasets(unittest.TestCase):
 
+class TestMergeDatasets(unittest.TestCase):
     def setUp(self):
         # Create temporary directories for test datasets
         self.input_dir_1 = "input_dir_1"
@@ -158,7 +157,9 @@ class TestMergeDatasets(unittest.TestCase):
 
     def test_merge_datasets(self):
         # Test merging datasets
-        merge_raw_datasets.merge_datasets([self.input_dir_1, self.input_dir_2], self.output_dir, copy_files=True)
+        merge_raw_datasets.merge_datasets(
+            [self.input_dir_1, self.input_dir_2], self.output_dir, copy_files=True
+        )
 
         # Check if output directory is created
         self.assertTrue(os.path.exists(self.output_dir))
@@ -179,6 +180,7 @@ class TestMergeDatasets(unittest.TestCase):
         # Check if images are copied correctly
         for image_name in ["image1.jpg", "image2.jpg", "image3.jpg", "image4.jpg"]:
             self.assertTrue(os.path.exists(os.path.join(self.output_dir, image_name)))
+
 
 if __name__ == "__main__":
     unittest.main()
