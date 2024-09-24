@@ -623,11 +623,13 @@ def main():
 
                 labels_list.append(np.array(labels))
 
+                plt.axis("off")
                 plt.savefig(
                     os.path.join(
                         bbox_dir, f"bbox_{i * args.batch_size_annotation + j}.jpg"
                     )
                 )
+
                 plt.close()
 
         # Save annotations as JSON files
