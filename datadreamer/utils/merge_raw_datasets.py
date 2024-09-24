@@ -14,7 +14,7 @@ def merge_datasets(input_dirs, output_dir, copy_files=True):
     config_classes = []
     random_seeds = []
     for input_dir in input_dirs:
-        with open(os.path.join(input_dir, "generation_args.json")) as f:
+        with open(os.path.join(input_dir, "generation_args.yaml")) as f:
             generation_args = json.load(f)
         config_tasks.append(generation_args["task"])
         config_classes.append(generation_args["class_names"])
@@ -48,12 +48,12 @@ def merge_datasets(input_dirs, output_dir, copy_files=True):
         if copy_files:
             shutil.copy(
                 os.path.join(input_dir, "generation_args.yaml"),
-                os.path.join(output_dir, f"generation_args_{i}.json"),
+                os.path.join(output_dir, f"generation_args_{i}.yaml"),
             )
         else:
             shutil.move(
                 os.path.join(input_dir, "generation_args.yaml"),
-                os.path.join(output_dir, f"generation_args_{i}.json"),
+                os.path.join(output_dir, f"generation_args_{i}.yaml"),
             )
 
         # Copy or move images
