@@ -46,16 +46,17 @@ class StableDiffusionLightningImageGenerator(ImageGenerator):
         base = "stabilityai/stable-diffusion-xl-base-1.0"
         repo = "ByteDance/SDXL-Lightning"
         ckpt = "sdxl_lightning_4step_unet.safetensors"  # Use the correct ckpt for your step setting!
+        config = UNet2DConditionModel.load_config(base, subfolder="unet")
 
         # Load model.
         if self.device == "cpu":
             print("Loading SDXL Lightning on CPU...")
-            unet = UNet2DConditionModel.from_config(base, subfolder="unet")
+            unet = UNet2DConditionModel.from_config(config)
             unet.load_state_dict(load_file(hf_hub_download(repo, ckpt)))
             pipe = StableDiffusionXLPipeline.from_pretrained(base, unet=unet)
         else:
             print("Loading SDXL Lightning on GPU...")
-            unet = UNet2DConditionModel.from_config(base, subfolder="unet").to(
+            unet = UNet2DConditionModel.from_config(config).to(
                 self.device, torch.float16
             )
             unet.load_state_dict(
