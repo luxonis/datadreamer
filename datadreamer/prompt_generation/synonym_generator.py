@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 import logging
 from abc import ABC, abstractmethod
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 from tqdm import tqdm
 
@@ -41,7 +41,7 @@ class SynonymGenerator(ABC):
         self.seed = seed
         self.device = device
 
-    def generate_synonyms_for_list(self, words: List[str]) -> dict:
+    def generate_synonyms_for_list(self, words: List[str]) -> Dict:
         """Generates synonyms for a list of words and returns them in a dictionary.
 
         Args:
@@ -56,7 +56,7 @@ class SynonymGenerator(ABC):
             synonyms_dict[word] = synonyms
         return synonyms_dict
 
-    def save_synonyms(self, synonyms, save_path: str) -> None:
+    def save_synonyms(self, synonyms: Dict, save_path: str) -> None:
         """Saves the generated synonyms to a JSON file.
 
         Args:

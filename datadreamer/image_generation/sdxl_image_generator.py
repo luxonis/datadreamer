@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import logging
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 import torch
 from compel import Compel, ReturnedEmbeddingsType
@@ -36,7 +36,7 @@ class StableDiffusionImageGenerator(ImageGenerator):
         self.base, self.refiner = self._init_gen_model()
         self.base_processor, self.refiner_processor = self._init_processor()
 
-    def _init_gen_model(self) -> tuple:
+    def _init_gen_model(self) -> Tuple[DiffusionPipeline, DiffusionPipeline]:
         """Initializes the base and refiner models of Stable Diffusion.
 
         Returns:
@@ -80,7 +80,7 @@ class StableDiffusionImageGenerator(ImageGenerator):
 
         return base, refiner
 
-    def _init_processor(self) -> tuple:
+    def _init_processor(self) -> Tuple[Compel, Compel]:
         """Initializes the processors for the base and refiner models.
 
         Returns:

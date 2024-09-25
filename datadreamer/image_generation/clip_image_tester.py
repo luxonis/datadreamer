@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import logging
-from typing import List
+from typing import List, Tuple
 
 import torch
 from PIL import Image
@@ -34,8 +34,8 @@ class ClipImageTester:
         self.clip.to(self.device)
 
     def test_image(
-        self, image: Image.Image, objects: List[str], conf_threshold=0.05
-    ) -> tuple:
+        self, image: Image.Image, objects: List[str], conf_threshold: float = 0.05
+    ) -> Tuple[bool, torch.Tensor, int]:
         """Tests the generated image against a set of objects using the CLIP model.
 
         Args:
@@ -67,7 +67,7 @@ class ClipImageTester:
         images: List[Image.Image],
         objects: List[List[str]],
         conf_threshold=0.05,
-    ) -> List[tuple]:
+    ) -> Tuple[List[bool], List[torch.Tensor], List[int]]:
         """Tests the generated images against a set of objects using the CLIP model.
 
         Args:
@@ -76,8 +76,8 @@ class ClipImageTester:
             conf_threshold (float, optional): Confidence threshold for considering an object as present. Defaults to 0.05.
 
         Returns:
-            List[tuple]: A list of tuples containing a boolean indicating if the image passes the test,
-                        the probabilities of the objects, and the number of objects that passed the test.
+            Tuple[List[bool], List[torch.Tensor], List[int]]: A tuple containing a list of booleans indicating if the images pass the test,
+                   a list of probabilities of the objects, and a list of the number of objects that passed the test.
         """
         # Transform the inputs for the CLIP model
         objects_array = []

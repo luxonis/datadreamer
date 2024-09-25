@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 import re
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 import torch
 from transformers import (
@@ -45,7 +45,7 @@ class LMSynonymGenerator(SynonymGenerator):
         super().__init__(synonyms_number, seed, device)
         self.model, self.tokenizer, self.pipeline = self._init_lang_model()
 
-    def _init_lang_model(self) -> tuple[AutoModelForCausalLM, AutoTokenizer, Pipeline]:
+    def _init_lang_model(self) -> Tuple[AutoModelForCausalLM, AutoTokenizer, Pipeline]:
         """Initializes the language model, tokenizer and pipeline for prompt generation.
 
         Returns:

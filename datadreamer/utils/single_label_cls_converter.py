@@ -3,6 +3,7 @@ from __future__ import annotations
 import logging
 import os
 import shutil
+from typing import Dict, List
 
 from datadreamer.utils import BaseConverter
 
@@ -32,10 +33,16 @@ class SingleLabelClsConverter(BaseConverter):
     │   ├── class_2
     """
 
-    def __init__(self, seed=42):
+    def __init__(self, seed: int = 42):
         super().__init__(seed)
 
-    def convert(self, dataset_dir, output_dir, split_ratios, copy_files=True) -> None:
+    def convert(
+        self,
+        dataset_dir: str,
+        output_dir: str,
+        split_ratios: List[float],
+        copy_files: bool = True,
+    ) -> None:
         """Converts a dataset into a format suitable for single-label classification.
 
         Args:
@@ -51,7 +58,12 @@ class SingleLabelClsConverter(BaseConverter):
         self.process_data(data, dataset_dir, output_dir, split_ratios, copy_files)
 
     def process_data(
-        self, data, image_dir, output_dir, split_ratios, copy_files=True
+        self,
+        data: Dict,
+        image_dir: str,
+        output_dir: str,
+        split_ratios: List[float],
+        copy_files: bool = True,
     ) -> None:
         """Processes the data by removing images with multiple labels, then dividing it
         into training and validation sets, and saves the images with single labels.

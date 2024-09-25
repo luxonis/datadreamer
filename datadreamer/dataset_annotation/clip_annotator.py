@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import logging
-from typing import List
+from typing import Dict, List
 
 import numpy as np
 import PIL
@@ -76,7 +76,7 @@ class CLIPAnnotator(BaseAnnotator):
         images: List[PIL.Image.Image],
         objects: List[str],
         conf_threshold: float = 0.1,
-        synonym_dict: dict[str, List[str]] | None = None,
+        synonym_dict: Dict[str, List[str]] | None = None,
     ) -> List[np.ndarray]:
         """Annotates images using the OWLv2 model.
 

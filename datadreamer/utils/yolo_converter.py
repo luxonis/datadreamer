@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 import shutil
+from typing import Dict, List
 
 from PIL import Image
 
@@ -32,7 +33,13 @@ class YOLOConverter(BaseConverter):
     def __init__(self, seed=42):
         super().__init__(seed)
 
-    def convert(self, dataset_dir, output_dir, split_ratios, copy_files=True) -> None:
+    def convert(
+        self,
+        dataset_dir: str,
+        output_dir: str,
+        split_ratios: List[float],
+        copy_files: bool = True,
+    ):
         """Converts a dataset into a format suitable for training with YOLO, including
         creating training and validation splits.
 
@@ -48,7 +55,9 @@ class YOLOConverter(BaseConverter):
         data = BaseConverter.read_annotations(annotation_path)
         self.process_data(data, dataset_dir, output_dir, split_ratios, copy_files)
 
-    def convert_to_yolo_format(self, box, image_width, image_height) -> list:
+    def convert_to_yolo_format(
+        self, box: List[float], image_width: int, image_height: int
+    ) -> List[float]:
         """Converts bounding box coordinates to YOLO format.
 
         Args:
@@ -66,7 +75,12 @@ class YOLOConverter(BaseConverter):
         return [x_center, y_center, width, height]
 
     def process_data(
-        self, data, image_dir, output_dir, split_ratios, copy_files=True
+        self,
+        data: Dict,
+        image_dir: str,
+        output_dir: str,
+        split_ratios: List[float],
+        copy_files: bool = True,
     ) -> None:
         """Processes the data by dividing it into training and validation sets, and
         saves the images and labels in YOLO format.
@@ -133,7 +147,7 @@ class YOLOConverter(BaseConverter):
 
         self.create_data_yaml(output_dir, data["class_names"])
 
-    def create_data_yaml(self, root_dir, class_names) -> None:
+    def create_data_yaml(self, root_dir: str, class_names: List[str]) -> None:
         """Creates a YAML file for dataset configuration, specifying paths and class
         names.
 

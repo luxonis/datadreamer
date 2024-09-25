@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 import os
+from typing import Dict, List
 
 from luxonis_ml.data import DATASETS_REGISTRY, LuxonisDataset
 from luxonis_ml.data.utils.enums import BucketStorage
@@ -15,12 +16,20 @@ logger = logging.getLogger(__name__)
 class LuxonisDatasetConverter(BaseConverter):
     """Class for converting a dataset to LuxonisDataset format."""
 
-    def __init__(self, dataset_plugin=None, dataset_name=None, seed=42):
+    def __init__(
+        self, dataset_plugin: str = None, dataset_name: str = None, seed: int = 42
+    ):
         super().__init__(seed)
         self.dataset_plugin = dataset_plugin
         self.dataset_name = dataset_name
 
-    def convert(self, dataset_dir, output_dir, split_ratios, copy_files=True) -> None:
+    def convert(
+        self,
+        dataset_dir: str,
+        output_dir: str,
+        split_ratios: List[float],
+        copy_files: bool = True,
+    ) -> None:
         """Converts a dataset into a LuxonisDataset format.
 
         Args:
@@ -35,7 +44,9 @@ class LuxonisDatasetConverter(BaseConverter):
         data = BaseConverter.read_annotations(annotation_path)
         self.process_data(data, dataset_dir, output_dir, split_ratios)
 
-    def process_data(self, data, dataset_dir, output_dir, split_ratios) -> None:
+    def process_data(
+        self, data: Dict, dataset_dir: str, output_dir: str, split_ratios: List[float]
+    ) -> None:
         """Processes the data into LuxonisDataset format.
 
         Args:

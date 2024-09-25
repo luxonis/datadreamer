@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import logging
-from typing import List, Tuple
+from typing import Dict, List, Tuple
 
 import numpy as np
 import PIL
@@ -85,7 +85,7 @@ class OWLv2Annotator(BaseAnnotator):
         images: List[PIL.Image.Image],
         prompts: List[str],
         conf_threshold: float = 0.1,
-    ) -> List[dict[str, torch.Tensor]]:
+    ) -> List[Dict[str, torch.Tensor]]:
         """Generates annotations for the given images and prompts.
 
         Args:
@@ -94,7 +94,7 @@ class OWLv2Annotator(BaseAnnotator):
             conf_threshold (float, optional): Confidence threshold for the annotations. Defaults to 0.1.
 
         Returns:
-            dict: A dictionary containing the annotations for the images.
+            List[Dict[str, torch.Tensor]]: The annotations for the given images and prompts.
         """
         n = len(images)
         batched_prompts = [prompts] * n
@@ -119,11 +119,11 @@ class OWLv2Annotator(BaseAnnotator):
 
     def _get_annotations(
         self,
-        pred: dict[str, torch.Tensor],
+        pred: Dict[str, torch.Tensor],
         use_tta: bool,
         img_dim: int,
-        synonym_dict: dict[str, List[str]] | None,
-        synonym_dict_rev: dict[int, int] | None,
+        synonym_dict: Dict[str, List[str]] | None,
+        synonym_dict_rev: Dict[int, int] | None,
     ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         """Extracts the annotations from the predictions.
 
@@ -161,7 +161,7 @@ class OWLv2Annotator(BaseAnnotator):
         conf_threshold: float = 0.1,
         iou_threshold: float = 0.2,
         use_tta: bool = False,
-        synonym_dict: dict[str, List[str]] | None = None,
+        synonym_dict: Dict[str, List[str]] | None = None,
     ) -> Tuple[List[np.ndarray], List[np.ndarray], List[np.ndarray]]:
         """Annotates images using the OWLv2 model.
 

@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+from typing import List
+
 from torchvision import transforms
 
 
-def apply_tta(image) -> list:
+def apply_tta(image) -> List[transforms.Compose]:
     """Apply test-time augmentation (TTA) to the given image.
 
     Args:

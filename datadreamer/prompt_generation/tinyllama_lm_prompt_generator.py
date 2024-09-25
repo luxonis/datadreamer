@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 import re
-from typing import List, Literal, Optional
+from typing import List, Literal, Optional, Tuple
 
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer, Pipeline, pipeline
@@ -50,7 +50,7 @@ class TinyLlamaLMPromptGenerator(LMPromptGenerator):
             quantization,
         )
 
-    def _init_lang_model(self) -> tuple[AutoModelForCausalLM, AutoTokenizer, Pipeline]:
+    def _init_lang_model(self) -> Tuple[AutoModelForCausalLM, AutoTokenizer, Pipeline]:
         """Initializes the language model, tokenizer and pipeline for prompt generation.
 
         Returns:

@@ -5,11 +5,14 @@ import json
 import logging
 import os
 import shutil
+from typing import List
 
 logger = logging.getLogger(__name__)
 
 
-def merge_datasets(input_dirs, output_dir, copy_files=True) -> None:
+def merge_datasets(
+    input_dirs: List[str], output_dir: str, copy_files: bool = True
+) -> None:
     """Merges multiple raw datasets into a single dataset.
 
     Args:

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from abc import ABC, abstractmethod
+from typing import Dict, List, Tuple
 
 import numpy as np
 
@@ -27,7 +28,7 @@ class BaseConverter(ABC):
         pass
 
     @staticmethod
-    def read_annotations(annotation_path) -> dict:
+    def read_annotations(annotation_path) -> Dict:
         """Reads annotations from a JSON file located at the specified path.
 
         Args:
@@ -41,7 +42,7 @@ class BaseConverter(ABC):
         return data
 
     @staticmethod
-    def make_splits(images, split_ratios, shuffle=True) -> tuple:
+    def make_splits(images, split_ratios, shuffle=True) -> Tuple[List, List, List]:
         """Splits the list of images into training, validation, and test sets.
 
         Args:
