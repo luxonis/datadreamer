@@ -70,8 +70,8 @@ def _check_lm_prompt_generator(
 
 
 @pytest.mark.skipif(
-    total_memory < 16 or not torch.cuda.is_available() or total_disk_space < 35,
-    reason="Test requires at least 16GB of RAM, 35GB of HDD and CUDA support",
+    total_memory < 15 or not torch.cuda.is_available() or total_disk_space < 35,
+    reason="Test requires at least 15GB of RAM, 35GB of HDD and CUDA support",
 )
 def test_cuda_lm_prompt_generator():
     _check_lm_prompt_generator("cuda")
@@ -128,8 +128,8 @@ def _check_synonym_generator(device: str, synonym_generator_class=LMSynonymGener
 
 
 @pytest.mark.skipif(
-    total_memory < 16 or not torch.cuda.is_available() or total_disk_space < 35,
-    reason="Test requires at least 16GB of RAM, 35GB of HDD and CUDA support",
+    total_memory < 15 or not torch.cuda.is_available() or total_disk_space < 35,
+    reason="Test requires at least 15GB of RAM, 35GB of HDD and CUDA support",
 )
 def test_cuda_synonym_generator():
     _check_synonym_generator("cuda")

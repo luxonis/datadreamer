@@ -9,12 +9,9 @@ import torch
 
 # Get the total memory in GB
 total_memory = psutil.virtual_memory().total / (1000**3)
-print(f"Total memory: {total_memory}")
 total_memory = int(total_memory) + (total_memory > int(total_memory))
-print(f"Total memory rounded: {total_memory}")
 # Get the total disk space in GB
 total_disk_space = psutil.disk_usage("/").total / (1000**3)
-print(f"Total disk space: {total_disk_space}")
 
 
 def _check_detection_pipeline(cmd: str, target_folder: str):
@@ -260,8 +257,8 @@ def test_negative_num_objects_range():
 # DETECTION - SIMPLE LM
 # =========================================================
 @pytest.mark.skipif(
-    total_memory < 16 or total_disk_space < 35,
-    reason="Test requires at least 16GB of RAM and 35GB of HDD",
+    total_memory < 15 or total_disk_space < 35,
+    reason="Test requires at least 15GB of RAM and 35GB of HDD",
 )
 def test_cpu_simple_sdxl_turbo_detection_pipeline():
     # Define target folder
@@ -282,8 +279,8 @@ def test_cpu_simple_sdxl_turbo_detection_pipeline():
 
 
 @pytest.mark.skipif(
-    not torch.cuda.is_available() or total_memory < 16 or total_disk_space < 35,
-    reason="Test requires GPU, at least 16GB of RAM and 35GB of HDD",
+    not torch.cuda.is_available() or total_memory < 15 or total_disk_space < 35,
+    reason="Test requires GPU, at least 15GB of RAM and 35GB of HDD",
 )
 def test_cuda_simple_sdxl_turbo_detection_pipeline():
     # Define target folder
@@ -304,8 +301,8 @@ def test_cuda_simple_sdxl_turbo_detection_pipeline():
 
 
 @pytest.mark.skipif(
-    not torch.cuda.is_available() or total_memory < 16 or total_disk_space < 55,
-    reason="Test requires GPU, at least 16GB of RAM and 55GB of HDD",
+    not torch.cuda.is_available() or total_memory < 15 or total_disk_space < 55,
+    reason="Test requires GPU, at least 15GB of RAM and 55GB of HDD",
 )
 def test_cuda_simple_llm_synonym_sdxl_turbo_detection_pipeline():
     # Define target folder
@@ -327,8 +324,8 @@ def test_cuda_simple_llm_synonym_sdxl_turbo_detection_pipeline():
 
 
 @pytest.mark.skipif(
-    not torch.cuda.is_available() or total_memory < 16 or total_disk_space < 35,
-    reason="Test requires GPU, at least 16GB of RAM and 35GB of HDD",
+    not torch.cuda.is_available() or total_memory < 15 or total_disk_space < 35,
+    reason="Test requires GPU, at least 15GB of RAM and 35GB of HDD",
 )
 def test_cuda_simple_wordnet_synonym_sdxl_turbo_detection_pipeline():
     # Define target folder
@@ -350,8 +347,8 @@ def test_cuda_simple_wordnet_synonym_sdxl_turbo_detection_pipeline():
 
 
 @pytest.mark.skipif(
-    total_memory < 16 or total_disk_space < 35,
-    reason="Test requires at least 16GB of RAM and 35GB of HDD",
+    total_memory < 15 or total_disk_space < 35,
+    reason="Test requires at least 15GB of RAM and 35GB of HDD",
 )
 def test_cpu_simple_sdxl_detection_pipeline():
     # Define target folder
@@ -372,8 +369,8 @@ def test_cpu_simple_sdxl_detection_pipeline():
 
 
 @pytest.mark.skipif(
-    not torch.cuda.is_available() or total_memory < 16 or total_disk_space < 35,
-    reason="Test requires GPU, at least 16GB of RAM and 35GB of HDD",
+    not torch.cuda.is_available() or total_memory < 15 or total_disk_space < 35,
+    reason="Test requires GPU, at least 15GB of RAM and 35GB of HDD",
 )
 def test_cuda_simple_sdxl_detection_pipeline():
     # Define target folder
@@ -394,8 +391,8 @@ def test_cuda_simple_sdxl_detection_pipeline():
 
 
 @pytest.mark.skipif(
-    total_memory < 16 or total_disk_space < 35,
-    reason="Test requires at least 16GB of RAM and 35GB of HDD",
+    total_memory < 15 or total_disk_space < 35,
+    reason="Test requires at least 15GB of RAM and 35GB of HDD",
 )
 def test_cpu_simple_sdxl_lightning_detection_pipeline():
     # Define target folder
@@ -416,8 +413,8 @@ def test_cpu_simple_sdxl_lightning_detection_pipeline():
 
 
 @pytest.mark.skipif(
-    not torch.cuda.is_available() or total_memory < 16 or total_disk_space < 35,
-    reason="Test requires GPU, at least 16GB of RAM and 35GB of HDD",
+    not torch.cuda.is_available() or total_memory < 15 or total_disk_space < 35,
+    reason="Test requires GPU, at least 15GB of RAM and 35GB of HDD",
 )
 def test_cuda_simple_sdxl_lightning_detection_pipeline():
     # Define target folder
@@ -463,8 +460,8 @@ def test_cpu_lm_sdxl_turbo_detection_pipeline():
 
 
 @pytest.mark.skipif(
-    total_memory < 16 or not torch.cuda.is_available() or total_disk_space < 55,
-    reason="Test requires at least 16GB of RAM, CUDA support and 55GB of HDD",
+    total_memory < 15 or not torch.cuda.is_available() or total_disk_space < 55,
+    reason="Test requires at least 15GB of RAM, CUDA support and 55GB of HDD",
 )
 def test_cuda_lm_sdxl_turbo_detection_pipeline():
     # Define target folder
@@ -530,8 +527,8 @@ def test_cpu_lm_sdxl_detection_pipeline():
 
 
 @pytest.mark.skipif(
-    total_memory < 16 or not torch.cuda.is_available() or total_disk_space < 55,
-    reason="Test requires at least 16GB of RAM, CUDA support and 55GB of HDD",
+    total_memory < 15 or not torch.cuda.is_available() or total_disk_space < 55,
+    reason="Test requires at least 15GB of RAM, CUDA support and 55GB of HDD",
 )
 def test_cuda_lm_sdxl_detection_pipeline():
     # Define target folder
@@ -578,8 +575,8 @@ def test_cuda_4bit_lm_sdxl_detection_pipeline():
 # DETECTION - TinyLlama LLM
 # =========================================================
 @pytest.mark.skipif(
-    total_memory < 16 or total_disk_space < 35,
-    reason="Test requires at least 16GB of RAM and 35GB of HDD",
+    total_memory < 15 or total_disk_space < 35,
+    reason="Test requires at least 15GB of RAM and 35GB of HDD",
 )
 def test_cpu_tiny_sdxl_turbo_detection_pipeline():
     # Define target folder
@@ -600,8 +597,8 @@ def test_cpu_tiny_sdxl_turbo_detection_pipeline():
 
 
 @pytest.mark.skipif(
-    not torch.cuda.is_available() or total_memory < 16 or total_disk_space < 35,
-    reason="Test requires GPU, at least 16GB of RAM and 35GB of HDD",
+    not torch.cuda.is_available() or total_memory < 15 or total_disk_space < 35,
+    reason="Test requires GPU, at least 15GB of RAM and 35GB of HDD",
 )
 def test_cuda_tiny_sdxl_turbo_detection_pipeline():
     # Define target folder
@@ -622,8 +619,8 @@ def test_cuda_tiny_sdxl_turbo_detection_pipeline():
 
 
 @pytest.mark.skipif(
-    total_memory < 16 or total_disk_space < 35,
-    reason="Test requires at least 16GB of RAM and 35GB of HDD",
+    total_memory < 15 or total_disk_space < 35,
+    reason="Test requires at least 15GB of RAM and 35GB of HDD",
 )
 def test_cpu_tiny_sdxl_detection_pipeline():
     # Define target folder
@@ -644,8 +641,8 @@ def test_cpu_tiny_sdxl_detection_pipeline():
 
 
 @pytest.mark.skipif(
-    not torch.cuda.is_available() or total_memory < 16 or total_disk_space < 35,
-    reason="Test requires GPU, at least 16GB of RAM and 35GB of HDD",
+    not torch.cuda.is_available() or total_memory < 15 or total_disk_space < 35,
+    reason="Test requires GPU, at least 15GB of RAM and 35GB of HDD",
 )
 def test_cuda_tiny_sdxl_detection_pipeline():
     # Define target folder
@@ -669,8 +666,8 @@ def test_cuda_tiny_sdxl_detection_pipeline():
 # CLASSIFICATION - SIMPLE LM
 # =========================================================
 @pytest.mark.skipif(
-    total_memory < 16 or total_disk_space < 35,
-    reason="Test requires at least 16GB of RAM and 35GB of HDD",
+    total_memory < 15 or total_disk_space < 35,
+    reason="Test requires at least 15GB of RAM and 35GB of HDD",
 )
 def test_cpu_simple_sdxl_turbo_classification_pipeline():
     # Define target folder
@@ -693,8 +690,8 @@ def test_cpu_simple_sdxl_turbo_classification_pipeline():
 
 
 @pytest.mark.skipif(
-    not torch.cuda.is_available() or total_memory < 16 or total_disk_space < 35,
-    reason="Test requires GPU, at least 16GB of RAM and 35GB of HDD",
+    not torch.cuda.is_available() or total_memory < 15 or total_disk_space < 35,
+    reason="Test requires GPU, at least 15GB of RAM and 35GB of HDD",
 )
 def test_cuda_simple_sdxl_turbo_classification_pipeline():
     # Define target folder
@@ -717,8 +714,8 @@ def test_cuda_simple_sdxl_turbo_classification_pipeline():
 
 
 @pytest.mark.skipif(
-    not torch.cuda.is_available() or total_memory < 16 or total_disk_space < 55,
-    reason="Test requires GPU, at least 16GB of RAM and 55GB of HDD",
+    not torch.cuda.is_available() or total_memory < 15 or total_disk_space < 55,
+    reason="Test requires GPU, at least 15GB of RAM and 55GB of HDD",
 )
 def test_cuda_simple_llm_synonym_sdxl_turbo_classification_pipeline():
     # Define target folder
@@ -742,8 +739,8 @@ def test_cuda_simple_llm_synonym_sdxl_turbo_classification_pipeline():
 
 
 @pytest.mark.skipif(
-    not torch.cuda.is_available() or total_memory < 16 or total_disk_space < 35,
-    reason="Test requires GPU, at least 16GB of RAM and 35GB of HDD",
+    not torch.cuda.is_available() or total_memory < 15 or total_disk_space < 35,
+    reason="Test requires GPU, at least 15GB of RAM and 35GB of HDD",
 )
 def test_cuda_simple_wordnet_synonym_sdxl_turbo_classification_pipeline():
     # Define target folder
@@ -767,8 +764,8 @@ def test_cuda_simple_wordnet_synonym_sdxl_turbo_classification_pipeline():
 
 
 @pytest.mark.skipif(
-    total_memory < 16 or total_disk_space < 35,
-    reason="Test requires at least 16GB of RAM and 35GB of HDD",
+    total_memory < 15 or total_disk_space < 35,
+    reason="Test requires at least 15GB of RAM and 35GB of HDD",
 )
 def test_cpu_simple_sdxl_classification_pipeline():
     # Define target folder
@@ -791,8 +788,8 @@ def test_cpu_simple_sdxl_classification_pipeline():
 
 
 @pytest.mark.skipif(
-    not torch.cuda.is_available() or total_memory < 16 or total_disk_space < 35,
-    reason="Test requires GPU, at least 16GB of RAM and 35GB of HDD",
+    not torch.cuda.is_available() or total_memory < 15 or total_disk_space < 35,
+    reason="Test requires GPU, at least 15GB of RAM and 35GB of HDD",
 )
 def test_cuda_simple_sdxl_classification_pipeline():
     # Define target folder
@@ -842,8 +839,8 @@ def test_cpu_lm_sdxl_turbo_classification_pipeline():
 
 
 @pytest.mark.skipif(
-    total_memory < 16 or not torch.cuda.is_available() or total_disk_space < 55,
-    reason="Test requires at least 16GB of RAM, 55GB of HDD and CUDA support",
+    total_memory < 15 or not torch.cuda.is_available() or total_disk_space < 55,
+    reason="Test requires at least 15GB of RAM, 55GB of HDD and CUDA support",
 )
 def test_cuda_lm_sdxl_turbo_classification_pipeline():
     # Define target folder
@@ -915,8 +912,8 @@ def test_cpu_lm_sdxl_classification_pipeline():
 
 
 @pytest.mark.skipif(
-    total_memory < 16 or not torch.cuda.is_available() or total_disk_space < 55,
-    reason="Test requires at least 16GB of RAM, CUDA support and 55GB of HDD",
+    total_memory < 15 or not torch.cuda.is_available() or total_disk_space < 55,
+    reason="Test requires at least 15GB of RAM, CUDA support and 55GB of HDD",
 )
 def test_cuda_lm_sdxl_classification_pipeline():
     # Define target folder
@@ -967,8 +964,8 @@ def test_cuda_4bit_lm_sdxl_classification_pipeline():
 # CLASSIFICATION - TinyLlama LLM
 # =========================================================
 @pytest.mark.skipif(
-    total_memory < 16 or total_disk_space < 35,
-    reason="Test requires at least 16GB of RAM and 35GB of HDD",
+    total_memory < 15 or total_disk_space < 35,
+    reason="Test requires at least 15GB of RAM and 35GB of HDD",
 )
 def test_cpu_tiny_sdxl_turbo_classification_pipeline():
     # Define target folder
@@ -991,8 +988,8 @@ def test_cpu_tiny_sdxl_turbo_classification_pipeline():
 
 
 @pytest.mark.skipif(
-    not torch.cuda.is_available() or total_memory < 16 or total_disk_space < 35,
-    reason="Test requires GPU, at least 16GB of RAM and 35GB of HDD",
+    not torch.cuda.is_available() or total_memory < 15 or total_disk_space < 35,
+    reason="Test requires GPU, at least 15GB of RAM and 35GB of HDD",
 )
 def test_cuda_tiny_sdxl_turbo_classification_pipeline():
     # Define target folder
@@ -1015,8 +1012,8 @@ def test_cuda_tiny_sdxl_turbo_classification_pipeline():
 
 
 @pytest.mark.skipif(
-    total_memory < 16 or total_disk_space < 35,
-    reason="Test requires at least 16GB of RAM and 35GB of HDD",
+    total_memory < 15 or total_disk_space < 35,
+    reason="Test requires at least 15GB of RAM and 35GB of HDD",
 )
 def test_cpu_tiny_sdxl_classification_pipeline():
     # Define target folder
@@ -1039,8 +1036,8 @@ def test_cpu_tiny_sdxl_classification_pipeline():
 
 
 @pytest.mark.skipif(
-    not torch.cuda.is_available() or total_memory < 16 or total_disk_space < 35,
-    reason="Test requires GPU, at least 16GB of RAM and 35GB of HDD",
+    not torch.cuda.is_available() or total_memory < 15 or total_disk_space < 35,
+    reason="Test requires GPU, at least 15GB of RAM and 35GB of HDD",
 )
 def test_cuda_tiny_sdxl_classification_pipeline():
     # Define target folder
@@ -1066,8 +1063,8 @@ def test_cuda_tiny_sdxl_classification_pipeline():
 # TEST WITH CONFIG FILE
 # =========================================================
 @pytest.mark.skipif(
-    total_memory < 16 or total_disk_space < 35,
-    reason="Test requires at least 16GB of RAM and 35GB of HDD",
+    total_memory < 15 or total_disk_space < 35,
+    reason="Test requires at least 15GB of RAM and 35GB of HDD",
 )
 def test_cpu_simple_sdxl_turbo_config_detection_pipeline():
     # Define target folder
@@ -1084,8 +1081,8 @@ def test_cpu_simple_sdxl_turbo_config_detection_pipeline():
 
 
 @pytest.mark.skipif(
-    not torch.cuda.is_available() or total_memory < 16 or total_disk_space < 35,
-    reason="Test requires GPU, at least 16GB of RAM and 35GB of HDD",
+    not torch.cuda.is_available() or total_memory < 15 or total_disk_space < 35,
+    reason="Test requires GPU, at least 15GB of RAM and 35GB of HDD",
 )
 def test_cuda_simple_sdxl_turbo_config_detection_pipeline():
     # Define target folder
@@ -1102,8 +1099,8 @@ def test_cuda_simple_sdxl_turbo_config_detection_pipeline():
 
 
 @pytest.mark.skipif(
-    total_memory < 16 or total_disk_space < 35,
-    reason="Test requires at least 16GB of RAM and 35GB of HDD",
+    total_memory < 15 or total_disk_space < 35,
+    reason="Test requires at least 15GB of RAM and 35GB of HDD",
 )
 def test_cpu_simple_sdxl_turbo_config_classification_pipeline():
     # Define target folder
@@ -1122,8 +1119,8 @@ def test_cpu_simple_sdxl_turbo_config_classification_pipeline():
 
 
 @pytest.mark.skipif(
-    not torch.cuda.is_available() or total_memory < 16 or total_disk_space < 35,
-    reason="Test requires GPU, at least 16GB of RAM and 35GB of HDD",
+    not torch.cuda.is_available() or total_memory < 15 or total_disk_space < 35,
+    reason="Test requires GPU, at least 15GB of RAM and 35GB of HDD",
 )
 def test_cuda_simple_sdxl_turbo_config_classification_pipeline():
     # Define target folder
