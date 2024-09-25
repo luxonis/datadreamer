@@ -37,10 +37,10 @@ class YOLOConverter(BaseConverter):
         creating training and validation splits.
 
         Args:
-        - dataset_dir (str): The directory where the source dataset is located.
-        - output_dir (str): The directory where the processed dataset should be saved.
-        - split_ratios (list of float): The ratios to split the data into training, validation, and test sets.
-        - copy_files (bool, optional): Whether to copy the source files to the output directory, otherwise move them. Defaults to True.
+            dataset_dir (str): The directory where the source dataset is located.
+            output_dir (str): The directory where the processed dataset should be saved.
+            split_ratios (list of float): The ratios to split the data into training, validation, and test sets.
+            copy_files (bool, optional): Whether to copy the source files to the output directory, otherwise move them. Defaults to True.
 
         No return value.
         """
@@ -52,12 +52,12 @@ class YOLOConverter(BaseConverter):
         """Converts bounding box coordinates to YOLO format.
 
         Args:
-        - box (list of float): A list containing the bounding box coordinates [x_min, y_min, x_max, y_max].
-        - image_width (int): The width of the image.
-        - image_height (int): The height of the image.
+            box (list of float): A list containing the bounding box coordinates [x_min, y_min, x_max, y_max].
+            image_width (int): The width of the image.
+            image_height (int): The height of the image.
 
         Returns:
-        - list of float: A list containing the bounding box in YOLO format [x_center, y_center, width, height].
+            list of float: A list containing the bounding box in YOLO format [x_center, y_center, width, height].
         """
         x_center = (box[0] + box[2]) / 2 / image_width
         y_center = (box[1] + box[3]) / 2 / image_height
@@ -72,11 +72,11 @@ class YOLOConverter(BaseConverter):
         saves the images and labels in YOLO format.
 
         Args:
-        - data (dict): The dictionary containing image annotations.
-        - image_dir (str): The directory where the source images are located.
-        - output_dir (str): The base directory where the processed data will be saved.
-        - split_ratios (float): The ratio to split the data into training, validation, and test sets.
-        - copy_files (bool, optional): Whether to copy the source files to the output directory, otherwise move them. Defaults to True.
+            data (dict): The dictionary containing image annotations.
+            image_dir (str): The directory where the source images are located.
+            output_dir (str): The base directory where the processed data will be saved.
+            split_ratios (float): The ratio to split the data into training, validation, and test sets.
+            copy_files (bool, optional): Whether to copy the source files to the output directory, otherwise move them. Defaults to True.
 
 
         No return value.
@@ -138,8 +138,8 @@ class YOLOConverter(BaseConverter):
         names.
 
         Args:
-        - root_dir (str): The root directory where the dataset is located.
-        - class_names (list of str): A list of class names.
+            root_dir (str): The root directory where the dataset is located.
+            class_names (list of str): A list of class names.
 
         No return value.
         """

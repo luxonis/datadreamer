@@ -35,10 +35,10 @@ class COCOConverter(BaseConverter):
         """Converts a dataset into a COCO format.
 
         Args:
-        - dataset_dir (str): The directory where the source dataset is located.
-        - output_dir (str): The directory where the processed dataset should be saved.
-        - split_ratios (list of float): The ratios to split the data into training, validation, and test sets.
-        - copy_files (bool, optional): Whether to copy the source files to the output directory, otherwise move them. Defaults to True.
+            dataset_dir (str): The directory where the source dataset is located.
+            output_dir (str): The directory where the processed dataset should be saved.
+            split_ratios (list of float): The ratios to split the data into training, validation, and test sets.
+            copy_files (bool, optional): Whether to copy the source files to the output directory, otherwise move them. Defaults to True.
 
         No return value.
         """
@@ -53,12 +53,11 @@ class COCOConverter(BaseConverter):
         saves the images and labels in COCO format.
 
         Args:
-        - data (dict): The dictionary containing image annotations.
-        - image_dir (str): The directory where the source images are located.
-        - output_dir (str): The base directory where the processed data will be saved.
-        - split_ratios (float): The ratio to split the data into training, validation, and test sets.
-        - copy_files (bool, optional): Whether to copy the source files to the output directory, otherwise move them. Defaults to True.
-
+            data (dict): The dictionary containing image annotations.
+            image_dir (str): The directory where the source images are located.
+            output_dir (str): The base directory where the processed data will be saved.
+            split_ratios (float): The ratio to split the data into training, validation, and test sets.
+            copy_files (bool, optional): Whether to copy the source files to the output directory, otherwise move them. Defaults to True.
 
         No return value.
         """
@@ -134,10 +133,10 @@ class COCOConverter(BaseConverter):
         """Saves the labels to a JSON file.
 
         Args:
-        - dataset_output_dir (str): The directory where the labels should be saved.
-        - images_info (list of dict): A list of dictionaries containing image information.
-        - annotations (list of dict): A list of dictionaries containing annotation information.
-        - class_names (list of str): A list of class names.
+            dataset_output_dir (str): The directory where the labels should be saved.
+            images_info (list of dict): A list of dictionaries containing image information.
+            annotations (list of dict): A list of dictionaries containing annotation information.
+            class_names (list of str): A list of class names.
 
         No return value.
         """

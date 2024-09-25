@@ -24,10 +24,10 @@ class LuxonisDatasetConverter(BaseConverter):
         """Converts a dataset into a LuxonisDataset format.
 
         Args:
-        - dataset_dir (str): The directory where the source dataset is located.
-        - output_dir (str): The directory where the processed dataset should be saved.
-        - split_ratios (list of float): The ratios to split the data into training, validation, and test sets.
-        - copy_files (bool, optional): Whether to copy the source files to the output directory, otherwise move them. Defaults to True.
+            dataset_dir (str): The directory where the source dataset is located.
+            output_dir (str): The directory where the processed dataset should be saved.
+            split_ratios (list of float): The ratios to split the data into training, validation, and test sets.
+            copy_files (bool, optional): Whether to copy the source files to the output directory, otherwise move them. Defaults to True.
 
         No return value.
         """
@@ -39,10 +39,10 @@ class LuxonisDatasetConverter(BaseConverter):
         """Processes the data into LuxonisDataset format.
 
         Args:
-        - data (dict): The data to process.
-        - dataset_dir (str): The directory where the source dataset is located.
-        - output_dir (str): The directory where the processed dataset should be saved.
-        - split_ratios (list of float): The ratios to split the data into training, validation, and test sets.
+            data (dict): The data to process.
+            dataset_dir (str): The directory where the source dataset is located.
+            output_dir (str): The directory where the processed dataset should be saved.
+            split_ratios (list of float): The ratios to split the data into training, validation, and test sets.
 
         No return value.
         """
