@@ -66,7 +66,7 @@ class ClipImageTester:
         self,
         images: List[Image.Image],
         objects: List[List[str]],
-        conf_threshold=0.05,
+        conf_threshold: float = 0.05,
     ) -> Tuple[List[bool], List[torch.Tensor], List[int]]:
         """Tests the generated images against a set of objects using the CLIP model.
 
