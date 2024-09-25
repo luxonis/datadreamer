@@ -9,10 +9,12 @@ import torch
 
 # Get the total memory in GB
 total_memory = psutil.virtual_memory().total / (1000**3)
-print(total_memory)
+print(f"Total memory: {total_memory}")
 total_memory = int(total_memory) + (total_memory > int(total_memory))
+print(f"Total memory rounded: {total_memory}")
 # Get the total disk space in GB
 total_disk_space = psutil.disk_usage("/").total / (1000**3)
+print(f"Total disk space: {total_disk_space}")
 
 
 def _check_detection_pipeline(cmd: str, target_folder: str):
