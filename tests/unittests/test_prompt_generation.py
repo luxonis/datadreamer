@@ -15,9 +15,9 @@ from datadreamer.prompt_generation.wordnet_synonym_generator import (
 )
 
 # Get the total memory in GB
-total_memory = psutil.virtual_memory().total / (1024**3)
+total_memory = psutil.virtual_memory().total / (1000**3)
 # Get the total disk space in GB
-total_disk_space = psutil.disk_usage("/").total / (1024**3)
+total_disk_space = psutil.disk_usage("/").total / (1000**3)
 
 
 def test_simple_prompt_generator():

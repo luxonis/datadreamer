@@ -11,7 +11,7 @@ from datadreamer.dataset_annotation.clip_annotator import CLIPAnnotator
 from datadreamer.dataset_annotation.owlv2_annotator import OWLv2Annotator
 
 # Get the total disk space in GB
-total_disk_space = psutil.disk_usage("/").total / (1024**3)
+total_disk_space = psutil.disk_usage("/").total / (1000**3)
 
 
 def _check_owlv2_annotator(device: str, size: str = "base"):
