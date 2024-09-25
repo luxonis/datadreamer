@@ -13,8 +13,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [buildjet-4vcpu-ubuntu-2204, windows-latest, macOS-latest]
-        version: ['3.10', '3.11']
+        os: [buildjet-8vcpu-ubuntu-2204, windows-latest, macOS-latest]
+        version: ['3.10']
 
     runs-on: ${{ matrix.os }}
 
