@@ -15,7 +15,10 @@ jobs:
       fail-fast: false
       matrix:
         os: [buildjet-8vcpu-ubuntu-2204, windows-latest, macOS-latest]
-        version: ['3.10']
+        version: ['3.10', '3.11']
+        exclude:
+          - os: buildjet-8vcpu-ubuntu-2204
+            version: '3.11'
 
     runs-on: ${{ matrix.os }}
 
@@ -94,7 +97,7 @@ jobs:
   publish-test-results:
     name: "Publish Tests Results"
     needs: run_tests
-    runs-on: buildjet-8vcpu-ubuntu-2204
+    runs-on: ubuntu-latest
     permissions:
       checks: write
       pull-requests: write
