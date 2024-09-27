@@ -1,4 +1,4 @@
-name: Core tests
+name: Tests
 
 on:
   pull_request:
@@ -6,7 +6,7 @@ on:
     paths:
       - 'datadreamer/**/**.py'
       - 'tests/core_tests/**/**.py'
-      - .github/workflows/core-tests.yaml
+      - .github/workflows/tests.yaml
   workflow_dispatch:
 
 jobs:
