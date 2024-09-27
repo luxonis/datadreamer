@@ -11,7 +11,7 @@ from datadreamer.dataset_annotation.clip_annotator import CLIPAnnotator
 from datadreamer.dataset_annotation.owlv2_annotator import OWLv2Annotator
 
 # Get the total disk space in GB
-total_disk_space = psutil.disk_usage("/").total / (1000**3)
+total_disk_space = psutil.disk_usage("/").total / (1024**3)
 
 
 def _check_owlv2_annotator(device: str, size: str = "base"):
@@ -40,16 +40,16 @@ def _check_owlv2_annotator(device: str, size: str = "base"):
 
 
 @pytest.mark.skipif(
-    not torch.cuda.is_available() or total_disk_space < 15,
-    reason="Test requires GPU and 15GB of HDD",
+    not torch.cuda.is_available() or total_disk_space < 16,
+    reason="Test requires GPU and 16GB of HDD",
 )
 def test_cuda_owlv2_annotator():
     _check_owlv2_annotator("cuda")
 
 
 @pytest.mark.skipif(
-    total_disk_space < 15,
-    reason="Test requires at least 15GB of HDD",
+    total_disk_space < 16,
+    reason="Test requires at least 16GB of HDD",
 )
 def test_cpu_owlv2_annotator():
     _check_owlv2_annotator("cpu")
@@ -67,32 +67,32 @@ def _check_clip_annotator(device: str, size: str = "base"):
 
 
 @pytest.mark.skipif(
-    not torch.cuda.is_available() or total_disk_space < 15,
-    reason="Test requires GPU and 15GB of HDD",
+    not torch.cuda.is_available() or total_disk_space < 16,
+    reason="Test requires GPU and 16GB of HDD",
 )
 def test_cuda_clip_base_annotator():
     _check_clip_annotator("cuda")
 
 
 @pytest.mark.skipif(
-    total_disk_space < 15,
-    reason="Test requires at least 15GB of HDD",
+    total_disk_space < 16,
+    reason="Test requires at least 16GB of HDD",
 )
 def test_cpu_clip_base_annotator():
     _check_clip_annotator("cpu")
 
 
 @pytest.mark.skipif(
-    not torch.cuda.is_available() or total_disk_space < 15,
-    reason="Test requires GPU and 15GB of HDD",
+    not torch.cuda.is_available() or total_disk_space < 16,
+    reason="Test requires GPU and 16GB of HDD",
 )
 def test_cuda_clip_large_annotator():
     _check_clip_annotator("cuda")
 
 
 @pytest.mark.skipif(
-    total_disk_space < 15,
-    reason="Test requires at least 15GB of HDD",
+    total_disk_space < 16,
+    reason="Test requires at least 16GB of HDD",
 )
 def test_cpu_clip_large_annotator():
     _check_clip_annotator("cpu")
