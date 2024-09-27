@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 import shutil
+from typing import Dict, List
 
 from PIL import Image
 
@@ -32,15 +33,21 @@ class YOLOConverter(BaseConverter):
     def __init__(self, seed=42):
         super().__init__(seed)
 
-    def convert(self, dataset_dir, output_dir, split_ratios, copy_files=True):
+    def convert(
+        self,
+        dataset_dir: str,
+        output_dir: str,
+        split_ratios: List[float],
+        copy_files: bool = True,
+    ):
         """Converts a dataset into a format suitable for training with YOLO, including
         creating training and validation splits.
 
         Args:
-        - dataset_dir (str): The directory where the source dataset is located.
-        - output_dir (str): The directory where the processed dataset should be saved.
-        - split_ratios (list of float): The ratios to split the data into training, validation, and test sets.
-        - copy_files (bool, optional): Whether to copy the source files to the output directory, otherwise move them. Defaults to True.
+            dataset_dir (str): The directory where the source dataset is located.
+            output_dir (str): The directory where the processed dataset should be saved.
+            split_ratios (list of float): The ratios to split the data into training, validation, and test sets.
+            copy_files (bool, optional): Whether to copy the source files to the output directory, otherwise move them. Defaults to True.
 
         No return value.
         """
@@ -48,16 +55,18 @@ class YOLOConverter(BaseConverter):
         data = BaseConverter.read_annotations(annotation_path)
         self.process_data(data, dataset_dir, output_dir, split_ratios, copy_files)
 
-    def convert_to_yolo_format(self, box, image_width, image_height):
+    def convert_to_yolo_format(
+        self, box: List[float], image_width: int, image_height: int
+    ) -> List[float]:
         """Converts bounding box coordinates to YOLO format.
 
         Args:
-        - box (list of float): A list containing the bounding box coordinates [x_min, y_min, x_max, y_max].
-        - image_width (int): The width of the image.
-        - image_height (int): The height of the image.
+            box (list of float): A list containing the bounding box coordinates [x_min, y_min, x_max, y_max].
+            image_width (int): The width of the image.
+            image_height (int): The height of the image.
 
         Returns:
-        - list of float: A list containing the bounding box in YOLO format [x_center, y_center, width, height].
+            list of float: A list containing the bounding box in YOLO format [x_center, y_center, width, height].
         """
         x_center = (box[0] + box[2]) / 2 / image_width
         y_center = (box[1] + box[3]) / 2 / image_height
@@ -65,16 +74,23 @@ class YOLOConverter(BaseConverter):
         height = (box[3] - box[1]) / image_height
         return [x_center, y_center, width, height]
 
-    def process_data(self, data, image_dir, output_dir, split_ratios, copy_files=True):
+    def process_data(
+        self,
+        data: Dict,
+        image_dir: str,
+        output_dir: str,
+        split_ratios: List[float],
+        copy_files: bool = True,
+    ) -> None:
         """Processes the data by dividing it into training and validation sets, and
         saves the images and labels in YOLO format.
 
         Args:
-        - data (dict): The dictionary containing image annotations.
-        - image_dir (str): The directory where the source images are located.
-        - output_dir (str): The base directory where the processed data will be saved.
-        - split_ratios (float): The ratio to split the data into training, validation, and test sets.
-        - copy_files (bool, optional): Whether to copy the source files to the output directory, otherwise move them. Defaults to True.
+            data (dict): The dictionary containing image annotations.
+            image_dir (str): The directory where the source images are located.
+            output_dir (str): The base directory where the processed data will be saved.
+            split_ratios (float): The ratio to split the data into training, validation, and test sets.
+            copy_files (bool, optional): Whether to copy the source files to the output directory, otherwise move them. Defaults to True.
 
 
         No return value.
@@ -131,13 +147,13 @@ class YOLOConverter(BaseConverter):
 
         self.create_data_yaml(output_dir, data["class_names"])
 
-    def create_data_yaml(self, root_dir, class_names):
+    def create_data_yaml(self, root_dir: str, class_names: List[str]) -> None:
         """Creates a YAML file for dataset configuration, specifying paths and class
         names.
 
         Args:
-        - root_dir (str): The root directory where the dataset is located.
-        - class_names (list of str): A list of class names.
+            root_dir (str): The root directory where the dataset is located.
+            class_names (list of str): A list of class names.
 
         No return value.
         """

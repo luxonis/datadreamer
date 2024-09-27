@@ -49,7 +49,7 @@ class PromptGenerator(ABC):
         self.quantization = quantization if quantization is not None else "none"
 
     @staticmethod
-    def set_seed(seed: int):
+    def set_seed(seed: int) -> None:
         """Sets the random seed for consistent prompt generation.
 
         Args:

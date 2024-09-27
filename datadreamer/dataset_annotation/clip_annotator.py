@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import List
+import logging
+from typing import Dict, List
 
 import numpy as np
 import PIL
@@ -9,6 +10,8 @@ from PIL import Image
 from transformers import CLIPModel, CLIPProcessor
 
 from datadreamer.dataset_annotation.image_annotator import BaseAnnotator, TaskList
+
+logger = logging.getLogger(__name__)
 
 
 class CLIPAnnotator(BaseAnnotator):
@@ -47,7 +50,7 @@ class CLIPAnnotator(BaseAnnotator):
         self.device = device
         self.model.to(self.device)
 
-    def _init_processor(self):
+    def _init_processor(self) -> CLIPProcessor:
         """Initializes the CLIP processor.
 
         Returns:
@@ -57,12 +60,13 @@ class CLIPAnnotator(BaseAnnotator):
             return CLIPProcessor.from_pretrained("openai/clip-vit-large-patch14")
         return CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32")
 
-    def _init_model(self):
+    def _init_model(self) -> CLIPModel:
         """Initializes the CLIP model.
 
         Returns:
             CLIPModel: The initialized CLIP model.
         """
+        logger.info(f"Initializing CLIP {self.size} model...")
         if self.size == "large":
             return CLIPModel.from_pretrained("openai/clip-vit-large-patch14")
         return CLIPModel.from_pretrained("openai/clip-vit-base-patch32")
@@ -72,7 +76,7 @@ class CLIPAnnotator(BaseAnnotator):
         images: List[PIL.Image.Image],
         objects: List[str],
         conf_threshold: float = 0.1,
-        synonym_dict: dict[str, List[str]] | None = None,
+        synonym_dict: Dict[str, List[str]] | None = None,
     ) -> List[np.ndarray]:
         """Annotates images using the OWLv2 model.
 
@@ -83,7 +87,7 @@ class CLIPAnnotator(BaseAnnotator):
             synonym_dict (dict, optional): Dictionary for handling synonyms in labels. Defaults to None.
 
         Returns:
-            List[List[int]]: A list of lists of labels for each image.
+            List[np.ndarray]: A list of the annotations for each image.
         """
         if synonym_dict is not None:
             objs_syn = set()

@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import logging
 import os
+from typing import Dict, List
 
 from luxonis_ml.data import DATASETS_REGISTRY, LuxonisDataset
 from luxonis_ml.data.utils.enums import BucketStorage
@@ -8,23 +10,33 @@ from PIL import Image
 
 from datadreamer.utils import BaseConverter
 
+logger = logging.getLogger(__name__)
+
 
 class LuxonisDatasetConverter(BaseConverter):
     """Class for converting a dataset to LuxonisDataset format."""
 
-    def __init__(self, dataset_plugin=None, dataset_name=None, seed=42):
+    def __init__(
+        self, dataset_plugin: str = None, dataset_name: str = None, seed: int = 42
+    ):
         super().__init__(seed)
         self.dataset_plugin = dataset_plugin
         self.dataset_name = dataset_name
 
-    def convert(self, dataset_dir, output_dir, split_ratios, copy_files=True):
+    def convert(
+        self,
+        dataset_dir: str,
+        output_dir: str,
+        split_ratios: List[float],
+        copy_files: bool = True,
+    ) -> None:
         """Converts a dataset into a LuxonisDataset format.
 
         Args:
-        - dataset_dir (str): The directory where the source dataset is located.
-        - output_dir (str): The directory where the processed dataset should be saved.
-        - split_ratios (list of float): The ratios to split the data into training, validation, and test sets.
-        - copy_files (bool, optional): Whether to copy the source files to the output directory, otherwise move them. Defaults to True.
+            dataset_dir (str): The directory where the source dataset is located.
+            output_dir (str): The directory where the processed dataset should be saved.
+            split_ratios (list of float): The ratios to split the data into training, validation, and test sets.
+            copy_files (bool, optional): Whether to copy the source files to the output directory, otherwise move them. Defaults to True.
 
         No return value.
         """
@@ -32,7 +44,21 @@ class LuxonisDatasetConverter(BaseConverter):
         data = BaseConverter.read_annotations(annotation_path)
         self.process_data(data, dataset_dir, output_dir, split_ratios)
 
-    def process_data(self, data, dataset_dir, output_dir, split_ratios):
+    def process_data(
+        self, data: Dict, dataset_dir: str, output_dir: str, split_ratios: List[float]
+    ) -> None:
+        """Processes the data into LuxonisDataset format.
+
+        Args:
+            data (dict): The data to process.
+            dataset_dir (str): The directory where the source dataset is located.
+            output_dir (str): The directory where the processed dataset should be saved.
+            split_ratios (list of float): The ratios to split the data into training, validation, and test sets.
+
+        No return value.
+        """
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
         class_names = data["class_names"]
         image_paths = list(data.keys())
         image_paths.remove("class_names")
@@ -84,7 +110,7 @@ class LuxonisDatasetConverter(BaseConverter):
         # if dataset_plugin is set, use that
         if self.dataset_plugin:
             if "GOOGLE_APPLICATION_CREDENTIALS" in os.environ:
-                print(f"Using {self.dataset_plugin} dataset")
+                logger.info(f"Using {self.dataset_plugin} dataset")
                 dataset_constructor = DATASETS_REGISTRY.get(self.dataset_plugin)
                 dataset = dataset_constructor(dataset_name)
             else:
@@ -96,10 +122,10 @@ class LuxonisDatasetConverter(BaseConverter):
             "LUXONISML_BUCKET" in os.environ
             and "GOOGLE_APPLICATION_CREDENTIALS" in os.environ
         ):
-            print("Using GCS bucket")
+            logger.info("Using GCS bucket")
             dataset = LuxonisDataset(dataset_name, bucket_storage=BucketStorage.GCS)
         else:
-            print("Using local dataset")
+            logger.info("Using local dataset")
             dataset = LuxonisDataset(dataset_name)
 
         dataset.add(dataset_generator())

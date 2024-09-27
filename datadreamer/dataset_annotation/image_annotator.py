@@ -4,15 +4,12 @@ import enum
 from abc import ABC, abstractmethod
 
 
-# Enum for different labeling tasks
 class TaskList(enum.Enum):
     CLASSIFICATION = "classification"
     OBJECT_DETECTION = "object_detection"
     SEGMENTATION = "segmentation"
-    # Add more tasks as needed
 
 
-# Abstract base class for data labeling
 class BaseAnnotator(ABC):
     """Abstract base class for creating annotators.
 
@@ -24,6 +21,8 @@ class BaseAnnotator(ABC):
     Methods:
         annotate_batch(): Abstract method to be implemented by subclasses. It should contain
                     the logic for performing annotation based on the task definition.
+        release(): Abstract method to be implemented by subclasses. It should contain
+                    the logic for releasing the resources used by the annotator.
     """
 
     def __init__(
@@ -34,4 +33,8 @@ class BaseAnnotator(ABC):
 
     @abstractmethod
     def annotate_batch(self):
+        pass
+
+    @abstractmethod
+    def release(self, empty_cuda_cache=False) -> None:
         pass

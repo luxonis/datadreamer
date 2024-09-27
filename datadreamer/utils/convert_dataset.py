@@ -19,7 +19,22 @@ def convert_dataset(
     dataset_name=None,
     copy_files=True,
     seed=42,
-):
+) -> None:
+    """Converts a dataset from one format to another.
+
+    Args:
+        input_dir (str): Directory containing the images and annotations.
+        output_dir (str): Directory where the processed dataset will be saved.
+        dataset_format (str): Format of the dataset. Can be 'yolo', 'coco', 'luxonis-dataset', or 'cls-single'.
+        split_ratios (list): List of ratios for train, val, and test splits.
+        dataset_plugin (str, optional): Plugin for Luxonis dataset. Defaults to None.
+        dataset_name (str, optional): Name of the Luxonis dataset. Defaults to None.
+        copy_files (bool, optional): Whether to copy the files to the output directory. Defaults to True.
+        seed (int, optional): Random seed. Defaults to 42.
+
+    No return value.
+    """
+
     if dataset_format == "yolo":
         converter = YOLOConverter(seed=seed)
     elif dataset_format == "coco":

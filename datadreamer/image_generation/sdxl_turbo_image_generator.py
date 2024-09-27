@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from typing import List, Optional
 
 import torch
@@ -7,6 +8,8 @@ from diffusers import AutoPipelineForText2Image
 from PIL import Image
 
 from datadreamer.image_generation.image_generator import ImageGenerator
+
+logger = logging.getLogger(__name__)
 
 
 class StableDiffusionTurboImageGenerator(ImageGenerator):
@@ -28,14 +31,14 @@ class StableDiffusionTurboImageGenerator(ImageGenerator):
         super().__init__(*args, **kwargs)
         self.base = self._init_gen_model()
 
-    def _init_gen_model(self):
+    def _init_gen_model(self) -> AutoPipelineForText2Image:
         """Initializes the Stable Diffusion Turbo model for image generation.
 
         Returns:
             AutoPipelineForText2Image: The initialized Stable Diffusion Turbo model.
         """
+        logger.info(f"Initializing SDXL Turbo on {self.device}...")
         if self.device == "cpu":
-            print("Loading SDXL Turbo on CPU...")
             base = AutoPipelineForText2Image.from_pretrained(
                 "stabilityai/sdxl-turbo",
                 # variant="fp16",
@@ -44,7 +47,6 @@ class StableDiffusionTurboImageGenerator(ImageGenerator):
             )
             base.to("cpu")
         else:
-            print("Loading SDXL Turbo on GPU...")
             base = AutoPipelineForText2Image.from_pretrained(
                 "stabilityai/sdxl-turbo",
                 torch_dtype=torch.float16,

@@ -11,6 +11,7 @@ import numpy as np
 import torch
 from box import Box
 from luxonis_ml.data import DATASETS_REGISTRY, LOADERS_REGISTRY
+from luxonis_ml.utils import setup_logging
 from PIL import Image
 from tqdm import tqdm
 
@@ -49,6 +50,8 @@ image_generators = {
 
 det_annotators = {"owlv2": OWLv2Annotator}
 clf_annotators = {"clip": CLIPAnnotator}
+
+setup_logging(use_rich=True)
 
 
 def parse_args():
@@ -620,11 +623,13 @@ def main():
 
                 labels_list.append(np.array(labels))
 
+                plt.axis("off")
                 plt.savefig(
                     os.path.join(
                         bbox_dir, f"bbox_{i * args.batch_size_annotation + j}.jpg"
                     )
                 )
+
                 plt.close()
 
         # Save annotations as JSON files

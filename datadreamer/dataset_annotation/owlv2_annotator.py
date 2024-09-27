@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import List, Tuple
+import logging
+from typing import Dict, List, Tuple
 
 import numpy as np
 import PIL
@@ -10,6 +11,8 @@ from transformers import Owlv2ForObjectDetection, Owlv2Processor
 from datadreamer.dataset_annotation.image_annotator import BaseAnnotator
 from datadreamer.dataset_annotation.utils import apply_tta
 from datadreamer.utils.nms import non_max_suppression
+
+logger = logging.getLogger(__name__)
 
 
 class OWLv2Annotator(BaseAnnotator):
@@ -48,12 +51,13 @@ class OWLv2Annotator(BaseAnnotator):
         self.device = device
         self.model.to(self.device)
 
-    def _init_model(self):
+    def _init_model(self) -> Owlv2ForObjectDetection:
         """Initializes the OWLv2 model for object detection.
 
         Returns:
             Owlv2ForObjectDetection: The initialized OWLv2 model.
         """
+        logger.info(f"Initializing OWLv2 {self.size} model...")
         if self.size == "large":
             return Owlv2ForObjectDetection.from_pretrained(
                 "google/owlv2-large-patch14-ensemble"
@@ -62,7 +66,7 @@ class OWLv2Annotator(BaseAnnotator):
             "google/owlv2-base-patch16-ensemble"
         )
 
-    def _init_processor(self):
+    def _init_processor(self) -> Owlv2Processor:
         """Initializes the processor for the OWLv2 model.
 
         Returns:
@@ -81,7 +85,7 @@ class OWLv2Annotator(BaseAnnotator):
         images: List[PIL.Image.Image],
         prompts: List[str],
         conf_threshold: float = 0.1,
-    ) -> List[dict[str, torch.Tensor]]:
+    ) -> List[Dict[str, torch.Tensor]]:
         """Generates annotations for the given images and prompts.
 
         Args:
@@ -90,7 +94,7 @@ class OWLv2Annotator(BaseAnnotator):
             conf_threshold (float, optional): Confidence threshold for the annotations. Defaults to 0.1.
 
         Returns:
-            dict: A dictionary containing the annotations for the images.
+            List[Dict[str, torch.Tensor]]: The annotations for the given images and prompts.
         """
         n = len(images)
         batched_prompts = [prompts] * n
@@ -107,7 +111,6 @@ class OWLv2Annotator(BaseAnnotator):
         ).to(self.device)
         with torch.no_grad():
             outputs = self.model(**inputs)
-        # print(outputs)
         preds = self.processor.post_process_object_detection(
             outputs=outputs, target_sizes=target_sizes, threshold=conf_threshold
         )
@@ -116,11 +119,11 @@ class OWLv2Annotator(BaseAnnotator):
 
     def _get_annotations(
         self,
-        pred: dict[str, torch.Tensor],
+        pred: Dict[str, torch.Tensor],
         use_tta: bool,
         img_dim: int,
-        synonym_dict: dict[str, List[str]] | None,
-        synonym_dict_rev: dict[int, int] | None,
+        synonym_dict: Dict[str, List[str]] | None,
+        synonym_dict_rev: Dict[int, int] | None,
     ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         """Extracts the annotations from the predictions.
 
@@ -158,7 +161,7 @@ class OWLv2Annotator(BaseAnnotator):
         conf_threshold: float = 0.1,
         iou_threshold: float = 0.2,
         use_tta: bool = False,
-        synonym_dict: dict[str, List[str]] | None = None,
+        synonym_dict: Dict[str, List[str]] | None = None,
     ) -> Tuple[List[np.ndarray], List[np.ndarray], List[np.ndarray]]:
         """Annotates images using the OWLv2 model.
 
