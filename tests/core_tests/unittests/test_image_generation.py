@@ -8,18 +8,17 @@ import requests
 import torch
 from PIL import Image
 
-from datadreamer.image_generation.clip_image_tester import ClipImageTester
 from datadreamer.image_generation import (
     StableDiffusionImageGenerator,
     StableDiffusionLightningImageGenerator,
     StableDiffusionTurboImageGenerator,
 )
+from datadreamer.image_generation.clip_image_tester import ClipImageTester
 
 # Get the total memory in GB
 total_memory = psutil.virtual_memory().total / (1024**3)
 # Get the total disk space in GB
 total_disk_space = psutil.disk_usage("/").total / (1024**3)
-
 
 
 def _check_clip_image_tester(device: str):
@@ -64,6 +63,7 @@ def test_cuda_clip_image_tester():
 def test_cpu_clip_image_tester():
     _check_clip_image_tester("cpu")
 
+
 def _check_image_generator(
     image_generator_class: Type[
         Union[
@@ -95,6 +95,7 @@ def _check_image_generator(
 
     # Release the generator
     image_generator.release(empty_cuda_cache=True if device != "cpu" else False)
+
 
 @pytest.mark.skipif(
     not torch.cuda.is_available() or total_memory < 16 or total_disk_space < 25,

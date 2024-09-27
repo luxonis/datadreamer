@@ -43,6 +43,7 @@ def _check_detection_pipeline(cmd: str, target_folder: str):
         os.path.join(target_folder, "bboxes_visualization")
     ), "bboxes_visualization directory not created"
 
+
 # =========================================================
 # TEST WITH CONFIG FILE
 # =========================================================

@@ -8,7 +8,7 @@ import pytest
 import torch
 
 # Get the total memory in GB
-total_memory = psutil.virtual_memory().total / (1024*3)
+total_memory = psutil.virtual_memory().total / (1024 * 3)
 # Get the total disk space in GB
 total_disk_space = psutil.disk_usage("/").total / (1024**3)
 

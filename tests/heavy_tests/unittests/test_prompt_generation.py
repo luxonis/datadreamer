@@ -6,18 +6,12 @@ import torch
 
 from datadreamer.prompt_generation.lm_prompt_generator import LMPromptGenerator
 from datadreamer.prompt_generation.lm_synonym_generator import LMSynonymGenerator
-from datadreamer.prompt_generation.simple_prompt_generator import SimplePromptGenerator
-from datadreamer.prompt_generation.tinyllama_lm_prompt_generator import (
-    TinyLlamaLMPromptGenerator,
-)
-from datadreamer.prompt_generation.wordnet_synonym_generator import (
-    WordNetSynonymGenerator,
-)
 
 # Get the total memory in GB
 total_memory = psutil.virtual_memory().total / (1024**3)
 # Get the total disk space in GB
 total_disk_space = psutil.disk_usage("/").total / (1024**3)
+
 
 def _check_lm_prompt_generator(
     device: str, prompt_generator_class=LMPromptGenerator, quantization: str = "none"
@@ -54,12 +48,14 @@ def _check_lm_prompt_generator(
 def test_cuda_lm_prompt_generator():
     _check_lm_prompt_generator("cuda")
 
+
 @pytest.mark.skipif(
     total_memory < 32 or total_disk_space < 35,
     reason="Test requires at least 28GB of RAM and 35GB of HDD for running on CPU",
 )
 def test_cpu_lm_prompt_generator():
     _check_lm_prompt_generator("cpu")
+
 
 def _check_synonym_generator(device: str, synonym_generator_class=LMSynonymGenerator):
     synonyms_num = 3

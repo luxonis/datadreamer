@@ -4,7 +4,6 @@ from typing import Type, Union
 
 import psutil
 import pytest
-import requests
 import torch
 from PIL import Image
 
@@ -18,6 +17,7 @@ from datadreamer.image_generation import (
 total_memory = psutil.virtual_memory().total / (1024**3)
 # Get the total disk space in GB
 total_disk_space = psutil.disk_usage("/").total / (1024**3)
+
 
 def _check_image_generator(
     image_generator_class: Type[
@@ -66,4 +66,3 @@ def test_cuda_sdxl_image_generator():
 )
 def test_cpu_sdxl_image_generator():
     _check_image_generator(StableDiffusionImageGenerator, "cpu")
-

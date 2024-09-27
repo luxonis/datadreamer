@@ -39,6 +39,7 @@ def test_simple_prompt_generator():
         # Check the generated text
         assert prompt_text == f"A photo of a {', a '.join(selected_objects)}"
 
+
 def _check_lm_prompt_generator(
     device: str, prompt_generator_class=LMPromptGenerator, quantization: str = "none"
 ):
@@ -66,6 +67,7 @@ def _check_lm_prompt_generator(
         assert len(prompt_text) > 0 and prompt_text.lower().startswith("a photo of")
     prompt_generator.release(empty_cuda_cache=True if device != "cpu" else False)
 
+
 @pytest.mark.skipif(
     total_memory < 12 or not torch.cuda.is_available() or total_disk_space < 25,
     reason="Test requires at least 12GB of RAM, 25GB of HDD and CUDA support",
@@ -73,12 +75,14 @@ def _check_lm_prompt_generator(
 def test_cuda_4bit_lm_prompt_generator():
     _check_lm_prompt_generator("cuda", quantization="4bit")
 
+
 @pytest.mark.skipif(
     total_memory < 12 or total_disk_space < 12,
     reason="Test requires at least 12GB of RAM and 12GB of HDD for running on CPU",
 )
 def test_cpu_tinyllama_lm_prompt_generator():
     _check_lm_prompt_generator("cpu", TinyLlamaLMPromptGenerator)
+
 
 @pytest.mark.skipif(
     total_memory < 8 or not torch.cuda.is_available() or total_disk_space < 12,
@@ -108,6 +112,7 @@ def _check_synonym_generator(device: str, synonym_generator_class=LMSynonymGener
 
 def test_cpu_wordnet_synonym_generator():
     _check_synonym_generator("cpu", WordNetSynonymGenerator)
+
 
 @pytest.mark.skipif(
     not torch.cuda.is_available(),
