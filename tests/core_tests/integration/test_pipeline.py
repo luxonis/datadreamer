@@ -58,7 +58,7 @@ def test_cpu_simple_sdxl_turbo_config_detection_pipeline():
     cmd = (
         f"datadreamer --save_dir {target_folder} "
         f"--num_objects_range 1 2 "
-        f"--config ./sample_config.yaml "
+        f"--config ./tests/core_tests/integration/sample_config.yaml "
         f"--device cpu"
     )
     # Check the run of the pipeline
@@ -76,7 +76,7 @@ def test_cuda_simple_sdxl_turbo_config_detection_pipeline():
     cmd = (
         f"datadreamer --save_dir {target_folder} "
         f"--num_objects_range 1 2 "
-        f"--config ./sample_config.yaml "
+        f"--config ./tests/core_tests/integration/sample_config.yaml "
         f"--device cuda"
     )
     # Check the run of the pipeline
@@ -96,7 +96,7 @@ def test_cpu_simple_sdxl_turbo_config_classification_pipeline():
         f"--save_dir {target_folder} "
         f"--num_objects_range 1 2 "
         f"--image_annotator clip "
-        f"--config ./sample_config.yaml "
+        f"--config ./tests/core_tests/integration/sample_config.yaml "
         f"--device cpu"
     )
     # Check the run of the pipeline
@@ -116,7 +116,7 @@ def test_cuda_simple_sdxl_turbo_config_classification_pipeline():
         f"--save_dir {target_folder} "
         f"--num_objects_range 1 2 "
         f"--image_annotator clip "
-        f"--config ./sample_config.yaml "
+        f"--config ./tests/core_tests/integration/sample_config.yaml "
         f"--device cuda"
     )
     # Check the run of the pipeline
