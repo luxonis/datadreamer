@@ -8,6 +8,7 @@ import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer, Pipeline, pipeline
 
 from datadreamer.prompt_generation.lm_prompt_generator import LMPromptGenerator
+from datadreamer.prompt_generation.profanity_filter import ProfanityFilter
 
 logger = logging.getLogger(__name__)
 
@@ -20,6 +21,7 @@ class TinyLlamaLMPromptGenerator(LMPromptGenerator):
         model (AutoModelForCausalLM): The pre-trained causal language model for generating prompts.
         tokenizer (AutoTokenizer): The tokenizer for the pre-trained language model.
         pipeline (pipeline): The HuggingFace pipeline for generating text.
+        profanity_filter (ProfanityFilter): Profanity filter for filtering bad words from prompts.
 
     Methods:
         _init_lang_model(): Initializes the language model and tokenizer.
@@ -38,6 +40,7 @@ class TinyLlamaLMPromptGenerator(LMPromptGenerator):
         seed: Optional[float] = 42,
         device: str = "cuda",
         quantization: Optional[Literal["none", "4bit"]] = "none",
+        profanity_filter: Optional[ProfanityFilter] = None,
     ) -> None:
         """Initializes the LMPromptGenerator with class names and other settings."""
         super().__init__(
@@ -48,6 +51,7 @@ class TinyLlamaLMPromptGenerator(LMPromptGenerator):
             seed,
             device,
             quantization,
+            profanity_filter,
         )
 
     def _init_lang_model(self) -> Tuple[AutoModelForCausalLM, AutoTokenizer, Pipeline]:

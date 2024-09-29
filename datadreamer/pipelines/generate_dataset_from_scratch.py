@@ -24,6 +24,7 @@ from datadreamer.image_generation import (
 from datadreamer.prompt_generation import (
     LMPromptGenerator,
     LMSynonymGenerator,
+    ProfanityFilter,
     SimplePromptGenerator,
     TinyLlamaLMPromptGenerator,
     WordNetSynonymGenerator,
@@ -272,6 +273,9 @@ def check_args(args):
     ):
         raise ValueError("--class_names must be a non-empty list of strings")
 
+    if ProfanityFilter.check_bad_words(args.class_names):
+        raise ValueError("Class names contain some bad words!")
+
     # Check prompts_number
     if args.prompts_number <= 0:
         raise ValueError("--prompts_number must be a positive integer")
@@ -412,6 +416,8 @@ def main():
             for i in range(0, len(image_paths), batch_size)
         ]
 
+    profanity_filter = ProfanityFilter(seed=args.seed, device=args.device)
+
     if not args.annotate_only:
         # Prompt generation
         prompt_generator_class = prompt_generators[args.prompt_generator]
@@ -423,6 +429,7 @@ def main():
             device=args.device,
             quantization=args.lm_quantization,
             batch_size=args.batch_size_prompt,
+            profanity_filter=profanity_filter,
         )
         generated_prompts = prompt_generator.generate_prompts()
         prompt_generator.save_prompts(

@@ -7,6 +7,8 @@ from typing import List, Literal, Optional
 
 import torch
 
+from datadreamer.prompt_generation.profanity_filter import ProfanityFilter
+
 
 # Abstract base class for prompt generation
 class PromptGenerator(ABC):
@@ -19,6 +21,7 @@ class PromptGenerator(ABC):
         seed (Optional[float]): Seed for randomization.
         device (str): Device to run the prompt generator on ('cuda' for GPU, 'cpu' for CPU).
         quantization (str): Quantization type for the prompt generator.
+        profanity_filter (ProfanityFilter): Profanity filter for filtering bad words from prompts.
 
     Methods:
         set_seed(seed): Sets the random seed for consistent prompt generation.
@@ -36,6 +39,7 @@ class PromptGenerator(ABC):
         seed: Optional[float] = None,
         device: str = "cuda",
         quantization: Optional[Literal["none", "4bit"]] = "none",
+        profanity_filter: Optional[ProfanityFilter] = None,
     ) -> None:
         """Initializes the PromptGenerator with class names and other settings."""
         self.class_names = class_names
@@ -47,6 +51,7 @@ class PromptGenerator(ABC):
             self.set_seed(seed)
         self.device = device
         self.quantization = quantization if quantization is not None else "none"
+        self.profanity_filter = profanity_filter
 
     @staticmethod
     def set_seed(seed: int) -> None:

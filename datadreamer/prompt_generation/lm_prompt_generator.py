@@ -15,6 +15,7 @@ from transformers import (
     pipeline,
 )
 
+from datadreamer.prompt_generation.profanity_filter import ProfanityFilter
 from datadreamer.prompt_generation.prompt_generator import PromptGenerator
 
 logger = logging.getLogger(__name__)
@@ -29,6 +30,7 @@ class LMPromptGenerator(PromptGenerator):
         model (AutoModelForCausalLM): The pre-trained causal language model for generating prompts.
         tokenizer (AutoTokenizer): The tokenizer for the pre-trained language model.
         pipeline (pipeline): The HuggingFace pipeline for generating text.
+        profanity_filter (ProfanityFilter): Profanity filter for filtering bad words from prompts.
 
     Methods:
         _init_lang_model(): Initializes the language model and tokenizer.
@@ -51,6 +53,7 @@ class LMPromptGenerator(PromptGenerator):
         seed: Optional[float] = 42,
         device: str = "cuda",
         quantization: Optional[Literal["none", "4bit"]] = "none",
+        profanity_filter: Optional[ProfanityFilter] = None,
     ) -> None:
         """Initializes the LMPromptGenerator with class names and other settings."""
         num_objects_range = num_objects_range or [1, 3]
@@ -62,6 +65,7 @@ class LMPromptGenerator(PromptGenerator):
             seed,
             device,
             quantization,
+            profanity_filter,
         )
         self.model, self.tokenizer, self.pipeline = self._init_lang_model()
 
@@ -190,6 +194,8 @@ class LMPromptGenerator(PromptGenerator):
         """
         return prompt.lower().startswith(
             "a photo of"
+        ) and self.profanity_filter.is_safe(
+            prompt
         )  # and all(obj.lower() in prompt.lower() for obj in selected_objects)
 
     def generate_prompts_batch(self, prompt_texts_batch: List[str]) -> List[str]:
