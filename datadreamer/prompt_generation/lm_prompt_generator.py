@@ -193,7 +193,7 @@ class LMPromptGenerator(PromptGenerator):
             bool: True if the prompt is valid, False otherwise.
         """
         return prompt.lower().startswith("a photo of") and (
-            self.profanity_filter is not None and self.profanity_filter.is_safe(prompt)
+            self.profanity_filter is None or self.profanity_filter.is_safe(prompt)
         )  # and all(obj.lower() in prompt.lower() for obj in selected_objects)
 
     def generate_prompts_batch(self, prompt_texts_batch: List[str]) -> List[str]:
