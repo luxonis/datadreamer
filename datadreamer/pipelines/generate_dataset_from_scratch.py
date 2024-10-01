@@ -392,6 +392,12 @@ def main():
     # Check arguments
     check_args(args)
 
+    profanity_filter = ProfanityFilter(seed=args.seed, device=args.device)
+    # Check class names for bad words
+    for class_name in args.class_names:
+        if not profanity_filter.is_safe(class_name):
+            raise ValueError(f"Class name '{class_name}' contains bad words!")
+
     # Directories for saving images and bboxes
     save_dir = args.save_dir
     if not args.annotate_only:
@@ -416,8 +422,6 @@ def main():
             for i in range(0, len(image_paths), batch_size)
         ]
 
-    profanity_filter = ProfanityFilter(seed=args.seed, device=args.device)
-
     if not args.annotate_only:
         # Prompt generation
         prompt_generator_class = prompt_generators[args.prompt_generator]
@@ -429,7 +433,6 @@ def main():
             device=args.device,
             quantization=args.lm_quantization,
             batch_size=args.batch_size_prompt,
-            profanity_filter=profanity_filter,
         )
         generated_prompts = prompt_generator.generate_prompts()
         prompt_generator.save_prompts(

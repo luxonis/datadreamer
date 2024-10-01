@@ -7,7 +7,7 @@ from typing import List, Optional, Tuple
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
-from datadreamer.prompt_generation.bad_words import BAD_WORDS_LIST
+from datadreamer.utils.bad_words import BAD_WORDS_LIST
 
 logger = logging.getLogger(__name__)
 
@@ -77,7 +77,7 @@ class ProfanityFilter:
         Returns:
             tuple: The initialized language model and tokenizer.
         """
-        model_name = "Qwen/Qwen2.5-0.5B-Instruct"
+        model_name = "Qwen/Qwen2.5-1.5B-Instruct"
         model = AutoModelForCausalLM.from_pretrained(
             model_name, torch_dtype="auto", device_map=self.device
         )
@@ -108,7 +108,7 @@ class ProfanityFilter:
             messages = [
                 {
                     "role": "system",
-                    "content": "You are Qwen, created by Alibaba Cloud. You are a helpful assistant that classifies the given text as Safe or Unsafe. Respond with 'Safe' if the text is benign or represents an object that is not harmful. Respond with 'Unsafe' if the text contains any of the following categories: drugs, harassment, hate, nudity or sexual, offensive words, self-harm, terrorism or extremism, toxic, violence, weapons. Here are unsafe examples: 'ass', 'a**', 'bitch', 'pussy', 'f**k'.",
+                    "content": "You are Qwen, created by Alibaba Cloud. You are a helpful assistant that classifies the given text as Safe or Unsafe. Respond with 'Safe' if the text is benign or represents an object that is not harmful such as planets like 'pluto', 'uran' or 'mercury'. Respond with 'Unsafe' if the text contains any of the following categories: drugs, harassment, hate, nudity or sexual, offensive words, self-harm, terrorism or extremism, toxic, violence, weapons. Here are unsafe examples: 'ass', 'a**', 'bitch', 'pussy', 'f**k'.",
                 },
                 {"role": "user", "content": text},
             ]

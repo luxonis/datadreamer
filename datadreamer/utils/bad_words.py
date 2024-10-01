@@ -1,3 +1,4 @@
+# Source of this list: https://github.com/coffee-and-fun/google-profanity-words/blob/main/data/en.txt
 BAD_WORDS_LIST = [
     "2 girls 1 cup",
     "2g1c",

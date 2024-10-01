@@ -14,7 +14,6 @@ class SimplePromptGenerator(PromptGenerator):
         prompts_number (int): Number of prompts to generate.
         num_objects_range (Optional[List[int]]): Range for the number of objects to include in prompts.
         seed (Optional[float]): Seed for randomization.
-        profanity_filter (ProfanityFilter): Profanity filter for filtering bad words from prompts.
 
     Methods:
         generate_prompts(): Generates a list of simple prompts.

@@ -293,7 +293,7 @@ The above license does not cover the models. Please see the license of each mode
 
 ## 🙏 Acknowledgements
 
-This library was made possible by the use of several open-source projects, including Transformers, Diffusers, and others listed in the requirements.txt.
+This library was made possible by the use of several open-source projects, including Transformers, Diffusers, and others listed in the requirements.txt. Furthermore, we utilized a bad words list from [`@coffeeandfun/google-profanity-words`](https://github.com/coffee-and-fun/google-profanity-words) Node.js module created by Robert James Gabriel from Coffee & Fun LLC.
 
 [SD-XL 1.0 License](https://github.com/Stability-AI/generative-models/blob/main/model_licenses/LICENSE-SDXL1.0)
 [SDXL-Turbo License](https://github.com/Stability-AI/generative-models/blob/main/model_licenses/LICENSE-SDXL-Turbo)
