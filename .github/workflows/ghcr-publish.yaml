@@ -1,4 +1,4 @@
-name: Docker Build and Publish
+name: Deploy latest image to GHCR on release
 
 on:
   workflow_dispatch:
