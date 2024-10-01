@@ -108,6 +108,7 @@ class OWLv2Annotator(BaseAnnotator):
             images=images,
             return_tensors="pt",
             padding="max_length",
+            truncation=True,
         ).to(self.device)
         with torch.no_grad():
             outputs = self.model(**inputs)
