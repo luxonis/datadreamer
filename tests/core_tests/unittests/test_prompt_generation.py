@@ -6,6 +6,7 @@ import torch
 
 from datadreamer.prompt_generation.lm_prompt_generator import LMPromptGenerator
 from datadreamer.prompt_generation.lm_synonym_generator import LMSynonymGenerator
+from datadreamer.prompt_generation.profanity_filter import ProfanityFilter
 from datadreamer.prompt_generation.simple_prompt_generator import SimplePromptGenerator
 from datadreamer.prompt_generation.tinyllama_lm_prompt_generator import (
     TinyLlamaLMPromptGenerator,
@@ -120,3 +121,27 @@ def test_cpu_wordnet_synonym_generator():
 )
 def test_cuda_wordnet_synonym_generator():
     _check_synonym_generator("cuda", WordNetSynonymGenerator)
+
+
+def _check_profanity_filter(device: str) -> None:
+    """Check the profanity filter.
+
+    Args:
+        device (str): The device to run the language model on ('cuda' for GPU, 'cpu' for CPU).
+    """
+    profanity_filter = ProfanityFilter(device=device, use_lm=True)
+    assert profanity_filter.is_safe(["cat", "dog", "plane", "person"])
+    assert not profanity_filter.is_safe(["cat", "dog", "ass", "person"])
+    profanity_filter.release(empty_cuda_cache=True if device != "cpu" else False)
+
+
+def test_cpu_lm_profanity_filter():
+    _check_profanity_filter("cpu")
+
+
+@pytest.mark.skipif(
+    not torch.cuda.is_available(),
+    reason="Test requires CUDA support",
+)
+def test_cuda_lm_profanity_filter():
+    _check_profanity_filter("cuda")

@@ -175,6 +175,7 @@ datadreamer --config <path-to-config>
 - `--image_tester_patience`: Patience level for image tester. Default is `1`.
 - `--lm_quantization`: Quantization to use for Mistral language model. Choose between `none` and `4bit`. Default is `none`.
 - `--annotator_size`: Size of the annotator model to use. Choose between `base` and `large`. Default is `base`.
+- `--disable_lm_filter`: Use only a bad word list for profanity filtering. Default is `False`.
 - `--batch_size_prompt`: Batch size for prompt generation. Default is 64.
 - `--batch_size_annotation`: Batch size for annotation. Default is `1`.
 - `--batch_size_image`: Batch size for image generation. Default is `1`.
@@ -191,6 +192,7 @@ datadreamer --config <path-to-config>
 | Prompt Generation | [Mistral-7B-Instruct-v0.1](https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.1) | Semantically rich prompts               |
 |                   | [TinyLlama-1.1B-Chat-v1.0](https://huggingface.co/TinyLlama/TinyLlama-1.1B-Chat-v1.0) | Tiny LM                                 |
 |                   | Simple random generator                                                               | Joins randomly chosen object names      |
+| Profanity Filter  | [Qwen2.5-1.5B-Instruct](https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct)            | Fast and accurate LM profanity filter   |
 | Image Generation  | [SDXL-1.0](https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0)           | Slow and accurate (1024x1024 images)    |
 |                   | [SDXL-Turbo](https://huggingface.co/stabilityai/sdxl-turbo)                           | Fast and less accurate (512x512 images) |
 |                   | [SDXL-Lightning](https://huggingface.co/ByteDance/SDXL-Lightning)                     | Fast and accurate (1024x1024 images)    |
@@ -292,7 +294,7 @@ The above license does not cover the models. Please see the license of each mode
 
 ## 🙏 Acknowledgements
 
-This library was made possible by the use of several open-source projects, including Transformers, Diffusers, and others listed in the requirements.txt.
+This library was made possible by the use of several open-source projects, including Transformers, Diffusers, and others listed in the requirements.txt. Furthermore, we utilized a bad words list from [`@coffeeandfun/google-profanity-words`](https://github.com/coffee-and-fun/google-profanity-words) Node.js module created by Robert James Gabriel from Coffee & Fun LLC.
 
 [SD-XL 1.0 License](https://github.com/Stability-AI/generative-models/blob/main/model_licenses/LICENSE-SDXL1.0)
 [SDXL-Turbo License](https://github.com/Stability-AI/generative-models/blob/main/model_licenses/LICENSE-SDXL-Turbo)
