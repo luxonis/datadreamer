@@ -6,6 +6,9 @@ import torch
 
 from datadreamer.prompt_generation.lm_prompt_generator import LMPromptGenerator
 from datadreamer.prompt_generation.lm_synonym_generator import LMSynonymGenerator
+from datadreamer.prompt_generation.qwen2_lm_prompt_generator import (
+    Qwen2LMPromptGenerator,
+)
 from datadreamer.prompt_generation.simple_prompt_generator import SimplePromptGenerator
 from datadreamer.prompt_generation.tinyllama_lm_prompt_generator import (
     TinyLlamaLMPromptGenerator,
@@ -90,6 +93,30 @@ def test_cpu_tinyllama_lm_prompt_generator():
 )
 def test_cuda_tinyllama_lm_prompt_generator():
     _check_lm_prompt_generator("cuda", TinyLlamaLMPromptGenerator)
+
+
+@pytest.mark.skipif(
+    total_memory < 12 or total_disk_space < 12,
+    reason="Test requires at least 12GB of RAM and 12GB of HDD for running on CPU",
+)
+def test_cpu_qwen2_lm_prompt_generator():
+    _check_lm_prompt_generator("cpu", Qwen2LMPromptGenerator)
+
+
+@pytest.mark.skipif(
+    total_memory < 10 or not torch.cuda.is_available() or total_disk_space < 12,
+    reason="Test requires at least 10GB of RAM, 12GB of HDD and CUDA support",
+)
+def test_cuda_qwen2_lm_prompt_generator():
+    _check_lm_prompt_generator("cuda", Qwen2LMPromptGenerator)
+
+
+@pytest.mark.skipif(
+    total_memory < 10 or not torch.cuda.is_available() or total_disk_space < 12,
+    reason="Test requires at least 10GB of RAM, 12GB of HDD and CUDA support",
+)
+def test_cuda_4bit_qwen2_lm_prompt_generator():
+    _check_lm_prompt_generator("cuda", Qwen2LMPromptGenerator, quantization="4bit")
 
 
 def _check_synonym_generator(device: str, synonym_generator_class=LMSynonymGenerator):

@@ -410,6 +410,97 @@ def test_cuda_tiny_sdxl_detection_pipeline():
 
 
 # =========================================================
+# DETECTION - Qwen2.5 LLM
+# =========================================================
+@pytest.mark.skipif(
+    total_memory < 16 or total_disk_space < 35,
+    reason="Test requires at least 16GB of RAM and 35GB of HDD",
+)
+def test_cpu_qwen2_sdxl_turbo_detection_pipeline():
+    # Define target folder
+    target_folder = "data/data-det-cpu-qwen2-sdxl-turbo/"
+    # Define the command to run the datadreamer
+    cmd = (
+        f"datadreamer --save_dir {target_folder} "
+        f"--class_names alien mars cat "
+        f"--prompts_number 1 "
+        f"--prompt_generator qwen2 "
+        f"--num_objects_range 1 2 "
+        f"--image_generator sdxl-turbo "
+        f"--use_image_tester "
+        f"--device cpu"
+    )
+    # Check the run of the pipeline
+    _check_detection_pipeline(cmd, target_folder)
+
+
+@pytest.mark.skipif(
+    not torch.cuda.is_available() or total_memory < 16 or total_disk_space < 35,
+    reason="Test requires GPU, at least 16GB of RAM and 35GB of HDD",
+)
+def test_cuda_qwen2_sdxl_turbo_detection_pipeline():
+    # Define target folder
+    target_folder = "data/data-det-cuda-qwen2-sdxl-turbo/"
+    # Define the command to run the datadreamer
+    cmd = (
+        f"datadreamer --save_dir {target_folder} "
+        f"--class_names alien mars cat "
+        f"--prompts_number 1 "
+        f"--prompt_generator qwen2 "
+        f"--num_objects_range 1 2 "
+        f"--image_generator sdxl-turbo "
+        f"--use_image_tester "
+        f"--device cuda"
+    )
+    # Check the run of the pipeline
+    _check_detection_pipeline(cmd, target_folder)
+
+
+@pytest.mark.skipif(
+    total_memory < 16 or total_disk_space < 35,
+    reason="Test requires at least 16GB of RAM and 35GB of HDD",
+)
+def test_cpu_qwen2_sdxl_detection_pipeline():
+    # Define target folder
+    target_folder = "data/data-det-cpu-qwen2-sdxl/"
+    # Define the command to run the datadreamer
+    cmd = (
+        f"datadreamer --save_dir {target_folder} "
+        f"--class_names alien mars cat "
+        f"--prompts_number 1 "
+        f"--prompt_generator qwen2 "
+        f"--num_objects_range 1 2 "
+        f"--image_generator sdxl "
+        f"--use_image_tester "
+        f"--device cpu"
+    )
+    # Check the run of the pipeline
+    _check_detection_pipeline(cmd, target_folder)
+
+
+@pytest.mark.skipif(
+    not torch.cuda.is_available() or total_memory < 16 or total_disk_space < 35,
+    reason="Test requires GPU, at least 16GB of RAM and 35GB of HDD",
+)
+def test_cuda_qwen2_sdxl_detection_pipeline():
+    # Define target folder
+    target_folder = "data/data-det-cuda-qwen2-sdxl/"
+    # Define the command to run the datadreamer
+    cmd = (
+        f"datadreamer --save_dir {target_folder} "
+        f"--class_names alien mars cat "
+        f"--prompts_number 1 "
+        f"--prompt_generator qwen2 "
+        f"--num_objects_range 1 2 "
+        f"--image_generator sdxl "
+        f"--use_image_tester "
+        f"--device cuda"
+    )
+    # Check the run of the pipeline
+    _check_detection_pipeline(cmd, target_folder)
+
+
+# =========================================================
 # CLASSIFICATION - SIMPLE LM
 # =========================================================
 @pytest.mark.skipif(
@@ -796,6 +887,105 @@ def test_cuda_tiny_sdxl_classification_pipeline():
         f"--class_names alien mars cat "
         f"--prompts_number 1 "
         f"--prompt_generator tiny "
+        f"--num_objects_range 1 2 "
+        f"--image_annotator clip "
+        f"--image_generator sdxl "
+        f"--use_image_tester "
+        f"--device cuda"
+    )
+    # Check the run of the pipeline
+    _check_detection_pipeline(cmd, target_folder)
+
+
+# =========================================================
+# CLASSIFICATION - Qwen2.5 LLM
+# =========================================================
+@pytest.mark.skipif(
+    total_memory < 16 or total_disk_space < 35,
+    reason="Test requires at least 16GB of RAM and 35GB of HDD",
+)
+def test_cpu_qwen2_sdxl_turbo_classification_pipeline():
+    # Define target folder
+    target_folder = "data/data-cls-cpu-qwen2-sdxl-turbo/"
+    # Define the command to run the datadreamer
+    cmd = (
+        f"datadreamer --task classification "
+        f"--save_dir {target_folder} "
+        f"--class_names alien mars cat "
+        f"--prompts_number 1 "
+        f"--prompt_generator qwen2 "
+        f"--image_annotator clip "
+        f"--num_objects_range 1 2 "
+        f"--image_generator sdxl-turbo "
+        f"--use_image_tester "
+        f"--device cpu"
+    )
+    # Check the run of the pipeline
+    _check_detection_pipeline(cmd, target_folder)
+
+
+@pytest.mark.skipif(
+    not torch.cuda.is_available() or total_memory < 16 or total_disk_space < 35,
+    reason="Test requires GPU, at least 16GB of RAM and 35GB of HDD",
+)
+def test_cuda_qwen2_sdxl_turbo_classification_pipeline():
+    # Define target folder
+    target_folder = "data/data-cls-cuda-qwen2-sdxl-turbo/"
+    # Define the command to run the datadreamer
+    cmd = (
+        f"datadreamer --task classification "
+        f"--save_dir {target_folder} "
+        f"--class_names alien mars cat "
+        f"--prompts_number 1 "
+        f"--prompt_generator qwen2 "
+        f"--num_objects_range 1 2 "
+        f"--image_annotator clip "
+        f"--image_generator sdxl-turbo "
+        f"--use_image_tester "
+        f"--device cuda"
+    )
+    # Check the run of the pipeline
+    _check_detection_pipeline(cmd, target_folder)
+
+
+@pytest.mark.skipif(
+    total_memory < 16 or total_disk_space < 35,
+    reason="Test requires at least 16GB of RAM and 35GB of HDD",
+)
+def test_cpu_qwen2_sdxl_classification_pipeline():
+    # Define target folder
+    target_folder = "data/data-cls-cpu-qwen2-sdxl/"
+    # Define the command to run the datadreamer
+    cmd = (
+        f"datadreamer --task classification "
+        f"--save_dir {target_folder} "
+        f"--class_names alien mars cat "
+        f"--prompts_number 1 "
+        f"--prompt_generator qwen2 "
+        f"--num_objects_range 1 2 "
+        f"--image_annotator clip "
+        f"--image_generator sdxl "
+        f"--use_image_tester "
+        f"--device cpu"
+    )
+    # Check the run of the pipeline
+    _check_detection_pipeline(cmd, target_folder)
+
+
+@pytest.mark.skipif(
+    not torch.cuda.is_available() or total_memory < 16 or total_disk_space < 35,
+    reason="Test requires GPU, at least 16GB of RAM and 35GB of HDD",
+)
+def test_cuda_qwen2_sdxl_classification_pipeline():
+    # Define target folder
+    target_folder = "data/data-cls-cuda-qwen2-sdxl/"
+    # Define the command to run the datadreamer
+    cmd = (
+        f"datadreamer --task classification "
+        f"--save_dir {target_folder} "
+        f"--class_names alien mars cat "
+        f"--prompts_number 1 "
+        f"--prompt_generator qwen2 "
         f"--num_objects_range 1 2 "
         f"--image_annotator clip "
         f"--image_generator sdxl "

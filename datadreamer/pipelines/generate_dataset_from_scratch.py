@@ -24,6 +24,7 @@ from datadreamer.image_generation import (
 from datadreamer.prompt_generation import (
     LMPromptGenerator,
     LMSynonymGenerator,
+    Qwen2LMPromptGenerator,
     SimplePromptGenerator,
     TinyLlamaLMPromptGenerator,
     WordNetSynonymGenerator,
@@ -35,6 +36,7 @@ prompt_generators = {
     "simple": SimplePromptGenerator,
     "lm": LMPromptGenerator,
     "tiny": TinyLlamaLMPromptGenerator,
+    "qwen2": Qwen2LMPromptGenerator,
 }
 
 synonym_generators = {
@@ -100,7 +102,7 @@ def parse_args():
     parser.add_argument(
         "--prompt_generator",
         type=str,
-        choices=["simple", "lm", "tiny"],
+        choices=["simple", "lm", "tiny", "qwen2"],
         help="Prompt generator to use: simple or language model",
     )
     parser.add_argument(
