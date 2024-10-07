@@ -129,11 +129,9 @@ def _check_profanity_filter(device: str) -> None:
     Args:
         device (str): The device to run the language model on ('cuda' for GPU, 'cpu' for CPU).
     """
-    profanity_filter = ProfanityFilter(device=device)
-    assert profanity_filter.is_safe("cat")
-    assert not profanity_filter.is_safe("ass")
-    assert ProfanityFilter.check_bad_words(["cat", "dog", "ass"])
-    assert not ProfanityFilter.check_bad_words(["cat", "dog", "plane"])
+    profanity_filter = ProfanityFilter(device=device, use_lm=True)
+    assert profanity_filter.is_safe(["cat", "dog", "plane", "person"])
+    assert not profanity_filter.is_safe(["cat", "dog", "ass", "person"])
     profanity_filter.release(empty_cuda_cache=True if device != "cpu" else False)
 
 

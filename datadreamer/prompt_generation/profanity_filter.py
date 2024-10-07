@@ -25,18 +25,37 @@ class ProfanityFilter:
 
     Methods:
         set_seed(seed): Sets the random seed for consistent prompt generation.
-        check_bad_words(texts): Filters bad words from a list of texts.
         _init_lang_model(): Initializes the language model and tokenizer.
-        _is_bad_word(text): Checks if a text contains a bad word.
+        _contains_bad_words(texts): Checks if a list of texts contain bad words.
         _check_lm_safety(text): Checks if a text is safe using a language model.
-        is_safe(text): Checks if a text is safe (does not contain bad words).
+        is_safe(classes): Checks if a list of classes is safe.
         release(empty_cuda_cache): Releases the model and optionally empties the CUDA cache.
     """
+
+    LLM_PROMPT = """You are Qwen, created by Alibaba Cloud. You are a helpful assistant who classifies the classes as appropriate or inappropriate. Inappropriate classes are those that directly relate to drugs, hate, racism, harassment, nudity, sexual or offensive words. Here are inappropriate examples:
+- 'ass',
+- 'a**',
+- 'bitch',
+- 'pussy',
+- and 'f**k'.
+
+Otherwise, the classes are considered appropriate. They can talk about people, characters, animals, nature, history, human conflicts, and so on. Some acceptable examples are:
+- 'cat',
+- 'angry barking dog',
+- 'alien',
+- 'dracula',
+- 'war',
+- 'soldier',
+- 'pluto',
+- 'sun',
+- and 'mercury.'
+
+Respond 'inappropriate' if the classes are unacceptable, otherwise respond with 'appropriate'."""
 
     def __init__(
         self,
         device: str = "cuda",
-        use_lm: bool = True,
+        use_lm: bool = False,
         seed: Optional[float] = 42,
     ) -> None:
         """Initializes the ProfanityFilter with parameters."""
@@ -59,18 +78,6 @@ class ProfanityFilter:
         torch.manual_seed(seed)
         torch.cuda.manual_seed_all(seed)
 
-    @staticmethod
-    def check_bad_words(texts: List[str]) -> bool:
-        """Filters bad words from a list of texts.
-
-        Args:
-            texts (List[str]): List of texts to filter bad words from.
-
-        Returns:
-            bool: True if any of the texts contain bad words, False otherwise.
-        """
-        return any(text.lower() in BAD_WORDS_LIST for text in texts)
-
     def _init_lang_model(self) -> Tuple[AutoModelForCausalLM, AutoTokenizer]:
         """Initializes the language model and tokenizer for prompt generation.
 
@@ -84,16 +91,16 @@ class ProfanityFilter:
         tokenizer = AutoTokenizer.from_pretrained(model_name)
         return model, tokenizer
 
-    def _is_bad_word(self, text: str) -> bool:
-        """Checks if a text contains a bad word.
+    def _contains_bad_words(self, texts: List[str]) -> bool:
+        """Checks if a list of texts contain bad words.
 
         Args:
-            text (str): Text to check for bad words.
+            texts (List[str]): List of texts to checks against bad words list.
 
         Returns:
-            bool: True if the text contains a bad word, False otherwise.
+            bool: True if any of the texts contain bad words, False otherwise.
         """
-        return text.lower() in BAD_WORDS_LIST
+        return any(text.lower() in BAD_WORDS_LIST for text in texts)
 
     def _check_lm_safety(self, text: str) -> bool:
         """Checks if a text is safe using a language model.
@@ -108,7 +115,7 @@ class ProfanityFilter:
             messages = [
                 {
                     "role": "system",
-                    "content": "You are Qwen, created by Alibaba Cloud. You are a helpful assistant that classifies the given text as Safe or Unsafe. Respond with 'Safe' if the text is benign or represents an object that is not harmful such as planets like 'pluto', 'uran' or 'mercury'. Respond with 'Unsafe' if the text contains any of the following categories: drugs, harassment, hate, nudity or sexual, offensive words, self-harm, terrorism or extremism, toxic, violence, weapons. Here are unsafe examples: 'ass', 'a**', 'bitch', 'pussy', 'f**k'.",
+                    "content": self.LLM_PROMPT,
                 },
                 {"role": "user", "content": text},
             ]
@@ -136,19 +143,22 @@ class ProfanityFilter:
                 response = self.tokenizer.batch_decode(
                     generated_ids, skip_special_tokens=True
                 )[0]
-                return response.lower() == "safe"
+                return response.lower().strip() == "appropriate"
         return True
 
-    def is_safe(self, text: str) -> bool:
-        """Checks if a text is safe (does not contain bad words).
+    def is_safe(self, classes: List[str]) -> bool:
+        """Checks if a list of classes is safe.
 
         Args:
-            text (str): Text to check for bad words.
+            classes (List[str]): List of classes to check for safety.
 
         Returns:
-            bool: True if the text is safe, False otherwise.
+            bool: True if the classes are safe, False otherwise.
         """
-        return not self._is_bad_word(text) and self._check_lm_safety(text)
+        logger.info(f"Profanity filter is checking classes: {classes}")
+        return not self._contains_bad_words(classes) and self._check_lm_safety(
+            ",".join(classes)
+        )
 
     def release(self, empty_cuda_cache=False) -> None:
         """Releases the model and optionally empties the CUDA cache."""
@@ -163,10 +173,8 @@ class ProfanityFilter:
 if __name__ == "__main__":
     # Example usage of the class
     profanity_filter = ProfanityFilter(use_lm=True, device="cpu")
-    texts = ["cat", "fish", "dog", "ass"]
-    print(ProfanityFilter.check_bad_words(texts))
-    for text in texts:
-        print(
-            f"Text: '{text}' is {'safe' if profanity_filter.is_safe(text) else 'unsafe'}!"
-        )
+    classes_1 = ["cat", "fish", "dog", "ass", "person", "soldier", "war"]
+    print(f"Are classes#1 {classes_1} safe: {profanity_filter.is_safe(classes_1)}")
+    classes_2 = ["cat", "fish", "dog", "person", "soldier", "war"]
+    print(f"Are classes#2 {classes_2} safe: {profanity_filter.is_safe(classes_2)}")
     profanity_filter.release()

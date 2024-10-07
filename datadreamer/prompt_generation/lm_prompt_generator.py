@@ -15,7 +15,6 @@ from transformers import (
     pipeline,
 )
 
-from datadreamer.prompt_generation.profanity_filter import ProfanityFilter
 from datadreamer.prompt_generation.prompt_generator import PromptGenerator
 
 logger = logging.getLogger(__name__)
@@ -189,9 +188,7 @@ class LMPromptGenerator(PromptGenerator):
         Returns:
             bool: True if the prompt is valid, False otherwise.
         """
-        return prompt.lower().startswith(
-            "a photo of"
-        ) and ProfanityFilter.check_bad_words(prompt.lower()[10:].strip().split())
+        return prompt.lower().startswith("a photo of")
 
     def generate_prompts_batch(self, prompt_texts_batch: List[str]) -> List[str]:
         """Generates a list of prompts using the language model.

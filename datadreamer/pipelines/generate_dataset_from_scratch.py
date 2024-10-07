@@ -202,6 +202,13 @@ def parse_args():
     )
 
     parser.add_argument(
+        "--use_only_bad_words_filter",
+        default=None,
+        action="store_true",
+        help="Whether to use only bad words in profanity filter",
+    )
+
+    parser.add_argument(
         "--batch_size_prompt",
         type=int,
         help="Batch size for prompt generation",
@@ -272,9 +279,6 @@ def check_args(args):
         not isinstance(name, str) for name in args.class_names
     ):
         raise ValueError("--class_names must be a non-empty list of strings")
-
-    if ProfanityFilter.check_bad_words(args.class_names):
-        raise ValueError("Class names contain some bad words!")
 
     # Check prompts_number
     if args.prompts_number <= 0:
@@ -392,11 +396,12 @@ def main():
     # Check arguments
     check_args(args)
 
-    profanity_filter = ProfanityFilter(seed=args.seed, device=args.device)
+    profanity_filter = ProfanityFilter(
+        seed=args.seed, device=args.device, use_lm=not args.use_only_bad_words_filter
+    )
     # Check class names for bad words
-    for class_name in args.class_names:
-        if not profanity_filter.is_safe(class_name):
-            raise ValueError(f"Class name '{class_name}' contains bad words!")
+    if not profanity_filter.is_safe(args.class_names):
+        raise ValueError(f"Class names: '{args.class_names}' contain bad words!")
 
     # Directories for saving images and bboxes
     save_dir = args.save_dir
