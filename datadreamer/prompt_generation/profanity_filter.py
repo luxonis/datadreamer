@@ -16,10 +16,9 @@ class ProfanityFilter:
     """Class for filtering bad words from texts and checking if texts are safe.
 
     Attributes:
-        seed (Optional[float]): Seed for randomization.
         device (str): Device to run the language model on ('cuda' for GPU, 'cpu' for CPU).
         use_lm (bool): Whether to use a language model for checking text safety.
-        bad_words (List[str]): List of bad words to filter from texts.
+        seed (Optional[float]): Seed for randomization.
         model (AutoModelForCausalLM): The pre-trained causal language model for checking text safety.
         tokenizer (AutoTokenizer): The tokenizer for the pre-trained language model.
 
@@ -84,10 +83,23 @@ Respond 'inappropriate' if the classes are unacceptable, otherwise respond with 
         Returns:
             tuple: The initialized language model and tokenizer.
         """
-        model_name = "Qwen/Qwen2.5-1.5B-Instruct"
-        model = AutoModelForCausalLM.from_pretrained(
-            model_name, torch_dtype="auto", device_map=self.device
+        logger.info(
+            f"Initializing Qwen2.5-1.5B-Instruct language model on {self.device}..."
         )
+        model_name = "Qwen/Qwen2.5-1.5B-Instruct"
+        if self.device == "cpu":
+            model = AutoModelForCausalLM.from_pretrained(
+                model_name,
+                torch_dtype="auto",
+                device_map="cpu",
+                low_cpu_mem_usage=True,
+            )
+        else:
+            model = AutoModelForCausalLM.from_pretrained(
+                model_name,
+                torch_dtype=torch.float16,
+                device_map=self.device,
+            )
         tokenizer = AutoTokenizer.from_pretrained(model_name)
         return model, tokenizer
 
@@ -143,7 +155,7 @@ Respond 'inappropriate' if the classes are unacceptable, otherwise respond with 
                 response = self.tokenizer.batch_decode(
                     generated_ids, skip_special_tokens=True
                 )[0]
-                return response.lower().strip() == "appropriate"
+                return "inappropriate" not in response.lower().strip()
         return True
 
     def is_safe(self, classes: List[str]) -> bool:

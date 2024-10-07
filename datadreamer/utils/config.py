@@ -37,7 +37,7 @@ class Config(LuxonisConfig):
     use_image_tester: bool = False
     image_tester_patience: int = 1
     # Profanity filter arguments
-    use_only_bad_words_filter: bool = False
+    disable_lm_filter: bool = False
     # Annotation arguments
     image_annotator: Literal["owlv2", "clip"] = "owlv2"
     conf_threshold: float = 0.15
