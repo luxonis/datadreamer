@@ -24,8 +24,8 @@ from datadreamer.image_generation import (
 from datadreamer.prompt_generation import (
     LMPromptGenerator,
     LMSynonymGenerator,
-    Qwen2LMPromptGenerator,
     ProfanityFilter,
+    Qwen2LMPromptGenerator,
     SimplePromptGenerator,
     TinyLlamaLMPromptGenerator,
     WordNetSynonymGenerator,

@@ -6,10 +6,10 @@ import torch
 
 from datadreamer.prompt_generation.lm_prompt_generator import LMPromptGenerator
 from datadreamer.prompt_generation.lm_synonym_generator import LMSynonymGenerator
+from datadreamer.prompt_generation.profanity_filter import ProfanityFilter
 from datadreamer.prompt_generation.qwen2_lm_prompt_generator import (
     Qwen2LMPromptGenerator,
 )
-from datadreamer.prompt_generation.profanity_filter import ProfanityFilter
 from datadreamer.prompt_generation.simple_prompt_generator import SimplePromptGenerator
 from datadreamer.prompt_generation.tinyllama_lm_prompt_generator import (
     TinyLlamaLMPromptGenerator,
