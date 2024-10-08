@@ -25,6 +25,7 @@ from datadreamer.prompt_generation import (
     LMPromptGenerator,
     LMSynonymGenerator,
     Qwen2LMPromptGenerator,
+    ProfanityFilter,
     SimplePromptGenerator,
     TinyLlamaLMPromptGenerator,
     WordNetSynonymGenerator,
@@ -200,6 +201,13 @@ def parse_args():
         type=str,
         choices=["base", "large"],
         help="Size of the annotator model to use",
+    )
+
+    parser.add_argument(
+        "--disable_lm_filter",
+        default=None,
+        action="store_true",
+        help="Whether to use only bad words in profanity filter",
     )
 
     parser.add_argument(
@@ -389,6 +397,14 @@ def main():
     args = Box(config.model_dump(exclude_none=True, by_alias=True))
     # Check arguments
     check_args(args)
+
+    profanity_filter = ProfanityFilter(
+        seed=args.seed, device=args.device, use_lm=not args.disable_lm_filter
+    )
+    # Check class names for bad words
+    if not profanity_filter.is_safe(args.class_names):
+        raise ValueError(f"Class names: '{args.class_names}' contain bad words!")
+    profanity_filter.release(empty_cuda_cache=True)
 
     # Directories for saving images and bboxes
     save_dir = args.save_dir

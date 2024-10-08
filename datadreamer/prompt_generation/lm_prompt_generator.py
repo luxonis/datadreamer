@@ -188,9 +188,7 @@ class LMPromptGenerator(PromptGenerator):
         Returns:
             bool: True if the prompt is valid, False otherwise.
         """
-        return prompt.lower().startswith(
-            "a photo of"
-        )  # and all(obj.lower() in prompt.lower() for obj in selected_objects)
+        return prompt.lower().startswith("a photo of")
 
     def generate_prompts_batch(self, prompt_texts_batch: List[str]) -> List[str]:
         """Generates a list of prompts using the language model.
