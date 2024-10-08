@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import os
 import shutil
+import textwrap
 import uuid
 
 import matplotlib.patches as patches
@@ -25,6 +26,7 @@ from datadreamer.prompt_generation import (
     LMPromptGenerator,
     LMSynonymGenerator,
     ProfanityFilter,
+    Qwen2LMPromptGenerator,
     SimplePromptGenerator,
     TinyLlamaLMPromptGenerator,
     WordNetSynonymGenerator,
@@ -36,6 +38,7 @@ prompt_generators = {
     "simple": SimplePromptGenerator,
     "lm": LMPromptGenerator,
     "tiny": TinyLlamaLMPromptGenerator,
+    "qwen2": Qwen2LMPromptGenerator,
 }
 
 synonym_generators = {
@@ -101,8 +104,8 @@ def parse_args():
     parser.add_argument(
         "--prompt_generator",
         type=str,
-        choices=["simple", "lm", "tiny"],
-        help="Prompt generator to use: simple or language model",
+        choices=["simple", "lm", "tiny", "qwen2"],
+        help="Prompt generator to use: simple, lm, tiny, or qwen2 (default).",
     )
     parser.add_argument(
         "--image_generator",
@@ -321,10 +324,10 @@ def check_args(args):
     if args.lm_quantization != "none" and (
         args.device == "cpu"
         or not torch.cuda.is_available()
-        or args.prompt_generator != "lm"
+        or args.prompt_generator not in ["lm", "qwen2"]
     ):
         raise ValueError(
-            "LM Quantization is only available for CUDA devices and Mistral LM"
+            "LM Quantization is only available for CUDA devices and Mistral/Qwen2.5 prompt generators"
         )
 
     # Check batch_size_prompt
@@ -633,7 +636,9 @@ def main():
                     )
                     # Add prompt text as title
                 if generated_prompts:
-                    plt.title(generated_prompts[i * args.batch_size_annotation + j][1])
+                    title = generated_prompts[i * args.batch_size_annotation + j][1]
+                    wrapped_title = "\n".join(textwrap.wrap(title, width=50))
+                    plt.title(wrapped_title)
                 else:
                     plt.title("Annotated image")
 

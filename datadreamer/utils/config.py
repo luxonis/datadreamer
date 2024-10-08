@@ -21,7 +21,7 @@ class Config(LuxonisConfig):
         List[float], Field(default=[0.8, 0.1, 0.1], min_length=3, max_length=3)
     ] = [0.8, 0.1, 0.1]
     # Prompt generation arguments
-    prompt_generator: Literal["simple", "lm", "tiny"] = "simple"
+    prompt_generator: Literal["simple", "lm", "tiny", "qwen2"] = "qwen2"
     synonym_generator: Literal["none", "llm", "wordnet"] = "none"
     num_objects_range: Annotated[
         List[int], Field(default=[1, 3], min_length=2, max_length=2)
