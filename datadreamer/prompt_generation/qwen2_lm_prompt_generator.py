@@ -101,7 +101,9 @@ class Qwen2LMPromptGenerator(LMPromptGenerator):
                     trust_remote_code=True,
                 )
 
-        tokenizer = AutoTokenizer.from_pretrained("Qwen/Qwen2.5-1.5B-Instruct")
+        tokenizer = AutoTokenizer.from_pretrained(
+            "Qwen/Qwen2.5-1.5B-Instruct", padding_side="left"
+        )
         pipe = pipeline(
             "text-generation",
             model=model,
