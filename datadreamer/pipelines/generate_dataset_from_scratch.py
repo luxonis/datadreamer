@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import os
 import shutil
+import textwrap
 import uuid
 
 import matplotlib.patches as patches
@@ -635,7 +636,9 @@ def main():
                     )
                     # Add prompt text as title
                 if generated_prompts:
-                    plt.title(generated_prompts[i * args.batch_size_annotation + j][1])
+                    title = generated_prompts[i * args.batch_size_annotation + j][1]
+                    wrapped_title = "\n".join(textwrap.wrap(title, width=50))
+                    plt.title(wrapped_title)
                 else:
                     plt.title("Annotated image")
 
