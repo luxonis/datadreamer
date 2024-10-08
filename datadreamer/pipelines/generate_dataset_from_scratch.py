@@ -105,7 +105,7 @@ def parse_args():
         "--prompt_generator",
         type=str,
         choices=["simple", "lm", "tiny", "qwen2"],
-        help="Prompt generator to use: simple or language model",
+        help="Prompt generator to use: simple, lm, tiny, or qwen2 (default).",
     )
     parser.add_argument(
         "--image_generator",
@@ -324,10 +324,10 @@ def check_args(args):
     if args.lm_quantization != "none" and (
         args.device == "cpu"
         or not torch.cuda.is_available()
-        or args.prompt_generator != "lm"
+        or args.prompt_generator not in ["lm", "qwen2"]
     ):
         raise ValueError(
-            "LM Quantization is only available for CUDA devices and Mistral LM"
+            "LM Quantization is only available for CUDA devices and Mistral/Qwen2.5 prompt generators"
         )
 
     # Check batch_size_prompt
