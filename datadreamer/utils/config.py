@@ -10,7 +10,7 @@ class Config(LuxonisConfig):
     save_dir: str = "generated_dataset"
     class_names: List[str] = ["bear", "bicycle", "bird", "person"]
     prompts_number: int = 10
-    task: Literal["detection", "classification"] = "detection"
+    task: Literal["detection", "classification", "instance-segmentation"] = "detection"
     seed: int = 42
     device: Literal["cuda", "cpu"] = "cuda"
     annotate_only: bool = False
@@ -39,7 +39,7 @@ class Config(LuxonisConfig):
     # Profanity filter arguments
     disable_lm_filter: bool = False
     # Annotation arguments
-    image_annotator: Literal["owlv2", "clip"] = "owlv2"
+    image_annotator: Literal["owlv2", "clip", "owlv2_fastsam"] = "owlv2"
     conf_threshold: float = 0.15
     annotation_iou_threshold: float = 0.2
     use_tta: bool = False

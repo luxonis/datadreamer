@@ -4,6 +4,7 @@ import json
 import os
 import shutil
 
+import numpy as np
 from PIL import Image
 
 from datadreamer.utils.base_converter import BaseConverter
@@ -28,8 +29,9 @@ class COCOConverter(BaseConverter):
     │   ├── labels.json
     """
 
-    def __init__(self, seed=42):
+    def __init__(self, seed=42, is_instance_segmentation: bool = False):
         super().__init__(seed)
+        self.is_instance_segmentation = is_instance_segmentation
 
     def convert(self, dataset_dir, output_dir, split_ratios, copy_files=True) -> None:
         """Converts a dataset into a COCO format.
@@ -99,15 +101,23 @@ class COCOConverter(BaseConverter):
                         "height": image_height,
                     }
                 )
-
-                for box, label in zip(annotation["boxes"], annotation["labels"]):
+                masks = (
+                    annotation["masks"]
+                    if "masks" in annotation and self.is_instance_segmentation
+                    else [None for i in range(len(annotation["boxes"]))]
+                )
+                for box, label, mask in zip(
+                    annotation["boxes"], annotation["labels"], masks
+                ):
                     annotations.append(
                         {
                             "id": annotation_id,
                             "image_id": len(images_info),
                             "category_id": label,
                             "bbox": [box[0], box[1], box[2] - box[0], box[3] - box[1]],
-                            "segmentation": None,  # [[box[0], box[1], box[2], box[1], box[2], box[3], box[0], box[3]]], # bbox mask
+                            "segmentation": np.array(mask).reshape(-1)
+                            if mask is not None
+                            else None,  # [[box[0], box[1], box[2], box[1], box[2], box[3], box[0], box[3]]], # bbox mask
                             "area": (box[2] - box[0]) * (box[3] - box[1]),
                             "iscrowd": 0,
                         }

@@ -16,7 +16,11 @@ from luxonis_ml.utils import setup_logging
 from PIL import Image
 from tqdm import tqdm
 
-from datadreamer.dataset_annotation import CLIPAnnotator, OWLv2Annotator
+from datadreamer.dataset_annotation import (
+    CLIPAnnotator,
+    FastSAMAnnotator,
+    OWLv2Annotator,
+)
 from datadreamer.image_generation import (
     StableDiffusionImageGenerator,
     StableDiffusionLightningImageGenerator,
@@ -54,6 +58,8 @@ image_generators = {
 
 det_annotators = {"owlv2": OWLv2Annotator}
 clf_annotators = {"clip": CLIPAnnotator}
+inst_seg_annotators = {"owlv2_fastsam": FastSAMAnnotator}
+inst_seg_to_det = {"owlv2_fastsam": OWLv2Annotator}
 
 setup_logging(use_rich=True)
 
@@ -70,7 +76,7 @@ def parse_args():
     parser.add_argument(
         "--task",
         type=str,
-        choices=["detection", "classification"],
+        choices=["detection", "classification", "instance-segmentation"],
         help="Task to generate data for",
     )
 
@@ -116,7 +122,7 @@ def parse_args():
     parser.add_argument(
         "--image_annotator",
         type=str,
-        choices=["owlv2", "clip"],
+        choices=["owlv2", "clip", "owlv2_fastsam"],
         help="Image annotator to use",
     )
 
@@ -357,6 +363,14 @@ def check_args(args):
             "--image_annotator must be one of the available annotators for classification task"
         )
 
+    if (
+        args.task == "instance-segmentation"
+        and args.image_annotator not in inst_seg_annotators
+    ):
+        raise ValueError(
+            "--image_annotator must be one of the available annotators for instance segmentation task"
+        )
+
     # Check coorect task and dataset_format
     if args.task == "classification" and args.dataset_format in ["coco", "yolo"]:
         raise ValueError(
@@ -366,6 +380,11 @@ def check_args(args):
     if args.task == "detection" and args.dataset_format in ["cls-single"]:
         raise ValueError(
             "--dataset_format must be one of the available dataset formats for detection task: raw, coco, yolo, luxonis-dataset"
+        )
+
+    if args.task == "instance-segmentation" and args.dataset_format in ["cls-single"]:
+        raise ValueError(
+            "--dataset_format must be one of the available dataset formats for instance segmentation task: raw, coco, yolo, luxonis-dataset"
         )
 
     # Check split_ratios
@@ -540,6 +559,7 @@ def main():
     boxes_list = []
     scores_list = []
     labels_list = []
+    segment_list = []
     image_paths = []
 
     if args.task == "classification":
@@ -583,7 +603,12 @@ def main():
             )
     else:
         # Detection annotation
-        annotator_class = det_annotators[args.image_annotator]
+        if args.task == "detection":
+            annotator_class = det_annotators[args.image_annotator]
+        else:
+            annotator_class = inst_seg_to_det[args.image_annotator]
+            inst_seg_annotator_class = inst_seg_annotators[args.image_annotator]
+            inst_seg_annotator = inst_seg_annotator_class(device=args.device)
         annotator = annotator_class(device=args.device, size=args.annotator_size)
 
         for i, image_batch in tqdm(
@@ -608,14 +633,42 @@ def main():
             boxes_list.extend(boxes_batch)
             scores_list.extend(scores_batch)
 
+            if args.task == "instance-segmentation":
+                (
+                    boxes_batch,
+                    scores_batch,
+                    local_labels_batch,
+                    masks_batch,
+                ) = inst_seg_annotator.annotate_batch(
+                    images=images,
+                    prompts=args.class_names,
+                    boxes_batch=boxes_batch,
+                    scores_batch=scores_batch,
+                    labels_batch=local_labels_batch,
+                    conf_threshold=args.conf_threshold,
+                    iou_threshold=args.annotation_iou_threshold,
+                )
+                print(
+                    "mask_batch",
+                    len(masks_batch),
+                    len(masks_batch[0]),
+                    len(scores_batch),
+                    scores_batch[0].shape,
+                )
+                segment_list.extend(masks_batch)
+
             for j, image in enumerate(images):
                 labels = []
                 # Save bbox visualizations
                 fig, ax = plt.subplots(1)
                 ax.imshow(image)
-                for box, score, label in zip(
-                    boxes_batch[j], scores_batch[j], local_labels_batch[j]
-                ):
+                for k in range(len(boxes_batch[j])):
+                    box = boxes_batch[j][k]
+                    score = scores_batch[j][k]
+                    label = local_labels_batch[j][k]
+                    if args.task == "instance-segmentation":
+                        mask = masks_batch[j][k]
+                        print("mask", type(mask))
                     labels.append(label)
                     x1, y1, x2, y2 = box
                     rect = patches.Rectangle(
@@ -658,6 +711,7 @@ def main():
             image_paths=image_paths,
             labels_list=labels_list,
             boxes_list=boxes_list,
+            masks_list=segment_list if len(segment_list) > 0 else None,
             class_names=args.class_names,
             save_dir=save_dir,
         )

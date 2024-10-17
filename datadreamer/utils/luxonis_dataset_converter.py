@@ -17,9 +17,14 @@ class LuxonisDatasetConverter(BaseConverter):
     """Class for converting a dataset to LuxonisDataset format."""
 
     def __init__(
-        self, dataset_plugin: str = None, dataset_name: str = None, seed: int = 42
+        self,
+        dataset_plugin: str = None,
+        dataset_name: str = None,
+        seed: int = 42,
+        is_instance_segmentation: bool = False,
     ):
         super().__init__(seed)
+        self.is_instance_segmentation = is_instance_segmentation
         self.dataset_plugin = dataset_plugin
         self.dataset_name = dataset_name
 

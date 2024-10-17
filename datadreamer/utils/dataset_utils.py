@@ -6,6 +6,7 @@ def save_annotations_to_json(
     image_paths,
     labels_list,
     boxes_list=None,
+    masks_list=None,
     class_names=None,
     save_dir=None,
     file_name="annotations.json",
@@ -16,6 +17,7 @@ def save_annotations_to_json(
         image_paths (list): List of image paths.
         labels_list (list): List of labels.
         boxes_list (list, optional): List of bounding boxes. Defaults to None.
+        masks_list (list, optional): List of instance segmentation masks. Defaults to None.
         class_names (list, optional): List of class names. Defaults to None.
         save_dir (str, optional): Directory to save the JSON file. Defaults to None.
         file_name (str, optional): Name of the JSON file. Defaults to 'annotations.json'.
@@ -37,6 +39,10 @@ def save_annotations_to_json(
         if boxes_list is not None:
             bboxes = boxes_list[i]
             annotations[image_name]["boxes"] = bboxes.tolist()
+
+        if masks_list is not None:
+            masks = masks_list[i]
+            annotations[image_name]["masks"] = masks
 
     annotations["class_names"] = class_names
 
