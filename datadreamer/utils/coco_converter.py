@@ -48,6 +48,21 @@ class COCOConverter(BaseConverter):
         data = BaseConverter.read_annotations(annotation_path)
         self.process_data(data, dataset_dir, output_dir, split_ratios, copy_files)
 
+    def convert_masks_to_coco_format(self, masks):
+        """Converts masks to COCO format.
+
+        Args:
+            masks (list of np.ndarray): A list of masks.
+
+        Returns:
+            list of list of floats: A list of lists of floats representing the segmentation mask polygon.
+        """
+        segmentations = []
+        for mask in masks:
+            segmentation = np.array(mask).reshape(-1).tolist()
+            segmentations.append(segmentation)
+        return segmentations
+
     def process_data(
         self, data, image_dir, output_dir, split_ratios, copy_files=True
     ) -> None:
@@ -102,26 +117,35 @@ class COCOConverter(BaseConverter):
                     }
                 )
                 masks = (
-                    annotation["masks"]
-                    if "masks" in annotation and self.is_instance_segmentation
-                    else [None for i in range(len(annotation["boxes"]))]
+                    annotation.get("masks")
+                    if self.is_instance_segmentation
+                    else [None] * len(annotation["boxes"])
                 )
+
+                # Loop through boxes, labels, and masks, appending to annotations
                 for box, label, mask in zip(
                     annotation["boxes"], annotation["labels"], masks
                 ):
+                    bbox = [box[0], box[1], box[2] - box[0], box[3] - box[1]]
+                    segmentation = (
+                        np.array(mask).reshape(-1).tolist()
+                        if mask is not None
+                        else None
+                    )
+                    area = (box[2] - box[0]) * (box[3] - box[1])
+
                     annotations.append(
                         {
                             "id": annotation_id,
                             "image_id": len(images_info),
                             "category_id": label,
-                            "bbox": [box[0], box[1], box[2] - box[0], box[3] - box[1]],
-                            "segmentation": np.array(mask).reshape(-1)
-                            if mask is not None
-                            else None,  # [[box[0], box[1], box[2], box[1], box[2], box[3], box[0], box[3]]], # bbox mask
-                            "area": (box[2] - box[0]) * (box[3] - box[1]),
+                            "bbox": bbox,
+                            "segmentation": segmentation,
+                            "area": area,
                             "iscrowd": 0,
                         }
                     )
+
                     annotation_id += 1
 
                 if copy_files:

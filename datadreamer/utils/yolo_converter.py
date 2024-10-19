@@ -152,19 +152,19 @@ class YOLOConverter(BaseConverter):
                 )
                 with open(label_file, "w") as f:
                     if self.is_instance_segmentation:
-                        for box, label in zip(
-                            annotation["boxes"], annotation["labels"]
-                        ):
-                            yolo_box = self.convert_to_yolo_format(
-                                box, image_width, image_height
-                            )
-                            f.write(f"{label} {' '.join(map(str, yolo_box))}\n")
-                    else:
                         for masks, label in zip(
                             annotation["masks"], annotation["labels"]
                         ):
                             yolo_box = self.convert_masks_to_yolo_format(
                                 masks, image_width, image_height
+                            )
+                            f.write(f"{label} {' '.join(map(str, yolo_box))}\n")
+                    else:
+                        for box, label in zip(
+                            annotation["boxes"], annotation["labels"]
+                        ):
+                            yolo_box = self.convert_to_yolo_format(
+                                box, image_width, image_height
                             )
                             f.write(f"{label} {' '.join(map(str, yolo_box))}\n")
 

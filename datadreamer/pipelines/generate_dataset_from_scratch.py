@@ -58,8 +58,8 @@ image_generators = {
 
 det_annotators = {"owlv2": OWLv2Annotator}
 clf_annotators = {"clip": CLIPAnnotator}
-inst_seg_annotators = {"owlv2_fastsam": FastSAMAnnotator}
-inst_seg_to_det = {"owlv2_fastsam": OWLv2Annotator}
+inst_seg_annotators = {"owlv2-fastsam": FastSAMAnnotator}
+inst_seg_to_det = {"owlv2-fastsam": OWLv2Annotator}
 
 setup_logging(use_rich=True)
 
@@ -122,7 +122,7 @@ def parse_args():
     parser.add_argument(
         "--image_annotator",
         type=str,
-        choices=["owlv2", "clip", "owlv2_fastsam"],
+        choices=["owlv2", "clip", "owlv2-fastsam"],
         help="Image annotator to use",
     )
 
@@ -634,26 +634,11 @@ def main():
             scores_list.extend(scores_batch)
 
             if args.task == "instance-segmentation":
-                (
-                    boxes_batch,
-                    scores_batch,
-                    local_labels_batch,
-                    masks_batch,
-                ) = inst_seg_annotator.annotate_batch(
+                masks_batch = inst_seg_annotator.annotate_batch(
                     images=images,
-                    prompts=args.class_names,
                     boxes_batch=boxes_batch,
-                    scores_batch=scores_batch,
-                    labels_batch=local_labels_batch,
                     conf_threshold=args.conf_threshold,
                     iou_threshold=args.annotation_iou_threshold,
-                )
-                print(
-                    "mask_batch",
-                    len(masks_batch),
-                    len(masks_batch[0]),
-                    len(scores_batch),
-                    scores_batch[0].shape,
                 )
                 segment_list.extend(masks_batch)
 
@@ -667,8 +652,16 @@ def main():
                     score = scores_batch[j][k]
                     label = local_labels_batch[j][k]
                     if args.task == "instance-segmentation":
-                        mask = masks_batch[j][k]
-                        print("mask", type(mask))
+                        if k < len(masks_batch[j]):
+                            mask = masks_batch[j][k]
+                            # Unzip the list of points into separate x and y lists
+                            x_points, y_points = zip(*mask)
+
+                            # Fill the polygon defined by the points to create the mask
+                            ax.fill(
+                                x_points, y_points, "blue", alpha=0.5
+                            )  # 'blue' for mask color and alpha for transparency
+
                     labels.append(label)
                     x1, y1, x2, y2 = box
                     rect = patches.Rectangle(
@@ -724,6 +717,7 @@ def main():
                 "yolo",
                 args.split_ratios,
                 copy_files=False,
+                is_instance_segmentation=args.task == "instance-segmentation",
                 seed=args.seed,
             )
         # Convert annotations to COCO format
@@ -733,6 +727,7 @@ def main():
                 args.save_dir,
                 "coco",
                 args.split_ratios,
+                is_instance_segmentation=args.task == "instance-segmentation",
                 copy_files=False,
                 seed=args.seed,
             )
@@ -746,6 +741,7 @@ def main():
             args.split_ratios,
             dataset_plugin=args.dataset_plugin,
             dataset_name=args.dataset_name,
+            is_instance_segmentation=args.task == "instance-segmentation",
             copy_files=False,
             seed=args.seed,
         )

@@ -85,6 +85,20 @@ class LuxonisDatasetConverter(BaseConverter):
                         },
                     }
 
+                if "masks" in data[image_path]:  # polyline format
+                    poly = []
+                    masks = data[image_path]["masks"]
+                    for m in masks:
+                        poly = [[point[0] / width, point[1] / height] for point in m]
+                        yield {
+                            "file": image_full_path,
+                            "annotation": {
+                                "type": "polyline",
+                                "class": class_names[label],
+                                "points": poly,
+                            },
+                        }
+
                 if "boxes" in data[image_path]:
                     boxes = data[image_path]["boxes"]
                     for box, label in zip(boxes, labels):
