@@ -651,16 +651,13 @@ def main():
                     box = boxes_batch[j][k]
                     score = scores_batch[j][k]
                     label = local_labels_batch[j][k]
+
                     if args.task == "instance-segmentation":
                         if k < len(masks_batch[j]):
                             mask = masks_batch[j][k]
-                            # Unzip the list of points into separate x and y lists
                             x_points, y_points = zip(*mask)
 
-                            # Fill the polygon defined by the points to create the mask
-                            ax.fill(
-                                x_points, y_points, "blue", alpha=0.5
-                            )  # 'blue' for mask color and alpha for transparency
+                            ax.fill(x_points, y_points, "blue", alpha=0.5)
 
                     labels.append(label)
                     x1, y1, x2, y2 = box

@@ -3,9 +3,10 @@ import json
 import os
 
 import cv2
+import numpy as np
 
 
-def draw_rounded_rectangle(img, pt1, pt2, color, thickness, r, d):
+def draw_rounded_rectangle(img, pt1, pt2, color, thickness, r, masks=None):
     x1, y1 = pt1
     x2, y2 = pt2
 
@@ -24,6 +25,13 @@ def draw_rounded_rectangle(img, pt1, pt2, color, thickness, r, d):
     cv2.ellipse(img, (x2 - r, y2 - r), (r, r), 0, 0, 90, color, thickness)
 
 
+def draw_mask(image, mask, color, alpha=0.5):
+    overlay = image.copy()
+    mask = np.array([[int(p[0]), int(p[1])] for p in mask])
+    cv2.fillPoly(overlay, [mask], color)
+    cv2.addWeighted(overlay, alpha, image, 1 - alpha, 0, image)
+
+
 def draw_bboxes_and_labels(image, annotations, class_names):
     font = cv2.FONT_HERSHEY_SIMPLEX
     font_scale = 1.5  # Increased font size
@@ -32,7 +40,10 @@ def draw_bboxes_and_labels(image, annotations, class_names):
     text_color = (255, 255, 255)  # White text
     rectangle_radius = 8
 
-    for bbox, label in zip(annotations["boxes"], annotations["labels"]):
+    for i in range(len(annotations["boxes"])):
+        bbox = annotations["boxes"][i]
+        label = annotations["labels"][i]
+
         x_min, y_min, x_max, y_max = map(int, bbox)
         label_text = class_names[label]
 
@@ -53,6 +64,10 @@ def draw_bboxes_and_labels(image, annotations, class_names):
             rectangle_radius,
             1,
         )
+
+        if "masks" in annotations:
+            masks = annotations["masks"][i]
+            draw_mask(image, masks, (0, 255, 0), 0.5)
 
         # Draw text background
         draw_rounded_rectangle(
@@ -89,7 +104,7 @@ def visualize_dataset(dataset_dir, save_images):
 
     for image_name, annotations in all_annotations.items():
         image_path = image_name
-        image = cv2.imread(image_path)
+        image = cv2.imread(os.path.join(dataset_dir, image_path))
         image = draw_bboxes_and_labels(image, annotations, class_names)
 
         if save_images:

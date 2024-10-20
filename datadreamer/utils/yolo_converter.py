@@ -4,6 +4,7 @@ import os
 import shutil
 from typing import Dict, List
 
+import numpy as np
 from PIL import Image
 
 from datadreamer.utils import BaseConverter
@@ -76,24 +77,26 @@ class YOLOConverter(BaseConverter):
         return [x_center, y_center, width, height]
 
     def convert_masks_to_yolo_format(
-        self, masks: List[List[float]], image_width: int, image_height: int
+        self, masks: List[List[float]], w: int, h: int
     ) -> List[float]:
         """Converts masks to YOLO format.
 
         Args:
             masks (list of list of float): A list containing the masks.
-            image_width (int): The width of the image.
-            image_height (int): The height of the image.
+            w (int): The width of the image.
+            h (int): The height of the image.
 
         Returns:
             list of float: A list containing the masks in YOLO format.
         """
-        yolo_masks = []
-        for mask in masks:
-            x, y = mask[0], mask[1]
-            yolo_masks.append(x / image_width)
-            yolo_masks.append(y / image_height)
-        return yolo_masks
+        # yolo_masks = []
+        # for mask in masks:
+        #     x, y = mask[0], mask[1]
+        #     yolo_masks.append(x / image_width)
+        #     yolo_masks.append(y / image_height)
+        # return yolo_masks
+        return (np.array(masks) / np.array([w, h])).reshape(-1).tolist()
+        # return np.array(masks).reshape(-1).tolist()
 
     def process_data(
         self,
