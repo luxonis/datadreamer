@@ -48,21 +48,6 @@ class COCOConverter(BaseConverter):
         data = BaseConverter.read_annotations(annotation_path)
         self.process_data(data, dataset_dir, output_dir, split_ratios, copy_files)
 
-    def convert_masks_to_coco_format(self, masks):
-        """Converts masks to COCO format.
-
-        Args:
-            masks (list of np.ndarray): A list of masks.
-
-        Returns:
-            list of list of floats: A list of lists of floats representing the segmentation mask polygon.
-        """
-        segmentations = []
-        for mask in masks:
-            segmentation = np.array(mask).reshape(-1).tolist()
-            segmentations.append(segmentation)
-        return segmentations
-
     def process_data(
         self, data, image_dir, output_dir, split_ratios, copy_files=True
     ) -> None:
@@ -128,7 +113,6 @@ class COCOConverter(BaseConverter):
                 ):
                     bbox = [box[0], box[1], box[2] - box[0], box[3] - box[1]]
                     segmentation = (
-                        # (np.array(mask)*np.array([image_width, image_height])).reshape(-1).tolist()
                         np.array(mask).reshape(-1).tolist()
                         if mask is not None
                         else None
