@@ -17,9 +17,14 @@ class LuxonisDatasetConverter(BaseConverter):
     """Class for converting a dataset to LuxonisDataset format."""
 
     def __init__(
-        self, dataset_plugin: str = None, dataset_name: str = None, seed: int = 42
+        self,
+        dataset_plugin: str = None,
+        dataset_name: str = None,
+        seed: int = 42,
+        is_instance_segmentation: bool = False,
     ):
         super().__init__(seed)
+        self.is_instance_segmentation = is_instance_segmentation
         self.dataset_plugin = dataset_plugin
         self.dataset_name = dataset_name
 
@@ -79,6 +84,23 @@ class LuxonisDatasetConverter(BaseConverter):
                             # "value": True,
                         },
                     }
+
+                if "masks" in data[image_path]:  # polyline format
+                    masks = data[image_path]["masks"]
+                    for mask, label in zip(masks, labels):
+                        poly = []
+                        for m in mask:
+                            poly += [
+                                (point[0] / width, point[1] / height) for point in m
+                            ]
+                        yield {
+                            "file": image_full_path,
+                            "annotation": {
+                                "type": "polyline",
+                                "class": class_names[label],
+                                "points": poly,  # masks,
+                            },
+                        }
 
                 if "boxes" in data[image_path]:
                     boxes = data[image_path]["boxes"]

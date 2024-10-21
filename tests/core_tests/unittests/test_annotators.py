@@ -8,6 +8,7 @@ import torch
 from PIL import Image
 
 from datadreamer.dataset_annotation.clip_annotator import CLIPAnnotator
+from datadreamer.dataset_annotation.fastsam_annotator import FastSAMAnnotator
 from datadreamer.dataset_annotation.owlv2_annotator import OWLv2Annotator
 
 # Get the total disk space in GB
@@ -87,7 +88,7 @@ def test_cpu_clip_base_annotator():
     reason="Test requires GPU and 16GB of HDD",
 )
 def test_cuda_clip_large_annotator():
-    _check_clip_annotator("cuda")
+    _check_clip_annotator("cuda", size="large")
 
 
 @pytest.mark.skipif(
@@ -95,4 +96,56 @@ def test_cuda_clip_large_annotator():
     reason="Test requires at least 16GB of HDD",
 )
 def test_cpu_clip_large_annotator():
-    _check_clip_annotator("cpu")
+    _check_clip_annotator("cpu", size="large")
+
+
+def _check_fastsam_annotator(device: str, size: str = "base"):
+    url = "https://ultralytics.com/images/bus.jpg"
+    im = Image.open(requests.get(url, stream=True).raw)
+    annotator = FastSAMAnnotator(device=device, size=size)
+    masks = annotator.annotate_batch([im], [np.array([[3, 229, 559, 650]])])
+    w, h = im.width, im.height
+    # Check that the masks are lists
+    assert isinstance(masks, list) and len(masks) == 1
+    # Check that the masks are [B, O, N, 2], where
+    # - B = batch size
+    # - O = number of objects
+    # - N = number of points of the mask segment polygon (at least 3 to be polygon)
+    assert isinstance(masks[0], list) and len(masks[0]) == 1
+    assert isinstance(masks[0][0], list) and len(masks[0][0]) >= 3
+    for point in masks[0][0]:
+        # Check that it is a 2D point
+        assert len(point) == 2
+        assert 0 <= point[0] <= w and 0 <= point[1] <= h
+
+
+@pytest.mark.skipif(
+    not torch.cuda.is_available() or total_disk_space < 16,
+    reason="Test requires GPU and 16GB of HDD",
+)
+def test_cuda_fastsam_base_annotator():
+    _check_fastsam_annotator("cuda")
+
+
+@pytest.mark.skipif(
+    total_disk_space < 16,
+    reason="Test requires at least 16GB of HDD",
+)
+def test_cpu_fastsam_base_annotator():
+    _check_fastsam_annotator("cpu")
+
+
+@pytest.mark.skipif(
+    not torch.cuda.is_available() or total_disk_space < 16,
+    reason="Test requires GPU and 16GB of HDD",
+)
+def test_cuda_fastsam_large_annotator():
+    _check_fastsam_annotator("cuda", size="large")
+
+
+@pytest.mark.skipif(
+    total_disk_space < 16,
+    reason="Test requires at least 16GB of HDD",
+)
+def test_cpu_fastsam_large_annotator():
+    _check_fastsam_annotator("cpu", size="large")

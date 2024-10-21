@@ -17,6 +17,7 @@ def convert_dataset(
     split_ratios,
     dataset_plugin=None,
     dataset_name=None,
+    is_instance_segmentation=False,
     copy_files=True,
     seed=42,
 ) -> None:
@@ -36,14 +37,19 @@ def convert_dataset(
     """
 
     if dataset_format == "yolo":
-        converter = YOLOConverter(seed=seed)
+        converter = YOLOConverter(
+            seed=seed, is_instance_segmentation=is_instance_segmentation
+        )
     elif dataset_format == "coco":
-        converter = COCOConverter(seed=seed)
+        converter = COCOConverter(
+            seed=seed, is_instance_segmentation=is_instance_segmentation
+        )
     elif dataset_format == "luxonis-dataset":
         converter = LuxonisDatasetConverter(
             dataset_plugin=dataset_plugin,
             dataset_name=dataset_name,
             seed=seed,
+            is_instance_segmentation=is_instance_segmentation,
         )
     elif dataset_format == "cls-single":
         converter = SingleLabelClsConverter(seed=seed)

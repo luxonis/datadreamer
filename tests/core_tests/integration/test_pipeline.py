@@ -170,3 +170,43 @@ def test_cuda_simple_sdxl_turbo_config_classification_pipeline():
     )
     # Check the run of the pipeline
     _check_detection_pipeline(cmd, target_folder)
+
+
+@pytest.mark.skipif(
+    total_memory < 16 or total_disk_space < 35,
+    reason="Test requires at least 16GB of RAM and 35GB of HDD",
+)
+def test_cpu_simple_sdxl_turbo_config_instance_segmentation_pipeline():
+    # Define target folder
+    target_folder = "data/data-inst-seg-cpu-simple-sdxl-turbo-config/"
+    # Define the command to run the datadreamer
+    cmd = (
+        f"datadreamer --task instance-segmentation "
+        f"--save_dir {target_folder} "
+        f"--num_objects_range 1 2 "
+        f"--image_annotator owlv2-fastsam "
+        f"--config ./tests/core_tests/integration/sample_config.yaml "
+        f"--device cpu"
+    )
+    # Check the run of the pipeline
+    _check_detection_pipeline(cmd, target_folder)
+
+
+@pytest.mark.skipif(
+    not torch.cuda.is_available() or total_memory < 16 or total_disk_space < 35,
+    reason="Test requires GPU, at least 16GB of RAM and 35GB of HDD",
+)
+def test_cuda_simple_sdxl_turbo_config_instance_segmentation_pipeline():
+    # Define target folder
+    target_folder = "data/data-inst-seg-cuda-simple-sdxl-turbo-config/"
+    # Define the command to run the datadreamer
+    cmd = (
+        f"datadreamer --task instance-segmentation "
+        f"--save_dir {target_folder} "
+        f"--num_objects_range 1 2 "
+        f"--image_annotator owlv2-fastsam "
+        f"--config ./tests/core_tests/integration/sample_config.yaml "
+        f"--device cuda"
+    )
+    # Check the run of the pipeline
+    _check_detection_pipeline(cmd, target_folder)
