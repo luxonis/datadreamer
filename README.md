@@ -272,6 +272,23 @@ save_dir/
 }
 ```
 
+3. Instance Segmentation Annotations (instance_segmentation_annotations.json):
+
+- Each entry corresponds to an image and contains bounding boxes, masks and labels for objects in the image.
+- Format:
+
+```bash
+{
+  "image_path": {
+    "boxes": [[x_min, y_min, x_max, y_max], ...],
+    "masks": [[x0, y0], [x1, y1], ...]
+    "labels": [label_index, ...]
+  },
+  ...
+  "class_names": ["class1", "class2", ...]
+}
+```
+
 <a name="limitations"></a>
 
 ## ⚠️ Limitations

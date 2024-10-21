@@ -57,7 +57,7 @@ def test_cpu_simple_sdxl_turbo_detection_pipeline():
     # Define the command to run the datadreamer
     cmd = (
         f"datadreamer --save_dir {target_folder} "
-        f"--class_names alien mars cat "
+        f"--class_names alien bear cat "
         f"--prompts_number 1 "
         f"--prompt_generator simple "
         f"--num_objects_range 1 2 "
@@ -79,7 +79,7 @@ def test_cuda_simple_sdxl_turbo_detection_pipeline():
     # Define the command to run the datadreamer
     cmd = (
         f"datadreamer --save_dir {target_folder} "
-        f"--class_names alien mars cat "
+        f"--class_names alien bear cat "
         f"--prompts_number 1 "
         f"--prompt_generator simple "
         f"--num_objects_range 1 2 "
@@ -101,7 +101,7 @@ def test_cuda_simple_llm_synonym_sdxl_turbo_detection_pipeline():
     # Define the command to run the datadreamer
     cmd = (
         f"datadreamer --save_dir {target_folder} "
-        f"--class_names alien mars cat "
+        f"--class_names alien bear cat "
         f"--prompts_number 1 "
         f"--prompt_generator simple "
         f"--num_objects_range 1 2 "
@@ -124,7 +124,7 @@ def test_cuda_simple_wordnet_synonym_sdxl_turbo_detection_pipeline():
     # Define the command to run the datadreamer
     cmd = (
         f"datadreamer --save_dir {target_folder} "
-        f"--class_names alien mars cat "
+        f"--class_names alien bear cat "
         f"--prompts_number 1 "
         f"--prompt_generator simple "
         f"--num_objects_range 1 2 "
@@ -147,7 +147,7 @@ def test_cpu_simple_sdxl_detection_pipeline():
     # Define the command to run the datadreamer
     cmd = (
         f"datadreamer --save_dir {target_folder} "
-        f"--class_names alien mars cat "
+        f"--class_names alien bear cat "
         f"--prompts_number 1 "
         f"--prompt_generator simple "
         f"--num_objects_range 1 2 "
@@ -169,7 +169,7 @@ def test_cuda_simple_sdxl_detection_pipeline():
     # Define the command to run the datadreamer
     cmd = (
         f"datadreamer --save_dir {target_folder} "
-        f"--class_names alien mars cat "
+        f"--class_names alien bear cat "
         f"--prompts_number 1 "
         f"--prompt_generator simple "
         f"--num_objects_range 1 2 "
@@ -194,7 +194,7 @@ def test_cpu_lm_sdxl_turbo_detection_pipeline():
     # Define the command to run the datadreamer
     cmd = (
         f"datadreamer --save_dir {target_folder} "
-        f"--class_names alien mars cat "
+        f"--class_names alien bear cat "
         f"--prompts_number 1 "
         f"--prompt_generator lm "
         f"--num_objects_range 1 2 "
@@ -216,7 +216,7 @@ def test_cuda_lm_sdxl_turbo_detection_pipeline():
     # Define the command to run the datadreamer
     cmd = (
         f"datadreamer --save_dir {target_folder} "
-        f"--class_names alien mars cat "
+        f"--class_names alien bear cat "
         f"--prompts_number 1 "
         f"--prompt_generator lm "
         f"--num_objects_range 1 2 "
@@ -238,7 +238,7 @@ def test_cuda_4bit_lm_sdxl_turbo_detection_pipeline():
     # Define the command to run the datadreamer
     cmd = (
         f"datadreamer --save_dir {target_folder} "
-        f"--class_names alien mars cat "
+        f"--class_names alien bear cat "
         f"--prompts_number 1 "
         f"--prompt_generator lm "
         f"--num_objects_range 1 2 "
@@ -261,7 +261,7 @@ def test_cpu_lm_sdxl_detection_pipeline():
     # Define the command to run the datadreamer
     cmd = (
         f"datadreamer --save_dir {target_folder} "
-        f"--class_names alien mars cat "
+        f"--class_names alien bear cat "
         f"--prompts_number 1 "
         f"--prompt_generator lm "
         f"--num_objects_range 1 2 "
@@ -283,7 +283,7 @@ def test_cuda_lm_sdxl_detection_pipeline():
     # Define the command to run the datadreamer
     cmd = (
         f"datadreamer --save_dir {target_folder} "
-        f"--class_names alien mars cat "
+        f"--class_names alien bear cat "
         f"--prompts_number 1 "
         f"--prompt_generator lm "
         f"--num_objects_range 1 2 "
@@ -305,7 +305,7 @@ def test_cuda_4bit_lm_sdxl_detection_pipeline():
     # Define the command to run the datadreamer
     cmd = (
         f"datadreamer --save_dir {target_folder} "
-        f"--class_names alien mars cat "
+        f"--class_names alien bear cat "
         f"--prompts_number 1 "
         f"--prompt_generator lm "
         f"--num_objects_range 1 2 "
@@ -331,7 +331,7 @@ def test_cpu_tiny_sdxl_turbo_detection_pipeline():
     # Define the command to run the datadreamer
     cmd = (
         f"datadreamer --save_dir {target_folder} "
-        f"--class_names alien mars cat "
+        f"--class_names alien bear cat "
         f"--prompts_number 1 "
         f"--prompt_generator tiny "
         f"--num_objects_range 1 2 "
@@ -353,7 +353,7 @@ def test_cuda_tiny_sdxl_turbo_detection_pipeline():
     # Define the command to run the datadreamer
     cmd = (
         f"datadreamer --save_dir {target_folder} "
-        f"--class_names alien mars cat "
+        f"--class_names alien bear cat "
         f"--prompts_number 1 "
         f"--prompt_generator tiny "
         f"--num_objects_range 1 2 "
@@ -375,7 +375,7 @@ def test_cpu_tiny_sdxl_detection_pipeline():
     # Define the command to run the datadreamer
     cmd = (
         f"datadreamer --save_dir {target_folder} "
-        f"--class_names alien mars cat "
+        f"--class_names alien bear cat "
         f"--prompts_number 1 "
         f"--prompt_generator tiny "
         f"--num_objects_range 1 2 "
@@ -397,7 +397,7 @@ def test_cuda_tiny_sdxl_detection_pipeline():
     # Define the command to run the datadreamer
     cmd = (
         f"datadreamer --save_dir {target_folder} "
-        f"--class_names alien mars cat "
+        f"--class_names alien bear cat "
         f"--prompts_number 1 "
         f"--prompt_generator tiny "
         f"--num_objects_range 1 2 "
@@ -422,7 +422,7 @@ def test_cpu_qwen2_sdxl_turbo_detection_pipeline():
     # Define the command to run the datadreamer
     cmd = (
         f"datadreamer --save_dir {target_folder} "
-        f"--class_names alien mars cat "
+        f"--class_names alien bear cat "
         f"--prompts_number 1 "
         f"--prompt_generator qwen2 "
         f"--num_objects_range 1 2 "
@@ -444,7 +444,7 @@ def test_cuda_qwen2_sdxl_turbo_detection_pipeline():
     # Define the command to run the datadreamer
     cmd = (
         f"datadreamer --save_dir {target_folder} "
-        f"--class_names alien mars cat "
+        f"--class_names alien bear cat "
         f"--prompts_number 1 "
         f"--prompt_generator qwen2 "
         f"--num_objects_range 1 2 "
@@ -466,7 +466,7 @@ def test_cpu_qwen2_sdxl_detection_pipeline():
     # Define the command to run the datadreamer
     cmd = (
         f"datadreamer --save_dir {target_folder} "
-        f"--class_names alien mars cat "
+        f"--class_names alien bear cat "
         f"--prompts_number 1 "
         f"--prompt_generator qwen2 "
         f"--num_objects_range 1 2 "
@@ -488,7 +488,7 @@ def test_cuda_qwen2_sdxl_detection_pipeline():
     # Define the command to run the datadreamer
     cmd = (
         f"datadreamer --save_dir {target_folder} "
-        f"--class_names alien mars cat "
+        f"--class_names alien bear cat "
         f"--prompts_number 1 "
         f"--prompt_generator qwen2 "
         f"--num_objects_range 1 2 "
@@ -514,7 +514,7 @@ def test_cpu_simple_sdxl_turbo_classification_pipeline():
     cmd = (
         f"datadreamer --task classification "
         f"--save_dir {target_folder} "
-        f"--class_names alien mars cat "
+        f"--class_names alien bear cat "
         f"--prompts_number 1 "
         f"--prompt_generator simple "
         f"--num_objects_range 1 2 "
@@ -538,7 +538,7 @@ def test_cuda_simple_sdxl_turbo_classification_pipeline():
     cmd = (
         f"datadreamer --task classification "
         f"--save_dir {target_folder} "
-        f"--class_names alien mars cat "
+        f"--class_names alien bear cat "
         f"--prompts_number 1 "
         f"--prompt_generator simple "
         f"--num_objects_range 1 2 "
@@ -562,7 +562,7 @@ def test_cuda_simple_llm_synonym_sdxl_turbo_classification_pipeline():
     cmd = (
         f"datadreamer --task classification "
         f"--save_dir {target_folder} "
-        f"--class_names alien mars cat "
+        f"--class_names alien bear cat "
         f"--prompts_number 1 "
         f"--prompt_generator simple "
         f"--num_objects_range 1 2 "
@@ -587,7 +587,7 @@ def test_cuda_simple_wordnet_synonym_sdxl_turbo_classification_pipeline():
     cmd = (
         f"datadreamer --task classification "
         f"--save_dir {target_folder} "
-        f"--class_names alien mars cat "
+        f"--class_names alien bear cat "
         f"--prompts_number 1 "
         f"--prompt_generator simple "
         f"--num_objects_range 1 2 "
@@ -612,7 +612,7 @@ def test_cpu_simple_sdxl_classification_pipeline():
     cmd = (
         f"datadreamer --task classification "
         f"--save_dir {target_folder} "
-        f"--class_names alien mars cat "
+        f"--class_names alien bear cat "
         f"--prompts_number 1 "
         f"--prompt_generator simple "
         f"--image_annotator clip "
@@ -636,7 +636,7 @@ def test_cuda_simple_sdxl_classification_pipeline():
     cmd = (
         f"datadreamer --task classification "
         f"--save_dir {target_folder} "
-        f"--class_names alien mars cat "
+        f"--class_names alien bear cat "
         f"--prompts_number 1 "
         f"--prompt_generator simple "
         f"--image_annotator clip "
@@ -663,7 +663,7 @@ def test_cpu_lm_sdxl_turbo_classification_pipeline():
     cmd = (
         f"datadreamer --task classification "
         f"--save_dir {target_folder} "
-        f"--class_names alien mars cat "
+        f"--class_names alien bear cat "
         f"--prompts_number 1 "
         f"--prompt_generator lm "
         f"--num_objects_range 1 2 "
@@ -687,7 +687,7 @@ def test_cuda_lm_sdxl_turbo_classification_pipeline():
     cmd = (
         f"datadreamer --task classification "
         f"--save_dir {target_folder} "
-        f"--class_names alien mars cat "
+        f"--class_names alien bear cat "
         f"--prompts_number 1 "
         f"--prompt_generator lm "
         f"--num_objects_range 1 2 "
@@ -711,7 +711,7 @@ def test_cuda_4bit_lm_sdxl_turbo_classification_pipeline():
     cmd = (
         f"datadreamer --task classification "
         f"--save_dir {target_folder} "
-        f"--class_names alien mars cat "
+        f"--class_names alien bear cat "
         f"--prompts_number 1 "
         f"--prompt_generator lm "
         f"--num_objects_range 1 2 "
@@ -736,7 +736,7 @@ def test_cpu_lm_sdxl_classification_pipeline():
     cmd = (
         f"datadreamer --task classification "
         f"--save_dir {target_folder} "
-        f"--class_names alien mars cat "
+        f"--class_names alien bear cat "
         f"--prompts_number 1 "
         f"--prompt_generator lm "
         f"--image_annotator clip "
@@ -760,7 +760,7 @@ def test_cuda_lm_sdxl_classification_pipeline():
     cmd = (
         f"datadreamer --task classification "
         f"--save_dir {target_folder} "
-        f"--class_names alien mars cat "
+        f"--class_names alien bear cat "
         f"--prompts_number 1 "
         f"--prompt_generator lm "
         f"--image_annotator clip "
@@ -784,7 +784,7 @@ def test_cuda_4bit_lm_sdxl_classification_pipeline():
     cmd = (
         f"datadreamer --task classification "
         f"--save_dir {target_folder} "
-        f"--class_names alien mars cat "
+        f"--class_names alien bear cat "
         f"--prompts_number 1 "
         f"--prompt_generator lm "
         f"--num_objects_range 1 2 "
@@ -812,7 +812,7 @@ def test_cpu_tiny_sdxl_turbo_classification_pipeline():
     cmd = (
         f"datadreamer --task classification "
         f"--save_dir {target_folder} "
-        f"--class_names alien mars cat "
+        f"--class_names alien bear cat "
         f"--prompts_number 1 "
         f"--prompt_generator tiny "
         f"--image_annotator clip "
@@ -836,7 +836,7 @@ def test_cuda_tiny_sdxl_turbo_classification_pipeline():
     cmd = (
         f"datadreamer --task classification "
         f"--save_dir {target_folder} "
-        f"--class_names alien mars cat "
+        f"--class_names alien bear cat "
         f"--prompts_number 1 "
         f"--prompt_generator tiny "
         f"--num_objects_range 1 2 "
@@ -860,7 +860,7 @@ def test_cpu_tiny_sdxl_classification_pipeline():
     cmd = (
         f"datadreamer --task classification "
         f"--save_dir {target_folder} "
-        f"--class_names alien mars cat "
+        f"--class_names alien bear cat "
         f"--prompts_number 1 "
         f"--prompt_generator tiny "
         f"--num_objects_range 1 2 "
@@ -884,7 +884,7 @@ def test_cuda_tiny_sdxl_classification_pipeline():
     cmd = (
         f"datadreamer --task classification "
         f"--save_dir {target_folder} "
-        f"--class_names alien mars cat "
+        f"--class_names alien bear cat "
         f"--prompts_number 1 "
         f"--prompt_generator tiny "
         f"--num_objects_range 1 2 "
@@ -911,7 +911,7 @@ def test_cpu_qwen2_sdxl_turbo_classification_pipeline():
     cmd = (
         f"datadreamer --task classification "
         f"--save_dir {target_folder} "
-        f"--class_names alien mars cat "
+        f"--class_names alien bear cat "
         f"--prompts_number 1 "
         f"--prompt_generator qwen2 "
         f"--image_annotator clip "
@@ -935,7 +935,7 @@ def test_cuda_qwen2_sdxl_turbo_classification_pipeline():
     cmd = (
         f"datadreamer --task classification "
         f"--save_dir {target_folder} "
-        f"--class_names alien mars cat "
+        f"--class_names alien bear cat "
         f"--prompts_number 1 "
         f"--prompt_generator qwen2 "
         f"--num_objects_range 1 2 "
@@ -959,7 +959,7 @@ def test_cpu_qwen2_sdxl_classification_pipeline():
     cmd = (
         f"datadreamer --task classification "
         f"--save_dir {target_folder} "
-        f"--class_names alien mars cat "
+        f"--class_names alien bear cat "
         f"--prompts_number 1 "
         f"--prompt_generator qwen2 "
         f"--num_objects_range 1 2 "
@@ -983,7 +983,7 @@ def test_cuda_qwen2_sdxl_classification_pipeline():
     cmd = (
         f"datadreamer --task classification "
         f"--save_dir {target_folder} "
-        f"--class_names alien mars cat "
+        f"--class_names alien bear cat "
         f"--prompts_number 1 "
         f"--prompt_generator qwen2 "
         f"--num_objects_range 1 2 "
@@ -1010,7 +1010,7 @@ def test_cpu_simple_sdxl_turbo_instance_segmentation_pipeline():
     cmd = (
         f"datadreamer --task instance-segmentation "
         f"--save_dir {target_folder} "
-        f"--class_names alien mars cat "
+        f"--class_names alien bear cat "
         f"--prompts_number 1 "
         f"--prompt_generator simple "
         f"--num_objects_range 1 2 "
@@ -1034,7 +1034,7 @@ def test_cuda_simple_sdxl_turbo_instance_segmentation_pipeline():
     cmd = (
         f"datadreamer --task instance-segmentation "
         f"--save_dir {target_folder} "
-        f"--class_names alien mars cat "
+        f"--class_names alien bear cat "
         f"--prompts_number 1 "
         f"--prompt_generator simple "
         f"--num_objects_range 1 2 "
@@ -1058,7 +1058,7 @@ def test_cuda_simple_llm_synonym_sdxl_turbo_instance_segmentation_pipeline():
     cmd = (
         f"datadreamer --task instance-segmentation "
         f"--save_dir {target_folder} "
-        f"--class_names alien mars cat "
+        f"--class_names alien bear cat "
         f"--prompts_number 1 "
         f"--prompt_generator simple "
         f"--num_objects_range 1 2 "
@@ -1083,7 +1083,7 @@ def test_cuda_simple_wordnet_synonym_sdxl_turbo_instance_segmentation_pipeline()
     cmd = (
         f"datadreamer --task instance-segmentation "
         f"--save_dir {target_folder} "
-        f"--class_names alien mars cat "
+        f"--class_names alien bear cat "
         f"--prompts_number 1 "
         f"--prompt_generator simple "
         f"--num_objects_range 1 2 "
@@ -1108,7 +1108,7 @@ def test_cpu_simple_sdxl_instance_segmentation_pipeline():
     cmd = (
         f"datadreamer --task instance-segmentation "
         f"--save_dir {target_folder} "
-        f"--class_names alien mars cat "
+        f"--class_names alien bear cat "
         f"--prompts_number 1 "
         f"--prompt_generator simple "
         f"--image_annotator owlv2-fastsam "
@@ -1132,7 +1132,7 @@ def test_cuda_simple_sdxl_instance_segmentation_pipeline():
     cmd = (
         f"datadreamer --task instance-segmentation "
         f"--save_dir {target_folder} "
-        f"--class_names alien mars cat "
+        f"--class_names alien bear cat "
         f"--prompts_number 1 "
         f"--prompt_generator simple "
         f"--image_annotator owlv2-fastsam "
@@ -1159,7 +1159,7 @@ def test_cpu_lm_sdxl_turbo_instance_segmentation_pipeline():
     cmd = (
         f"datadreamer --task instance-segmentation "
         f"--save_dir {target_folder} "
-        f"--class_names alien mars cat "
+        f"--class_names alien bear cat "
         f"--prompts_number 1 "
         f"--prompt_generator lm "
         f"--num_objects_range 1 2 "
@@ -1183,7 +1183,7 @@ def test_cuda_lm_sdxl_turbo_instance_segmentation_pipeline():
     cmd = (
         f"datadreamer --task instance-segmentation "
         f"--save_dir {target_folder} "
-        f"--class_names alien mars cat "
+        f"--class_names alien bear cat "
         f"--prompts_number 1 "
         f"--prompt_generator lm "
         f"--num_objects_range 1 2 "
@@ -1207,7 +1207,7 @@ def test_cuda_4bit_lm_sdxl_turbo_instance_segmentation_pipeline():
     cmd = (
         f"datadreamer --task instance-segmentation "
         f"--save_dir {target_folder} "
-        f"--class_names alien mars cat "
+        f"--class_names alien bear cat "
         f"--prompts_number 1 "
         f"--prompt_generator lm "
         f"--num_objects_range 1 2 "
@@ -1232,7 +1232,7 @@ def test_cpu_lm_sdxl_instance_segmentation_pipeline():
     cmd = (
         f"datadreamer --task instance-segmentation "
         f"--save_dir {target_folder} "
-        f"--class_names alien mars cat "
+        f"--class_names alien bear cat "
         f"--prompts_number 1 "
         f"--prompt_generator lm "
         f"--image_annotator owlv2-fastsam "
@@ -1256,7 +1256,7 @@ def test_cuda_lm_sdxl_instance_segmentation_pipeline():
     cmd = (
         f"datadreamer --task instance-segmentation "
         f"--save_dir {target_folder} "
-        f"--class_names alien mars cat "
+        f"--class_names alien bear cat "
         f"--prompts_number 1 "
         f"--prompt_generator lm "
         f"--image_annotator owlv2-fastsam "
@@ -1280,7 +1280,7 @@ def test_cuda_4bit_lm_sdxl_instance_segmentation_pipeline():
     cmd = (
         f"datadreamer --task instance-segmentation "
         f"--save_dir {target_folder} "
-        f"--class_names alien mars cat "
+        f"--class_names alien bear cat "
         f"--prompts_number 1 "
         f"--prompt_generator lm "
         f"--num_objects_range 1 2 "
@@ -1308,7 +1308,7 @@ def test_cpu_tiny_sdxl_turbo_instance_segmentation_pipeline():
     cmd = (
         f"datadreamer --task instance-segmentation "
         f"--save_dir {target_folder} "
-        f"--class_names alien mars cat "
+        f"--class_names alien bear cat "
         f"--prompts_number 1 "
         f"--prompt_generator tiny "
         f"--image_annotator owlv2-fastsam "
@@ -1332,7 +1332,7 @@ def test_cuda_tiny_sdxl_turbo_instance_segmentation_pipeline():
     cmd = (
         f"datadreamer --task instance-segmentation "
         f"--save_dir {target_folder} "
-        f"--class_names alien mars cat "
+        f"--class_names alien bear cat "
         f"--prompts_number 1 "
         f"--prompt_generator tiny "
         f"--num_objects_range 1 2 "
@@ -1356,7 +1356,7 @@ def test_cpu_tiny_sdxl_instance_segmentation_pipeline():
     cmd = (
         f"datadreamer --task instance-segmentation "
         f"--save_dir {target_folder} "
-        f"--class_names alien mars cat "
+        f"--class_names alien bear cat "
         f"--prompts_number 1 "
         f"--prompt_generator tiny "
         f"--num_objects_range 1 2 "
@@ -1380,7 +1380,7 @@ def test_cuda_tiny_sdxl_instance_segmentation_pipeline():
     cmd = (
         f"datadreamer --task instance-segmentation "
         f"--save_dir {target_folder} "
-        f"--class_names alien mars cat "
+        f"--class_names alien bear cat "
         f"--prompts_number 1 "
         f"--prompt_generator tiny "
         f"--num_objects_range 1 2 "
@@ -1407,7 +1407,7 @@ def test_cpu_qwen2_sdxl_turbo_instance_segmentation_pipeline():
     cmd = (
         f"datadreamer --task instance-segmentation "
         f"--save_dir {target_folder} "
-        f"--class_names alien mars cat "
+        f"--class_names alien bear cat "
         f"--prompts_number 1 "
         f"--prompt_generator qwen2 "
         f"--image_annotator owlv2-fastsam "
@@ -1431,7 +1431,7 @@ def test_cuda_qwen2_sdxl_turbo_instance_segmentation_pipeline():
     cmd = (
         f"datadreamer --task instance-segmentation "
         f"--save_dir {target_folder} "
-        f"--class_names alien mars cat "
+        f"--class_names alien bear cat "
         f"--prompts_number 1 "
         f"--prompt_generator qwen2 "
         f"--num_objects_range 1 2 "
@@ -1455,7 +1455,7 @@ def test_cpu_qwen2_sdxl_instance_segmentation_pipeline():
     cmd = (
         f"datadreamer --task instance-segmentation "
         f"--save_dir {target_folder} "
-        f"--class_names alien mars cat "
+        f"--class_names alien bear cat "
         f"--prompts_number 1 "
         f"--prompt_generator qwen2 "
         f"--num_objects_range 1 2 "
@@ -1479,7 +1479,7 @@ def test_cuda_qwen2_sdxl_instance_segmentation_pipeline():
     cmd = (
         f"datadreamer --task instance-segmentation "
         f"--save_dir {target_folder} "
-        f"--class_names alien mars cat "
+        f"--class_names alien bear cat "
         f"--prompts_number 1 "
         f"--prompt_generator qwen2 "
         f"--num_objects_range 1 2 "
