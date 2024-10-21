@@ -6,7 +6,7 @@ import cv2
 import numpy as np
 
 
-def draw_rounded_rectangle(img, pt1, pt2, color, thickness, r, masks=None):
+def draw_rounded_rectangle(img, pt1, pt2, color, thickness, r):
     x1, y1 = pt1
     x2, y2 = pt2
 
