@@ -89,14 +89,7 @@ class YOLOConverter(BaseConverter):
         Returns:
             list of float: A list containing the masks in YOLO format.
         """
-        # yolo_masks = []
-        # for mask in masks:
-        #     x, y = mask[0], mask[1]
-        #     yolo_masks.append(x / image_width)
-        #     yolo_masks.append(y / image_height)
-        # return yolo_masks
         return (np.array(masks) / np.array([w, h])).reshape(-1).tolist()
-        # return np.array(masks).reshape(-1).tolist()
 
     def process_data(
         self,
