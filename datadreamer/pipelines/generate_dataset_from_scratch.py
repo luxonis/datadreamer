@@ -657,7 +657,7 @@ def main():
                             mask = masks_batch[j][k]
                             x_points, y_points = zip(*mask)
 
-                            ax.fill(x_points, y_points, "blue", alpha=0.5)
+                            ax.fill(x_points, y_points, label, alpha=0.5)
 
                     labels.append(label)
                     x1, y1, x2, y2 = box
