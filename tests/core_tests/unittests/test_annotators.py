@@ -8,8 +8,8 @@ import torch
 from PIL import Image
 
 from datadreamer.dataset_annotation.clip_annotator import CLIPAnnotator
-from datadreamer.dataset_annotation.fastsam_annotator import SlimSAMAnnotator
 from datadreamer.dataset_annotation.owlv2_annotator import OWLv2Annotator
+from datadreamer.dataset_annotation.slimsam_annotator import SlimSAMAnnotator
 
 # Get the total disk space in GB
 total_disk_space = psutil.disk_usage("/").total / (1024**3)
