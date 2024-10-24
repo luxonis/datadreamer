@@ -4,6 +4,7 @@ import os
 import shutil
 from typing import Dict, List
 
+import numpy as np
 from PIL import Image
 
 from datadreamer.utils import BaseConverter
@@ -30,8 +31,9 @@ class YOLOConverter(BaseConverter):
     │   ├── labels
     """
 
-    def __init__(self, seed=42):
+    def __init__(self, seed=42, is_instance_segmentation: bool = False):
         super().__init__(seed)
+        self.is_instance_segmentation = is_instance_segmentation
 
     def convert(
         self,
@@ -73,6 +75,21 @@ class YOLOConverter(BaseConverter):
         width = (box[2] - box[0]) / image_width
         height = (box[3] - box[1]) / image_height
         return [x_center, y_center, width, height]
+
+    def convert_masks_to_yolo_format(
+        self, masks: List[List[float]], w: int, h: int
+    ) -> List[float]:
+        """Converts masks to YOLO format.
+
+        Args:
+            masks (list of list of float): A list containing the masks.
+            w (int): The width of the image.
+            h (int): The height of the image.
+
+        Returns:
+            list of float: A list containing the masks in YOLO format.
+        """
+        return (np.array(masks) / np.array([w, h])).reshape(-1).tolist()
 
     def process_data(
         self,
@@ -130,11 +147,22 @@ class YOLOConverter(BaseConverter):
                     label_output_dir, os.path.splitext(image_name)[0] + ".txt"
                 )
                 with open(label_file, "w") as f:
-                    for box, label in zip(annotation["boxes"], annotation["labels"]):
-                        yolo_box = self.convert_to_yolo_format(
-                            box, image_width, image_height
-                        )
-                        f.write(f"{label} {' '.join(map(str, yolo_box))}\n")
+                    if self.is_instance_segmentation:
+                        for masks, label in zip(
+                            annotation["masks"], annotation["labels"]
+                        ):
+                            yolo_box = self.convert_masks_to_yolo_format(
+                                masks, image_width, image_height
+                            )
+                            f.write(f"{label} {' '.join(map(str, yolo_box))}\n")
+                    else:
+                        for box, label in zip(
+                            annotation["boxes"], annotation["labels"]
+                        ):
+                            yolo_box = self.convert_to_yolo_format(
+                                box, image_width, image_height
+                            )
+                            f.write(f"{label} {' '.join(map(str, yolo_box))}\n")
 
                 if copy_files:
                     shutil.copy(
