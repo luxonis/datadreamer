@@ -89,7 +89,6 @@ class LuxonisDatasetConverter(BaseConverter):
                     masks = data[image_path]["masks"]
                     for mask, label in zip(masks, labels):
                         poly = []
-                        print(mask)
                         poly += [
                             (point[0] / width, point[1] / height) for point in mask
                         ]
