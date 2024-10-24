@@ -89,10 +89,10 @@ class LuxonisDatasetConverter(BaseConverter):
                     masks = data[image_path]["masks"]
                     for mask, label in zip(masks, labels):
                         poly = []
-                        for m in mask:
-                            poly += [
-                                (point[0] / width, point[1] / height) for point in m
-                            ]
+                        print(mask)
+                        poly += [
+                            (point[0] / width, point[1] / height) for point in mask
+                        ]
                         yield {
                             "file": image_full_path,
                             "annotation": {

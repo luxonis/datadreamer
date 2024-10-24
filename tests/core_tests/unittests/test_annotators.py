@@ -8,7 +8,7 @@ import torch
 from PIL import Image
 
 from datadreamer.dataset_annotation.clip_annotator import CLIPAnnotator
-from datadreamer.dataset_annotation.fastsam_annotator import FastSAMAnnotator
+from datadreamer.dataset_annotation.fastsam_annotator import SlimSAMAnnotator
 from datadreamer.dataset_annotation.owlv2_annotator import OWLv2Annotator
 
 # Get the total disk space in GB
@@ -99,10 +99,10 @@ def test_cpu_clip_large_annotator():
     _check_clip_annotator("cpu", size="large")
 
 
-def _check_fastsam_annotator(device: str, size: str = "base"):
+def _check_slimsam_annotator(device: str, size: str = "base"):
     url = "https://ultralytics.com/images/bus.jpg"
     im = Image.open(requests.get(url, stream=True).raw)
-    annotator = FastSAMAnnotator(device=device, size=size)
+    annotator = SlimSAMAnnotator(device=device, size=size)
     masks = annotator.annotate_batch([im], [np.array([[3, 229, 559, 650]])])
     w, h = im.width, im.height
     # Check that the masks are lists
@@ -124,7 +124,7 @@ def _check_fastsam_annotator(device: str, size: str = "base"):
     reason="Test requires GPU and 16GB of HDD",
 )
 def test_cuda_fastsam_base_annotator():
-    _check_fastsam_annotator("cuda")
+    _check_slimsam_annotator("cuda")
 
 
 @pytest.mark.skipif(
@@ -132,7 +132,7 @@ def test_cuda_fastsam_base_annotator():
     reason="Test requires at least 16GB of HDD",
 )
 def test_cpu_fastsam_base_annotator():
-    _check_fastsam_annotator("cpu")
+    _check_slimsam_annotator("cpu")
 
 
 @pytest.mark.skipif(
@@ -140,7 +140,7 @@ def test_cpu_fastsam_base_annotator():
     reason="Test requires GPU and 16GB of HDD",
 )
 def test_cuda_fastsam_large_annotator():
-    _check_fastsam_annotator("cuda", size="large")
+    _check_slimsam_annotator("cuda", size="large")
 
 
 @pytest.mark.skipif(
@@ -148,4 +148,4 @@ def test_cuda_fastsam_large_annotator():
     reason="Test requires at least 16GB of HDD",
 )
 def test_cpu_fastsam_large_annotator():
-    _check_fastsam_annotator("cpu", size="large")
+    _check_slimsam_annotator("cpu", size="large")

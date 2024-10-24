@@ -18,8 +18,8 @@ from tqdm import tqdm
 
 from datadreamer.dataset_annotation import (
     CLIPAnnotator,
-    FastSAMAnnotator,
     OWLv2Annotator,
+    SlimSAMAnnotator,
 )
 from datadreamer.image_generation import (
     StableDiffusionImageGenerator,
@@ -58,8 +58,8 @@ image_generators = {
 
 det_annotators = {"owlv2": OWLv2Annotator}
 clf_annotators = {"clip": CLIPAnnotator}
-inst_seg_annotators = {"owlv2-fastsam": FastSAMAnnotator}
-inst_seg_to_det = {"owlv2-fastsam": OWLv2Annotator}
+inst_seg_annotators = {"owlv2-slimsam": SlimSAMAnnotator}
+inst_seg_to_det = {"owlv2-slimsam": OWLv2Annotator}
 
 setup_logging(use_rich=True)
 
@@ -122,7 +122,7 @@ def parse_args():
     parser.add_argument(
         "--image_annotator",
         type=str,
-        choices=["owlv2", "clip", "owlv2-fastsam"],
+        choices=["owlv2", "clip", "owlv2-slimsam"],
         help="Image annotator to use",
     )
 
@@ -637,7 +637,6 @@ def main():
                 masks_batch = inst_seg_annotator.annotate_batch(
                     images=images,
                     boxes_batch=boxes_batch,
-                    conf_threshold=args.conf_threshold,
                     iou_threshold=args.annotation_iou_threshold,
                 )
                 segment_list.extend(masks_batch)

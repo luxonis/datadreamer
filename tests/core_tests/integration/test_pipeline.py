@@ -184,7 +184,7 @@ def test_cpu_simple_sdxl_turbo_config_instance_segmentation_pipeline():
         f"datadreamer --task instance-segmentation "
         f"--save_dir {target_folder} "
         f"--num_objects_range 1 2 "
-        f"--image_annotator owlv2-fastsam "
+        f"--image_annotator owlv2-slimsam "
         f"--config ./tests/core_tests/integration/sample_config.yaml "
         f"--device cpu"
     )
@@ -204,7 +204,7 @@ def test_cuda_simple_sdxl_turbo_config_instance_segmentation_pipeline():
         f"datadreamer --task instance-segmentation "
         f"--save_dir {target_folder} "
         f"--num_objects_range 1 2 "
-        f"--image_annotator owlv2-fastsam "
+        f"--image_annotator owlv2-slimsam "
         f"--config ./tests/core_tests/integration/sample_config.yaml "
         f"--device cuda"
     )

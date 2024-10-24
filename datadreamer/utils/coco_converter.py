@@ -113,7 +113,7 @@ class COCOConverter(BaseConverter):
                 ):
                     bbox = [box[0], box[1], box[2] - box[0], box[3] - box[1]]
                     segmentation = (
-                        np.array(mask).reshape(-1).tolist()
+                        np.array(mask).reshape(1, -1).tolist()
                         if mask is not None
                         else None
                     )
