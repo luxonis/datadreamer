@@ -66,6 +66,8 @@ def _check_clip_annotator(device: str, size: str = "base"):
     # Check that the labels are ndarray of integers
     assert isinstance(labels[0], np.ndarray) and labels[0].dtype == np.int64
 
+    annotator.release(empty_cuda_cache=True if device != "cpu" else False)
+
 
 @pytest.mark.skipif(
     not torch.cuda.is_available() or total_disk_space < 16,
@@ -117,6 +119,8 @@ def _check_slimsam_annotator(device: str, size: str = "base"):
         # Check that it is a 2D point
         assert len(point) == 2
         assert 0 <= point[0] <= w and 0 <= point[1] <= h
+
+    annotator.release(empty_cuda_cache=True if device != "cpu" else False)
 
 
 @pytest.mark.skipif(
