@@ -281,7 +281,7 @@ save_dir/
 {
   "image_path": {
     "boxes": [[x_min, y_min, x_max, y_max], ...],
-    "masks": [[x0, y0], [x1, y1], ...]
+    "masks": [[[x0, y0],[x1, y1],...], [[x0, y0],[x1, y1],...], ....]
     "labels": [label_index, ...]
   },
   ...

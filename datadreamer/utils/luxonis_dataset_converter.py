@@ -28,6 +28,11 @@ class LuxonisDatasetConverter(BaseConverter):
         self.dataset_plugin = dataset_plugin
         self.dataset_name = dataset_name
 
+        if self.is_instance_segmentation:
+            logger.warning(
+                "Instance segmentation will be treated as semantic segmentation until the support for instance segmentation is added to Luxonis-ml."
+            )
+
     def convert(
         self,
         dataset_dir: str,
