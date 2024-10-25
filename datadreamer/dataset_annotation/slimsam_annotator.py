@@ -77,7 +77,7 @@ class SlimSAMAnnotator(BaseAnnotator):
         boxes_batch: List[np.ndarray],
         iou_threshold: float = 0.2,
     ) -> List[List[List[float]]]:
-        """Annotates images for the task of instance segmentation using the FastSAM
+        """Annotates images for the task of instance segmentation using the SlimSAM
         model.
 
         Args:

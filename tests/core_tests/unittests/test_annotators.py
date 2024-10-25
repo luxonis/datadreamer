@@ -127,7 +127,7 @@ def _check_slimsam_annotator(device: str, size: str = "base"):
     not torch.cuda.is_available() or total_disk_space < 16,
     reason="Test requires GPU and 16GB of HDD",
 )
-def test_cuda_fastsam_base_annotator():
+def test_cuda_slimsam_base_annotator():
     _check_slimsam_annotator("cuda")
 
 
@@ -135,7 +135,7 @@ def test_cuda_fastsam_base_annotator():
     total_disk_space < 16,
     reason="Test requires at least 16GB of HDD",
 )
-def test_cpu_fastsam_base_annotator():
+def test_cpu_slimsam_base_annotator():
     _check_slimsam_annotator("cpu")
 
 
@@ -143,7 +143,7 @@ def test_cpu_fastsam_base_annotator():
     not torch.cuda.is_available() or total_disk_space < 16,
     reason="Test requires GPU and 16GB of HDD",
 )
-def test_cuda_fastsam_large_annotator():
+def test_cuda_slimsam_large_annotator():
     _check_slimsam_annotator("cuda", size="large")
 
 
@@ -151,5 +151,5 @@ def test_cuda_fastsam_large_annotator():
     total_disk_space < 16,
     reason="Test requires at least 16GB of HDD",
 )
-def test_cpu_fastsam_large_annotator():
+def test_cpu_slimsam_large_annotator():
     _check_slimsam_annotator("cpu", size="large")
