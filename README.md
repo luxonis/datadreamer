@@ -157,7 +157,7 @@ datadreamer --config <path-to-config>
 
 ### 🔧 Additional Parameters
 
-- `--task`: Choose between detection, classification, instance segmentation and semantic segmentation. Default is `detection`.
+- `--task`: Choose between detection, classification and instance segmentation. Default is `detection`.
 - `--dataset_format`: Format of the dataset. Defaults to `raw`. Supported values: `raw`, `yolo`, `coco`, `luxonis-dataset`, `cls-single`.
 - `--split_ratios`: Split ratios for train, validation, and test sets. Defaults to `[0.8, 0.1, 0.1]`.
 - `--num_objects_range`: Range of objects in a prompt. Default is 1 to 3.
