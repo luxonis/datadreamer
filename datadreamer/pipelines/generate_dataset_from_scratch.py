@@ -608,7 +608,9 @@ def main():
         else:
             annotator_class = inst_seg_detectors[args.image_annotator]
             inst_seg_annotator_class = inst_seg_annotators[args.image_annotator]
-            inst_seg_annotator = inst_seg_annotator_class(device=args.device)
+            inst_seg_annotator = inst_seg_annotator_class(
+                device=args.device, size=args.annotator_size
+            )
         annotator = annotator_class(device=args.device, size=args.annotator_size)
 
         for i, image_batch in tqdm(
