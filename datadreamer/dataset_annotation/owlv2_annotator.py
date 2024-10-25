@@ -98,7 +98,7 @@ class OWLv2Annotator(BaseAnnotator):
         """
         n = len(images)
         batched_prompts = [prompts] * n
-        target_sizes = torch.Tensor(images[0].size[::-1]).repeat((n, 1)).to(self.device)
+        target_sizes = torch.Tensor([img.size[::-1] for img in images]).to(self.device)
 
         # resize the images to the model's input size
         img_size = (1008, 1008) if self.size == "large" else (960, 960)
