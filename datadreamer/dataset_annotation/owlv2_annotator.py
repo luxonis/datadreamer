@@ -121,7 +121,8 @@ class OWLv2Annotator(BaseAnnotator):
         self,
         pred: Dict[str, torch.Tensor],
         use_tta: bool,
-        img_dim: int,
+        img_width: int,
+        img_height: int,
         synonym_dict: Dict[str, List[str]] | None,
         synonym_dict_rev: Dict[int, int] | None,
     ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
@@ -130,7 +131,8 @@ class OWLv2Annotator(BaseAnnotator):
         Args:
             pred: The predictions from the model.
             use_tta (bool): Flag to whether the test-time augmentation was applied.
-            img_dim (int): The dimension of the image.
+            img_width (int): The width of the image.
+            img_height (int): The height of the image.
             synonym_dict (dict): Dictionary for handling synonyms in labels.
             synonym_dict_rev (dict): Dictionary for handling synonyms in labels.
 
@@ -143,19 +145,22 @@ class OWLv2Annotator(BaseAnnotator):
             pred["scores"],
             pred["labels"],
         )
-        # Flip boxes back if using TTA
-        if use_tta:
-            boxes[:, [0, 2]] = img_dim - boxes[:, [2, 0]]
 
         if synonym_dict is not None:
             labels = torch.tensor(
                 [synonym_dict_rev[label.item()] for label in labels], dtype=torch.int64
             )
 
+        boxes = self._correct_bboxes_misalignment(boxes, img_width, img_height)
+
+        # Flip boxes back if using TTA
+        if use_tta:
+            boxes[:, [0, 2]] = img_width - boxes[:, [2, 0]]
+
         return boxes, scores, labels
 
     def _correct_bboxes_misalignment(
-        self, input_boxes: List[torch.Tensor], width: int, height: int
+        self, input_boxes: torch.Tensor, width: int, height: int
     ) -> List[torch.Tensor]:
         """This function corrects the bounding boxes misalignment appearing when using
         the `transformers==4.45.2`.
@@ -164,23 +169,19 @@ class OWLv2Annotator(BaseAnnotator):
         Solution: https://discuss.huggingface.co/t/owl-v2-bounding-box-misalignment-problem/66181
 
         Args:
-            input_boxes (List[torch.Tensor]): The bounding boxes to be corrected.
+            input_boxes (torch.Tensor): The bounding boxes to be corrected.
             width (int): The width of the image.
             height (int): The height of the image.
 
         Returns:
             List[torch.Tensor]: The corrected bounding boxes.
         """
-        width_ratio = 1
-        height_ratio = 1
-        if width > height:
-            height_ratio = height / width
-        elif height > width:
-            width_ratio = width / height
-        return [
-            box * torch.tensor([width_ratio, height_ratio, width_ratio, height_ratio])
-            for box in input_boxes
-        ]
+        width_ratio = width / height if width < height else 1
+        height_ratio = height / width if height < width else 1
+        ratios = torch.tensor(
+            [width_ratio, height_ratio] * 2, device=input_boxes.device
+        )
+        return input_boxes * ratios
 
     def annotate_batch(
         self,
@@ -234,36 +235,34 @@ class OWLv2Annotator(BaseAnnotator):
         final_labels = []
 
         for i, (pred, aug_pred) in enumerate(zip(preds, augmented_preds)):
+            img_width, img_height = images[i].size
             boxes, scores, labels = self._get_annotations(
                 pred,
                 False,
-                images[i].size[0],
+                img_width,
+                img_height,
                 synonym_dict,
                 synonym_dict_rev if synonym_dict is not None else None,
             )
 
-            all_boxes = [boxes.to("cpu")]
-            all_scores = [scores.to("cpu")]
-            all_labels = [labels.to("cpu")]
-
-            # Fix the bounding boxes misalignment
-            all_boxes = self._correct_bboxes_misalignment(
-                all_boxes, images[i].width, images[i].height
-            )
+            all_boxes = [boxes]
+            all_scores = [scores]
+            all_labels = [labels]
 
             # Flip boxes back if using TTA
             if use_tta:
                 aug_boxes, aug_scores, aug_labels = self._get_annotations(
                     aug_pred,
                     True,
-                    images[i].size[0],
+                    img_width,
+                    img_height,
                     synonym_dict,
                     synonym_dict_rev if synonym_dict is not None else None,
                 )
 
-                all_boxes.append(aug_boxes.to("cpu"))
-                all_scores.append(aug_scores.to("cpu"))
-                all_labels.append(aug_labels.to("cpu"))
+                all_boxes.append(aug_boxes)
+                all_scores.append(aug_scores)
+                all_labels.append(aug_labels)
 
             one_hot_labels = torch.nn.functional.one_hot(
                 torch.cat(all_labels), num_classes=len(prompts)
