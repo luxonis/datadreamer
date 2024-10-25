@@ -59,7 +59,7 @@ image_generators = {
 det_annotators = {"owlv2": OWLv2Annotator}
 clf_annotators = {"clip": CLIPAnnotator}
 inst_seg_annotators = {"owlv2-slimsam": SlimSAMAnnotator}
-inst_seg_to_det = {"owlv2-slimsam": OWLv2Annotator}
+inst_seg_detectors = {"owlv2-slimsam": OWLv2Annotator}
 
 setup_logging(use_rich=True)
 
@@ -606,7 +606,7 @@ def main():
         if args.task == "detection":
             annotator_class = det_annotators[args.image_annotator]
         else:
-            annotator_class = inst_seg_to_det[args.image_annotator]
+            annotator_class = inst_seg_detectors[args.image_annotator]
             inst_seg_annotator_class = inst_seg_annotators[args.image_annotator]
             inst_seg_annotator = inst_seg_annotator_class(device=args.device)
         annotator = annotator_class(device=args.device, size=args.annotator_size)
