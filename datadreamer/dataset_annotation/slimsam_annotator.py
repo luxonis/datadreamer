@@ -68,7 +68,7 @@ class SlimSAMAnnotator(BaseAnnotator):
             SamProcessor: The initialized processor.
         """
         if self.size == "large":
-            SamProcessor.from_pretrained("Zigeng/SlimSAM-uniform-50")
+            return SamProcessor.from_pretrained("Zigeng/SlimSAM-uniform-50")
         return SamProcessor.from_pretrained("Zigeng/SlimSAM-uniform-77")
 
     def annotate_batch(
