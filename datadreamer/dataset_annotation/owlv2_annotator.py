@@ -236,6 +236,22 @@ class OWLv2Annotator(BaseAnnotator):
                 torch.cat(all_labels), num_classes=len(prompts)
             )
 
+            # Fix the bounding boxes
+            width_ratio = 1
+            height_ratio = 1
+            width = images[i].width
+            height = images[i].height
+            if width > height:
+                height_ratio = height / width
+            elif height > width:
+                width_ratio = width / height
+
+            all_boxes = [
+                box
+                / torch.tensor([width_ratio, height_ratio, width_ratio, height_ratio])
+                for box in all_boxes
+            ]
+
             # Apply NMS
             # transform predictions to shape [N, 5 + num_classes], N is the number of bboxes for nms function
             all_boxes_cat = torch.cat(
@@ -294,8 +310,8 @@ if __name__ == "__main__":
 
     url = "https://ultralytics.com/images/bus.jpg"
     im = Image.open(requests.get(url, stream=True).raw)
-    annotator = OWLv2Annotator(device="cpu", size="large")
+    annotator = OWLv2Annotator(device="cpu", size="base")
     final_boxes, final_scores, final_labels = annotator.annotate_batch(
-        [im], ["robot", "horse"]
+        [im], ["bus", "person"]
     )
     annotator.release()
