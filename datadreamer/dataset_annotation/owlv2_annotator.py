@@ -154,6 +154,34 @@ class OWLv2Annotator(BaseAnnotator):
 
         return boxes, scores, labels
 
+    def _correct_bboxes_misalignment(
+        self, input_boxes: List[torch.Tensor], width: int, height: int
+    ) -> List[torch.Tensor]:
+        """This function corrects the bounding boxes misalignment appearing when using
+        the `transformers==4.45.2`.
+
+        Problem description: With a non-square aspect ratio, the predictions are shifted in the smaller dimension.
+        Solution: https://discuss.huggingface.co/t/owl-v2-bounding-box-misalignment-problem/66181
+
+        Args:
+            input_boxes (List[torch.Tensor]): The bounding boxes to be corrected.
+            width (int): The width of the image.
+            height (int): The height of the image.
+
+        Returns:
+            List[torch.Tensor]: The corrected bounding boxes.
+        """
+        width_ratio = 1
+        height_ratio = 1
+        if width > height:
+            height_ratio = height / width
+        elif height > width:
+            width_ratio = width / height
+        return [
+            box * torch.tensor([width_ratio, height_ratio, width_ratio, height_ratio])
+            for box in input_boxes
+        ]
+
     def annotate_batch(
         self,
         images: List[PIL.Image.Image],
@@ -218,6 +246,11 @@ class OWLv2Annotator(BaseAnnotator):
             all_scores = [scores.to("cpu")]
             all_labels = [labels.to("cpu")]
 
+            # Fix the bounding boxes misalignment
+            all_boxes = self._correct_bboxes_misalignment(
+                all_boxes, images[i].width, images[i].height
+            )
+
             # Flip boxes back if using TTA
             if use_tta:
                 aug_boxes, aug_scores, aug_labels = self._get_annotations(
@@ -235,22 +268,6 @@ class OWLv2Annotator(BaseAnnotator):
             one_hot_labels = torch.nn.functional.one_hot(
                 torch.cat(all_labels), num_classes=len(prompts)
             )
-
-            # Fix the bounding boxes
-            width_ratio = 1
-            height_ratio = 1
-            width = images[i].width
-            height = images[i].height
-            if width > height:
-                height_ratio = height / width
-            elif height > width:
-                width_ratio = width / height
-
-            all_boxes = [
-                box
-                / torch.tensor([width_ratio, height_ratio, width_ratio, height_ratio])
-                for box in all_boxes
-            ]
 
             # Apply NMS
             # transform predictions to shape [N, 5 + num_classes], N is the number of bboxes for nms function
