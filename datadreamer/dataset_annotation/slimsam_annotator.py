@@ -122,7 +122,8 @@ class SlimSAMAnnotator(BaseAnnotator):
                 final_masks = (final_masks > 0).int()
                 final_masks = final_masks.numpy().astype(np.uint8)
                 polygon = mask_to_polygon(final_masks)
-                image_masks.append(polygon)
+                if len(polygon) != 0:
+                    image_masks.append(polygon)
 
             final_segments.append(image_masks)
 
