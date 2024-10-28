@@ -9,6 +9,7 @@ from PIL import Image
 
 from datadreamer.dataset_annotation.clip_annotator import CLIPAnnotator
 from datadreamer.dataset_annotation.owlv2_annotator import OWLv2Annotator
+from datadreamer.dataset_annotation.slimsam_annotator import SlimSAMAnnotator
 
 # Get the total disk space in GB
 total_disk_space = psutil.disk_usage("/").total / (1024**3)
@@ -65,6 +66,8 @@ def _check_clip_annotator(device: str, size: str = "base"):
     # Check that the labels are ndarray of integers
     assert isinstance(labels[0], np.ndarray) and labels[0].dtype == np.int64
 
+    annotator.release(empty_cuda_cache=True if device != "cpu" else False)
+
 
 @pytest.mark.skipif(
     not torch.cuda.is_available() or total_disk_space < 16,
@@ -87,7 +90,7 @@ def test_cpu_clip_base_annotator():
     reason="Test requires GPU and 16GB of HDD",
 )
 def test_cuda_clip_large_annotator():
-    _check_clip_annotator("cuda")
+    _check_clip_annotator("cuda", size="large")
 
 
 @pytest.mark.skipif(
@@ -95,4 +98,58 @@ def test_cuda_clip_large_annotator():
     reason="Test requires at least 16GB of HDD",
 )
 def test_cpu_clip_large_annotator():
-    _check_clip_annotator("cpu")
+    _check_clip_annotator("cpu", size="large")
+
+
+def _check_slimsam_annotator(device: str, size: str = "base"):
+    url = "https://ultralytics.com/images/bus.jpg"
+    im = Image.open(requests.get(url, stream=True).raw)
+    annotator = SlimSAMAnnotator(device=device, size=size)
+    masks = annotator.annotate_batch([im], [np.array([[3, 229, 559, 650]])])
+    w, h = im.width, im.height
+    # Check that the masks are lists
+    assert isinstance(masks, list) and len(masks) == 1
+    # Check that the masks are [B, O, N, 2], where
+    # - B = batch size
+    # - O = number of objects
+    # - N = number of points of the mask segment polygon (at least 3 to be polygon)
+    assert isinstance(masks[0], list) and len(masks[0]) == 1
+    assert isinstance(masks[0][0], list) and len(masks[0][0]) >= 3
+    for point in masks[0][0]:
+        # Check that it is a 2D point
+        assert len(point) == 2
+        assert 0 <= point[0] <= w and 0 <= point[1] <= h
+
+    annotator.release(empty_cuda_cache=True if device != "cpu" else False)
+
+
+@pytest.mark.skipif(
+    not torch.cuda.is_available() or total_disk_space < 16,
+    reason="Test requires GPU and 16GB of HDD",
+)
+def test_cuda_slimsam_base_annotator():
+    _check_slimsam_annotator("cuda")
+
+
+@pytest.mark.skipif(
+    total_disk_space < 16,
+    reason="Test requires at least 16GB of HDD",
+)
+def test_cpu_slimsam_base_annotator():
+    _check_slimsam_annotator("cpu")
+
+
+@pytest.mark.skipif(
+    not torch.cuda.is_available() or total_disk_space < 16,
+    reason="Test requires GPU and 16GB of HDD",
+)
+def test_cuda_slimsam_large_annotator():
+    _check_slimsam_annotator("cuda", size="large")
+
+
+@pytest.mark.skipif(
+    total_disk_space < 16,
+    reason="Test requires at least 16GB of HDD",
+)
+def test_cpu_slimsam_large_annotator():
+    _check_slimsam_annotator("cpu", size="large")

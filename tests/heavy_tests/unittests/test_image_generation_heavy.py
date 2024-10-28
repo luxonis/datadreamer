@@ -66,3 +66,19 @@ def test_cuda_sdxl_image_generator():
 )
 def test_cpu_sdxl_image_generator():
     _check_image_generator(StableDiffusionImageGenerator, "cpu")
+
+
+@pytest.mark.skipif(
+    not torch.cuda.is_available() or total_memory < 16 or total_disk_space < 25,
+    reason="Test requires GPU, at least 16GB of RAM and 25GB of HDD",
+)
+def test_cuda_sdxl_lightning_image_generator():
+    _check_image_generator(StableDiffusionLightningImageGenerator, "cuda")
+
+
+@pytest.mark.skipif(
+    total_memory < 16 or total_disk_space < 25,
+    reason="Test requires at least 16GB of RAM and 25GB of HDD",
+)
+def test_cpu_sdxl_lightning_image_generator():
+    _check_image_generator(StableDiffusionLightningImageGenerator, "cpu")

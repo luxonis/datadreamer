@@ -1,6 +1,6 @@
 torch>=2.0.0
 torchvision>=0.16.0
-transformers>=4.37.0
+transformers>=4.45.2
 diffusers>=0.24.0
 compel>=2.0.0
 tqdm>=4.0.0
@@ -12,6 +12,6 @@ accelerate>=0.25.0
 scipy>=1.10.0
 bitsandbytes>=0.42.0
 nltk>=3.8.1
-luxonis-ml[all]>=0.3.0
+luxonis-ml[all]>=0.4.1
 python-box>=7.1.1
 gcsfs>=2023.1.0
