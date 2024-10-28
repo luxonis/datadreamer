@@ -245,9 +245,9 @@ class OWLv2Annotator(BaseAnnotator):
                 synonym_dict_rev if synonym_dict is not None else None,
             )
 
-            all_boxes = [boxes]
-            all_scores = [scores]
-            all_labels = [labels]
+            all_boxes = [boxes.cpu()]
+            all_scores = [scores.cpu()]
+            all_labels = [labels.cpu()]
 
             # Flip boxes back if using TTA
             if use_tta:
@@ -260,9 +260,9 @@ class OWLv2Annotator(BaseAnnotator):
                     synonym_dict_rev if synonym_dict is not None else None,
                 )
 
-                all_boxes.append(aug_boxes)
-                all_scores.append(aug_scores)
-                all_labels.append(aug_labels)
+                all_boxes.append(aug_boxes.cpu())
+                all_scores.append(aug_scores.cpu())
+                all_labels.append(aug_labels.cpu())
 
             one_hot_labels = torch.nn.functional.one_hot(
                 torch.cat(all_labels), num_classes=len(prompts)
