@@ -552,7 +552,9 @@ def main():
                 batch_image_paths.append(image_path)
 
         else:
-            images = [Image.open(image_path) for image_path in image_batch]
+            images = [
+                Image.open(image_path).convert("RGB") for image_path in image_batch
+            ]
             batch_image_paths = image_batch
         return images, batch_image_paths
 
