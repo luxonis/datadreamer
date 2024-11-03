@@ -109,18 +109,18 @@ class LuxonisDatasetConverter(BaseConverter):
                 if "boxes" in data[image_path]:
                     boxes = data[image_path]["boxes"]
                     for box, label in zip(boxes, labels):
-                        x, y, w, h = box[0], box[1], box[2] - box[0], box[3] - box[1]
-                        x = max(0, x)
-                        y = max(0, y)
+                        x, y = max(0, box[0] / width), max(0, box[1] / height)
+                        w = min(box[2] / width - x, 1 - x)
+                        h = min(box[3] / height - y, 1 - y)
                         yield {
                             "file": image_full_path,
                             "annotation": {
                                 "class": class_names[label],
                                 "type": "boundingbox",
-                                "x": x / width,
-                                "y": y / height,
-                                "w": w / width,
-                                "h": h / height,
+                                "x": x,
+                                "y": y,
+                                "w": w,
+                                "h": h,
                             },
                         }
 
