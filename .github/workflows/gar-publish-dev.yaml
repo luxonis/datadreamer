@@ -15,7 +15,10 @@ jobs:
 
     steps:
       - name: 'Checkout GitHub Action'
-        uses: actions/checkout@main
+        uses: actions/checkout@v4
+
+      - name: Confirm current branch
+        run: git rev-parse --abbrev-ref HEAD
         
       - id: 'auth'
         name: 'Authenticate to Google Cloud'
