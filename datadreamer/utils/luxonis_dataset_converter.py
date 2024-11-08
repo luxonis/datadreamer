@@ -80,6 +80,12 @@ class LuxonisDatasetConverter(BaseConverter):
                 image_full_path = os.path.join(dataset_dir, image_path)
                 width, height = Image.open(image_full_path).size
                 labels = data[image_path]["labels"]
+
+                if len(labels) == 0:
+                    yield {
+                        "file": image_full_path,
+                    }
+
                 for label in labels:
                     yield {
                         "file": image_full_path,
