@@ -15,7 +15,7 @@ jobs:
 
     steps:
       - name: 'Checkout GitHub Action'
-        uses: actions/checkout@main
+        uses: actions/checkout@v4
         
       - id: 'auth'
         name: 'Authenticate to Google Cloud'
@@ -34,5 +34,5 @@ jobs:
       - name: 'Build Inventory Image'
         working-directory: .
         run: |
-          docker build --build-arg GITHUB_TOKEN=${{secrets.GHCR_PAT}} . --tag $GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/internal/datadreamer:dev
+          docker build --build-arg GITHUB_TOKEN=${{secrets.GHCR_PAT}} --build-arg BRANCH=${{ github.ref_name }} . --tag $GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/internal/datadreamer:dev
           docker push $GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/internal/datadreamer --all-tags

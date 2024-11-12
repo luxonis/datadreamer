@@ -5,14 +5,20 @@ import re
 from typing import List, Literal, Optional, Tuple
 
 import torch
-from transformers import AutoModelForCausalLM, AutoTokenizer, Pipeline, pipeline
+from transformers import (
+    AutoModelForCausalLM,
+    AutoTokenizer,
+    BitsAndBytesConfig,
+    Pipeline,
+    pipeline,
+)
 
 from datadreamer.prompt_generation.lm_prompt_generator import LMPromptGenerator
 
 logger = logging.getLogger(__name__)
 
 
-class TinyLlamaLMPromptGenerator(LMPromptGenerator):
+class Qwen2LMPromptGenerator(LMPromptGenerator):
     """A language model-based prompt generator class, extending PromptGenerator.
 
     Attributes:
@@ -56,31 +62,53 @@ class TinyLlamaLMPromptGenerator(LMPromptGenerator):
         Returns:
             tuple: The initialized language model, tokenizer and pipeline.
         """
-        logger.info(f"Initializing TinyLlama-1.1B language model on {self.device}...")
+        selected_dtype = "auto"
+        logger.info(
+            f"Initializing Qwen2.5-1.5B-Instruct language model on {self.device}..."
+        )
         if self.device == "cpu":
             model = AutoModelForCausalLM.from_pretrained(
-                "TinyLlama/TinyLlama-1.1B-Chat-v1.0",
+                "Qwen/Qwen2.5-1.5B-Instruct",
                 torch_dtype="auto",
                 device_map="cpu",
                 low_cpu_mem_usage=True,
             )
         else:
-            model = AutoModelForCausalLM.from_pretrained(
-                "TinyLlama/TinyLlama-1.1B-Chat-v1.0",
-                torch_dtype=torch.float16,
-                device_map=self.device,
-            )
+            if self.quantization == "none":
+                logger.info("Loading FP16 language model...")
+                selected_dtype = torch.float16
+                model = AutoModelForCausalLM.from_pretrained(
+                    "Qwen/Qwen2.5-1.5B-Instruct",
+                    torch_dtype=selected_dtype,
+                    trust_remote_code=True,
+                    device_map=self.device,
+                )
+            else:
+                logger.info("Loading INT4 language model...")
+                # Create the BitsAndBytesConfig object with the dynamically constructed arguments
+                bnb_config = BitsAndBytesConfig(
+                    load_in_4bit=True,
+                    bnb_4bit_use_double_quant=True,
+                    bnb_4bit_quant_type="nf4",
+                )
+                selected_dtype = torch.bfloat16
+
+                model = AutoModelForCausalLM.from_pretrained(
+                    "Qwen/Qwen2.5-1.5B-Instruct",
+                    quantization_config=bnb_config,
+                    torch_dtype=selected_dtype,
+                    device_map=self.device,
+                    trust_remote_code=True,
+                )
 
         tokenizer = AutoTokenizer.from_pretrained(
-            "TinyLlama/TinyLlama-1.1B-Chat-v1.0",
-            trust_remote_code=True,
-            padding_side="left",
+            "Qwen/Qwen2.5-1.5B-Instruct", padding_side="left"
         )
         pipe = pipeline(
             "text-generation",
             model=model,
             tokenizer=tokenizer,
-            torch_dtype=torch.float16 if self.device == "cuda" else "auto",
+            torch_dtype=selected_dtype,
             device_map=self.device,
             batch_size=self.batch_size,
         )
@@ -95,11 +123,6 @@ class TinyLlamaLMPromptGenerator(LMPromptGenerator):
         Returns:
             str: The cleaned prompt text.
         """
-        # Pattern to find sentences that start with "Caption reads: "
-        # \s* matches any whitespace characters at the beginning of the string (including none)
-        # re.IGNORECASE makes the search case-insensitive
-        # [^\.!?]* matches any sequence of characters that are not a period, exclamation mark, or question mark
-        # [\.\!?] matches a period, exclamation mark, or question mark, indicating the end of a sentence
         pattern = re.compile(r"\s*Caption reads: [^\.!?]*[\.\!?]", re.IGNORECASE)
         # Replace the matched sentences with an empty string
         cleaned_text = re.sub(pattern, "", text)
@@ -114,7 +137,7 @@ class TinyLlamaLMPromptGenerator(LMPromptGenerator):
         Returns:
             str: A text prompt for the language model.
         """
-        return f"<|system|>\nYou are a chatbot who describes content of images!</s>\n<|user|>\nGenerate a short and concise caption for an image. Follow this template: 'A photo of {', '.join(selected_objects)}', where the objects interact in a meaningful way within a scene, complete with a short scene description. The caption must be short in length and start with the words: 'A photo of '! Do not use the phrase 'Caption reads'.</s>\n<|assistant|>\n"
+        return f"<|im_start|>system\nYou are Qwen, created by Alibaba Cloud. You are a chatbot who describes content of images!<|im_end|>\n<|im_start|>user\nGenerate a short and concise caption for an image. The caption must begin with this template: 'A photo of {', '.join(selected_objects)}'. The objects within the scene interact in a meaningful way. Complete the caption with a short scene description.<|im_end|>\n<|im_start|>assistant\n"
 
     def _postprocess_prompt(self, prompt: str) -> str:
         """Post-processes the generated prompt.
@@ -125,7 +148,7 @@ class TinyLlamaLMPromptGenerator(LMPromptGenerator):
         Returns:
             str: The post-processed prompt.
         """
-        instructional_pattern = r"<\|system\|>\n.*?\n<\|user\|>\n.*?\n<\|assistant\|>\n"
+        instructional_pattern = r"<\|im_start\|>system\n.*?<\|im_end\|>\n<\|im_start\|>user\n.*?<\|im_end\|>\n<\|im_start\|>assistant\n"
         # Remove the instructional text to isolate the caption
         prompt = (
             re.sub(instructional_pattern, "", prompt).replace('"', "").replace("'", "")
@@ -144,16 +167,7 @@ class TinyLlamaLMPromptGenerator(LMPromptGenerator):
         Returns:
             List[str]: List of generated prompts.
         """
-        sequences = self.pipeline(
-            prompt_texts_batch,
-            max_new_tokens=70,
-            do_sample=True,
-            top_p=0.95,
-            top_k=50,
-            temperature=0.7,
-            num_beams=1,
-            pad_token_id=self.tokenizer.eos_token_id,
-        )
+        sequences = self.pipeline(prompt_texts_batch, max_new_tokens=70)
         decoded_prompts = [
             self._postprocess_prompt(sequence[0]["generated_text"])
             for sequence in sequences
@@ -165,7 +179,7 @@ class TinyLlamaLMPromptGenerator(LMPromptGenerator):
 if __name__ == "__main__":
     # Example usage of the class
     object_names = ["aeroplane", "bicycle", "bird", "boat", "city"]
-    prompt_generator = TinyLlamaLMPromptGenerator(
+    prompt_generator = Qwen2LMPromptGenerator(
         class_names=object_names, prompts_number=5, device="cpu"
     )
     generated_prompts = prompt_generator.generate_prompts()

@@ -1,8 +1,9 @@
 from __future__ import annotations
 
+import logging
 import random
 import re
-from typing import List, Literal, Optional
+from typing import List, Literal, Optional, Tuple
 
 import torch
 from tqdm import tqdm
@@ -15,6 +16,8 @@ from transformers import (
 )
 
 from datadreamer.prompt_generation.prompt_generator import PromptGenerator
+
+logger = logging.getLogger(__name__)
 
 
 class LMPromptGenerator(PromptGenerator):
@@ -62,15 +65,15 @@ class LMPromptGenerator(PromptGenerator):
         )
         self.model, self.tokenizer, self.pipeline = self._init_lang_model()
 
-    def _init_lang_model(self) -> tuple[AutoModelForCausalLM, AutoTokenizer, Pipeline]:
+    def _init_lang_model(self) -> Tuple[AutoModelForCausalLM, AutoTokenizer, Pipeline]:
         """Initializes the language model, tokenizer and pipeline for prompt generation.
 
         Returns:
             tuple: The initialized language model, tokenizer and pipeline.
         """
         selected_dtype = "auto"
+        logger.info(f"Initializing Mistral-7B language model on {self.device}...")
         if self.device == "cpu":
-            print("Loading language model on CPU...")
             model = AutoModelForCausalLM.from_pretrained(
                 "mistralai/Mistral-7B-Instruct-v0.1",
                 torch_dtype="auto",
@@ -79,7 +82,7 @@ class LMPromptGenerator(PromptGenerator):
             )
         else:
             if self.quantization == "none":
-                print("Loading FP16 language model on GPU...")
+                logger.info("Loading FP16 language model...")
                 selected_dtype = torch.float16
                 model = AutoModelForCausalLM.from_pretrained(
                     "mistralai/Mistral-7B-Instruct-v0.1",
@@ -88,7 +91,7 @@ class LMPromptGenerator(PromptGenerator):
                     device_map=self.device,
                 )
             else:
-                print("Loading INT4 language model on GPU...")
+                logger.info("Loading INT4 language model...")
                 # Create the BitsAndBytesConfig object with the dynamically constructed arguments
                 bnb_config = BitsAndBytesConfig(
                     load_in_4bit=True,
@@ -115,7 +118,6 @@ class LMPromptGenerator(PromptGenerator):
             device_map=self.device,
             batch_size=self.batch_size,
         )
-        print("Done!")
         return model, tokenizer, pipe
 
     def _remove_incomplete_sentence(self, text: str) -> str:
@@ -186,9 +188,7 @@ class LMPromptGenerator(PromptGenerator):
         Returns:
             bool: True if the prompt is valid, False otherwise.
         """
-        return prompt.lower().startswith(
-            "a photo of"
-        )  # and all(obj.lower() in prompt.lower() for obj in selected_objects)
+        return prompt.lower().startswith("a photo of")
 
     def generate_prompts_batch(self, prompt_texts_batch: List[str]) -> List[str]:
         """Generates a list of prompts using the language model.
@@ -219,7 +219,7 @@ class LMPromptGenerator(PromptGenerator):
         """
         prompts = []
         progress_bar = tqdm(
-            desc="Generating prompts...", position=0, total=self.prompts_number
+            desc="Generating prompts", position=0, total=self.prompts_number
         )
         while len(prompts) < self.prompts_number:
             selected_objects_batch = [

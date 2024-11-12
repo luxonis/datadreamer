@@ -1,9 +1,8 @@
 from __future__ import annotations
 
-from typing import Annotated, List, Literal
-
 from luxonis_ml.utils import LuxonisConfig
 from pydantic import Field
+from typing_extensions import Annotated, List, Literal
 
 
 class Config(LuxonisConfig):
@@ -11,7 +10,7 @@ class Config(LuxonisConfig):
     save_dir: str = "generated_dataset"
     class_names: List[str] = ["bear", "bicycle", "bird", "person"]
     prompts_number: int = 10
-    task: Literal["detection", "classification"] = "detection"
+    task: Literal["detection", "classification", "instance-segmentation"] = "detection"
     seed: int = 42
     device: Literal["cuda", "cpu"] = "cuda"
     annotate_only: bool = False
@@ -22,7 +21,7 @@ class Config(LuxonisConfig):
         List[float], Field(default=[0.8, 0.1, 0.1], min_length=3, max_length=3)
     ] = [0.8, 0.1, 0.1]
     # Prompt generation arguments
-    prompt_generator: Literal["simple", "lm", "tiny"] = "simple"
+    prompt_generator: Literal["simple", "lm", "tiny", "qwen2"] = "qwen2"
     synonym_generator: Literal["none", "llm", "wordnet"] = "none"
     num_objects_range: Annotated[
         List[int], Field(default=[1, 3], min_length=2, max_length=2)
@@ -37,10 +36,18 @@ class Config(LuxonisConfig):
     batch_size_image: int = 1
     use_image_tester: bool = False
     image_tester_patience: int = 1
+    # Profanity filter arguments
+    disable_lm_filter: bool = False
     # Annotation arguments
-    image_annotator: Literal["owlv2", "clip"] = "owlv2"
+    image_annotator: Literal["owlv2", "clip", "owlv2-slimsam"] = "owlv2"
     conf_threshold: float = 0.15
     annotation_iou_threshold: float = 0.2
     use_tta: bool = False
     annotator_size: Literal["base", "large"] = "base"
     batch_size_annotation: int = 1
+    dataset_plugin: str = ""
+    loader_plugin: str = ""
+    dataset_name: str = ""
+    dataset_id: str = ""
+    # Dataset arguments
+    keep_unlabeled_images: bool = False

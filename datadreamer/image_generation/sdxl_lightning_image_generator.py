@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from typing import List, Optional
 
 import torch
@@ -14,6 +15,8 @@ from PIL import Image
 from safetensors.torch import load_file
 
 from datadreamer.image_generation.image_generator import ImageGenerator
+
+logger = logging.getLogger(__name__)
 
 
 class StableDiffusionLightningImageGenerator(ImageGenerator):
@@ -37,7 +40,7 @@ class StableDiffusionLightningImageGenerator(ImageGenerator):
         self.pipe = self._init_gen_model()
         self.compel = self._init_compel()
 
-    def _init_gen_model(self):
+    def _init_gen_model(self) -> StableDiffusionXLPipeline:
         """Initializes the Stable Diffusion Lightning model for image generation.
 
         Returns:
@@ -46,16 +49,15 @@ class StableDiffusionLightningImageGenerator(ImageGenerator):
         base = "stabilityai/stable-diffusion-xl-base-1.0"
         repo = "ByteDance/SDXL-Lightning"
         ckpt = "sdxl_lightning_4step_unet.safetensors"  # Use the correct ckpt for your step setting!
+        config = UNet2DConditionModel.load_config(base, subfolder="unet")
 
-        # Load model.
+        logger.info(f"Initializing SDXL Lightning on {self.device}...")
         if self.device == "cpu":
-            print("Loading SDXL Lightning on CPU...")
-            unet = UNet2DConditionModel.from_config(base, subfolder="unet")
+            unet = UNet2DConditionModel.from_config(config)
             unet.load_state_dict(load_file(hf_hub_download(repo, ckpt)))
             pipe = StableDiffusionXLPipeline.from_pretrained(base, unet=unet)
         else:
-            print("Loading SDXL Lightning on GPU...")
-            unet = UNet2DConditionModel.from_config(base, subfolder="unet").to(
+            unet = UNet2DConditionModel.from_config(config).to(
                 self.device, torch.float16
             )
             unet.load_state_dict(
@@ -73,7 +75,7 @@ class StableDiffusionLightningImageGenerator(ImageGenerator):
 
         return pipe
 
-    def _init_compel(self):
+    def _init_compel(self) -> Compel:
         """Initializes the Compel model for text prompt weighting.
 
         Returns:
@@ -92,7 +94,6 @@ class StableDiffusionLightningImageGenerator(ImageGenerator):
         prompts: List[str],
         negative_prompt: str,
         prompt_objects: Optional[List[List[str]]] = None,
-        batch_size: int = 1,
     ) -> List[Image.Image]:
         """Generates a batch of images using the Stable Diffusion Lightning model based
         on the provided prompts.
@@ -101,7 +102,6 @@ class StableDiffusionLightningImageGenerator(ImageGenerator):
             prompts (List[str]): A list of positive prompts to guide image generation.
             negative_prompt (str): The negative prompt to avoid certain features in the image.
             prompt_objects (Optional[List[List[str]]]): Optional list of objects for each prompt for CLIP model testing.
-            batch_size (int): The number of images to generate in each batch.
 
         Returns:
             List[Image.Image]: A list of generated images.

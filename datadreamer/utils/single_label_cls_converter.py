@@ -1,9 +1,13 @@
 from __future__ import annotations
 
+import logging
 import os
 import shutil
+from typing import Dict, List
 
 from datadreamer.utils import BaseConverter
+
+logger = logging.getLogger(__name__)
 
 
 class SingleLabelClsConverter(BaseConverter):
@@ -29,17 +33,25 @@ class SingleLabelClsConverter(BaseConverter):
     │   ├── class_2
     """
 
-    def __init__(self, seed=42):
+    def __init__(self, seed: int = 42):
         super().__init__(seed)
 
-    def convert(self, dataset_dir, output_dir, split_ratios, copy_files=True):
+    def convert(
+        self,
+        dataset_dir: str,
+        output_dir: str,
+        split_ratios: List[float],
+        keep_unlabeled_images: bool = False,
+        copy_files: bool = True,
+    ) -> None:
         """Converts a dataset into a format suitable for single-label classification.
 
         Args:
-        - dataset_dir (str): The directory where the source dataset is located.
-        - output_dir (str): The directory where the processed dataset should be saved.
-        - split_ratios (list of float): The ratios to split the data into training, validation, and test sets.
-        - copy_files (bool, optional): Whether to copy the source files to the output directory, otherwise move them. Defaults to True.
+            dataset_dir (str): The directory where the source dataset is located.
+            output_dir (str): The directory where the processed dataset should be saved.
+            split_ratios (list of float): The ratios to split the data into training, validation, and test sets.
+            keep_unlabeled_images (bool, optional): Whether to keep images with no annotations. Defaults to False.
+            copy_files (bool, optional): Whether to copy the source files to the output directory, otherwise move them. Defaults to True.
 
         No return value.
         """
@@ -47,16 +59,23 @@ class SingleLabelClsConverter(BaseConverter):
         data = BaseConverter.read_annotations(annotation_path)
         self.process_data(data, dataset_dir, output_dir, split_ratios, copy_files)
 
-    def process_data(self, data, image_dir, output_dir, split_ratios, copy_files=True):
+    def process_data(
+        self,
+        data: Dict,
+        image_dir: str,
+        output_dir: str,
+        split_ratios: List[float],
+        copy_files: bool = True,
+    ) -> None:
         """Processes the data by removing images with multiple labels, then dividing it
         into training and validation sets, and saves the images with single labels.
 
         Args:
-        - data (dict): The dictionary containing image annotations.
-        - image_dir (str): The directory where the source images are located.
-        - output_dir (str): The base directory where the processed data will be saved.
-        - split_ratios (float): The ratio to split the data into training, validation, and test sets.
-        - copy_files (bool, optional): Whether to copy the source files to the output directory, otherwise move them. Defaults to True.
+            data (dict): The dictionary containing image annotations.
+            image_dir (str): The directory where the source images are located.
+            output_dir (str): The base directory where the processed data will be saved.
+            split_ratios (float): The ratio to split the data into training, validation, and test sets.
+            copy_files (bool, optional): Whether to copy the source files to the output directory, otherwise move them. Defaults to True.
 
         No return value.
         """
@@ -64,12 +83,12 @@ class SingleLabelClsConverter(BaseConverter):
         class_names = data["class_names"]
         images.remove("class_names")
 
-        print(f"Number of images: {len(images)}")
+        logger.info(f"Number of images: {len(images)}")
 
         # Remove images with multiple labels
         single_label_images = [img for img in images if len(data[img]["labels"]) == 1]
 
-        print(f"Number of images with single label: {len(single_label_images)}")
+        logger.info(f"Number of images with single label: {len(single_label_images)}")
 
         # Split the data into training, validation, and test sets
         train_images, val_images, test_images = BaseConverter.make_splits(

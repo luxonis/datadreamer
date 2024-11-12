@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import os
 import shutil
+import textwrap
 import uuid
 
 import matplotlib.patches as patches
@@ -10,10 +11,16 @@ import matplotlib.pyplot as plt
 import numpy as np
 import torch
 from box import Box
+from luxonis_ml.data import DATASETS_REGISTRY, LOADERS_REGISTRY
+from luxonis_ml.utils import setup_logging
 from PIL import Image
 from tqdm import tqdm
 
-from datadreamer.dataset_annotation import CLIPAnnotator, OWLv2Annotator
+from datadreamer.dataset_annotation import (
+    CLIPAnnotator,
+    OWLv2Annotator,
+    SlimSAMAnnotator,
+)
 from datadreamer.image_generation import (
     StableDiffusionImageGenerator,
     StableDiffusionLightningImageGenerator,
@@ -22,6 +29,8 @@ from datadreamer.image_generation import (
 from datadreamer.prompt_generation import (
     LMPromptGenerator,
     LMSynonymGenerator,
+    ProfanityFilter,
+    Qwen2LMPromptGenerator,
     SimplePromptGenerator,
     TinyLlamaLMPromptGenerator,
     WordNetSynonymGenerator,
@@ -33,6 +42,7 @@ prompt_generators = {
     "simple": SimplePromptGenerator,
     "lm": LMPromptGenerator,
     "tiny": TinyLlamaLMPromptGenerator,
+    "qwen2": Qwen2LMPromptGenerator,
 }
 
 synonym_generators = {
@@ -48,6 +58,10 @@ image_generators = {
 
 det_annotators = {"owlv2": OWLv2Annotator}
 clf_annotators = {"clip": CLIPAnnotator}
+inst_seg_annotators = {"owlv2-slimsam": SlimSAMAnnotator}
+inst_seg_detectors = {"owlv2-slimsam": OWLv2Annotator}
+
+setup_logging(use_rich=True)
 
 
 def parse_args():
@@ -62,7 +76,7 @@ def parse_args():
     parser.add_argument(
         "--task",
         type=str,
-        choices=["detection", "classification"],
+        choices=["detection", "classification", "instance-segmentation"],
         help="Task to generate data for",
     )
 
@@ -96,8 +110,8 @@ def parse_args():
     parser.add_argument(
         "--prompt_generator",
         type=str,
-        choices=["simple", "lm", "tiny"],
-        help="Prompt generator to use: simple or language model",
+        choices=["simple", "lm", "tiny", "qwen2"],
+        help="Prompt generator to use: simple, lm, tiny, or qwen2 (default).",
     )
     parser.add_argument(
         "--image_generator",
@@ -108,7 +122,7 @@ def parse_args():
     parser.add_argument(
         "--image_annotator",
         type=str,
-        choices=["owlv2", "clip"],
+        choices=["owlv2", "clip", "owlv2-slimsam"],
         help="Image annotator to use",
     )
 
@@ -197,6 +211,20 @@ def parse_args():
     )
 
     parser.add_argument(
+        "--disable_lm_filter",
+        default=None,
+        action="store_true",
+        help="Whether to use only bad words in profanity filter",
+    )
+
+    parser.add_argument(
+        "--keep_unlabeled_images",
+        default=None,
+        action="store_true",
+        help="Whether to keep images without any annotations",
+    )
+
+    parser.add_argument(
         "--batch_size_prompt",
         type=int,
         help="Batch size for prompt generation",
@@ -225,6 +253,24 @@ def parse_args():
         "--config",
         type=str,
         help="Path to the configuration file",
+    )
+
+    parser.add_argument(
+        "--dataset_plugin",
+        type=str,
+        help="LuxonisDataset plugin for the luxonis-dataset format",
+    )
+
+    parser.add_argument(
+        "--loader_plugin",
+        type=str,
+        help="Loader plugin for the LuxonisLoader",
+    )
+
+    parser.add_argument(
+        "--dataset_name",
+        type=str,
+        help="Name of the dataset to create if dataset_plugin or loader_plugin is used",
     )
 
     parser.add_argument(
@@ -291,10 +337,10 @@ def check_args(args):
     if args.lm_quantization != "none" and (
         args.device == "cpu"
         or not torch.cuda.is_available()
-        or args.prompt_generator != "lm"
+        or args.prompt_generator not in ["lm", "qwen2"]
     ):
         raise ValueError(
-            "LM Quantization is only available for CUDA devices and Mistral LM"
+            "LM Quantization is only available for CUDA devices and Mistral/Qwen2.5 prompt generators"
         )
 
     # Check batch_size_prompt
@@ -324,6 +370,14 @@ def check_args(args):
             "--image_annotator must be one of the available annotators for classification task"
         )
 
+    if (
+        args.task == "instance-segmentation"
+        and args.image_annotator not in inst_seg_annotators
+    ):
+        raise ValueError(
+            "--image_annotator must be one of the available annotators for instance segmentation task"
+        )
+
     # Check coorect task and dataset_format
     if args.task == "classification" and args.dataset_format in ["coco", "yolo"]:
         raise ValueError(
@@ -333,6 +387,11 @@ def check_args(args):
     if args.task == "detection" and args.dataset_format in ["cls-single"]:
         raise ValueError(
             "--dataset_format must be one of the available dataset formats for detection task: raw, coco, yolo, luxonis-dataset"
+        )
+
+    if args.task == "instance-segmentation" and args.dataset_format in ["cls-single"]:
+        raise ValueError(
+            "--dataset_format must be one of the available dataset formats for instance segmentation task: raw, coco, yolo, luxonis-dataset"
         )
 
     # Check split_ratios
@@ -345,6 +404,17 @@ def check_args(args):
             "--split_ratios must be a list of three floats that sum up to 1"
         )
 
+    # Check if dataset_plugin is valid
+    if args.dataset_plugin:
+        if args.dataset_format != "luxonis-dataset":
+            raise ValueError(
+                "--dataset_format must be 'luxonis-dataset' if --dataset_plugin is specified"
+            )
+        if args.dataset_plugin not in DATASETS_REGISTRY.module_dict:
+            raise ValueError(
+                f"Invalid dataset plugin: {args.dataset_plugin}. Available plugins: {list(DATASETS_REGISTRY.module_dict.keys())}"
+            )
+
 
 def main():
     args = parse_args()
@@ -354,6 +424,14 @@ def main():
     args = Box(config.model_dump(exclude_none=True, by_alias=True))
     # Check arguments
     check_args(args)
+
+    profanity_filter = ProfanityFilter(
+        seed=args.seed, device=args.device, use_lm=not args.disable_lm_filter
+    )
+    # Check class names for bad words
+    if not profanity_filter.is_safe(args.class_names):
+        raise ValueError(f"Class names: '{args.class_names}' contain bad words!")
+    profanity_filter.release(empty_cuda_cache=True)
 
     # Directories for saving images and bboxes
     save_dir = args.save_dir
@@ -372,6 +450,12 @@ def main():
 
     generated_prompts = None
     image_paths = []
+
+    def split_image_paths(image_paths, batch_size):
+        return [
+            image_paths[i : i + batch_size]
+            for i in range(0, len(image_paths), batch_size)
+        ]
 
     if not args.annotate_only:
         # Prompt generation
@@ -421,12 +505,33 @@ def main():
 
         image_generator.release(empty_cuda_cache=True)
 
+        # Split image_paths into batches
+        image_batches = split_image_paths(image_paths, args.batch_size_annotation)
+
     else:
-        # Load image paths for annotation
-        for image_path in os.listdir(save_dir):
-            # Check file extension: jpg, png, jpeg
-            if image_path.lower().endswith((".jpg", ".png", ".jpeg", ".bmp", "webp")):
-                image_paths.append(os.path.join(save_dir, image_path))
+        if args.loader_plugin:
+            if "DATASET_ID" in os.environ:
+                image_batches = LOADERS_REGISTRY.get(args.loader_plugin)(
+                    view="all",
+                    dataset_id=os.getenv("DATASET_ID"),
+                    sync_target_directory=save_dir,
+                    load_image_paths=True,
+                )
+            else:
+                raise ValueError(
+                    "DATASET_ID environment variable is not set for using the loader plugin"
+                )
+
+        else:
+            # Load image paths for annotation
+            for image_path in os.listdir(save_dir):
+                # Check file extension: jpg, png, jpeg
+                if image_path.lower().endswith(
+                    (".jpg", ".png", ".jpeg", ".bmp", "webp")
+                ):
+                    image_paths.append(os.path.join(save_dir, image_path))
+            # Split image_paths into batches
+            image_batches = split_image_paths(image_paths, args.batch_size_annotation)
 
     # Synonym generation
     synonym_dict = None
@@ -439,27 +544,48 @@ def main():
             synonym_dict, os.path.join(save_dir, "synonyms.json")
         )
 
+    def read_image_batch(image_batch, batch_num, batch_size):
+        if type(image_batch[0]) == np.ndarray:
+            images = []
+            batch_image_paths = []
+            for i, image in enumerate(image_batch[:-1]):
+                image = Image.fromarray(image)
+                unique_id = uuid.uuid4().hex
+                image_path = os.path.join(
+                    save_dir, f"image_{batch_num * batch_size + i}_{unique_id}.jpg"
+                )
+                image.save(image_path)
+                images.append(image)
+                batch_image_paths.append(image_path)
+
+        else:
+            images = [
+                Image.open(image_path).convert("RGB") for image_path in image_batch
+            ]
+            batch_image_paths = image_batch
+        return images, batch_image_paths
+
     boxes_list = []
     scores_list = []
     labels_list = []
+    segment_list = []
+    image_paths = []
 
     if args.task == "classification":
         # Classification annotation
         annotator_class = clf_annotators[args.image_annotator]
         annotator = annotator_class(device=args.device, size=args.annotator_size)
 
-        # Split image_paths into batches
-        image_batches = [
-            image_paths[i : i + args.batch_size_annotation]
-            for i in range(0, len(image_paths), args.batch_size_annotation)
-        ]
-
-        for image_batch in tqdm(
-            image_batches,
+        for i, image_batch in tqdm(
+            enumerate(image_batches),
             desc="Annotating images",
             total=len(image_batches),
         ):
-            images = [Image.open(image_path) for image_path in image_batch]
+            images, batch_image_paths = read_image_batch(
+                image_batch, i, args.batch_size_annotation
+            )
+            image_paths.extend(batch_image_paths)
+
             batch_labels = annotator.annotate_batch(
                 images,
                 args.class_names,
@@ -485,21 +611,27 @@ def main():
                 seed=args.seed,
             )
     else:
-        # Annotation
-        annotator_class = det_annotators[args.image_annotator]
+        # Detection annotation
+        if args.task == "detection":
+            annotator_class = det_annotators[args.image_annotator]
+        else:
+            annotator_class = inst_seg_detectors[args.image_annotator]
+            inst_seg_annotator_class = inst_seg_annotators[args.image_annotator]
+            inst_seg_annotator = inst_seg_annotator_class(
+                device=args.device, size=args.annotator_size
+            )
         annotator = annotator_class(device=args.device, size=args.annotator_size)
 
-        # Split image_paths into batches
-        image_batches = [
-            image_paths[i : i + args.batch_size_annotation]
-            for i in range(0, len(image_paths), args.batch_size_annotation)
-        ]
         for i, image_batch in tqdm(
             enumerate(image_batches),
             desc="Annotating images",
             total=len(image_batches),
         ):
-            images = [Image.open(image_path) for image_path in image_batch]
+            images, batch_image_paths = read_image_batch(
+                image_batch, i, args.batch_size_annotation
+            )
+            image_paths.extend(batch_image_paths)
+
             boxes_batch, scores_batch, local_labels_batch = annotator.annotate_batch(
                 images,
                 args.class_names,
@@ -512,14 +644,31 @@ def main():
             boxes_list.extend(boxes_batch)
             scores_list.extend(scores_batch)
 
+            if args.task == "instance-segmentation":
+                masks_batch = inst_seg_annotator.annotate_batch(
+                    images=images,
+                    boxes_batch=boxes_batch,
+                    iou_threshold=args.annotation_iou_threshold,
+                )
+                segment_list.extend(masks_batch)
+
             for j, image in enumerate(images):
                 labels = []
                 # Save bbox visualizations
                 fig, ax = plt.subplots(1)
                 ax.imshow(image)
-                for box, score, label in zip(
-                    boxes_batch[j], scores_batch[j], local_labels_batch[j]
-                ):
+                for k in range(len(boxes_batch[j])):
+                    box = boxes_batch[j][k]
+                    score = scores_batch[j][k]
+                    label = local_labels_batch[j][k]
+
+                    if args.task == "instance-segmentation":
+                        if k < len(masks_batch[j]):
+                            mask = masks_batch[j][k]
+                            x_points, y_points = zip(*mask)
+
+                            ax.fill(x_points, y_points, label, alpha=0.5)
+
                     labels.append(label)
                     x1, y1, x2, y2 = box
                     rect = patches.Rectangle(
@@ -540,17 +689,21 @@ def main():
                     )
                     # Add prompt text as title
                 if generated_prompts:
-                    plt.title(generated_prompts[i * args.batch_size_annotation + j][1])
+                    title = generated_prompts[i * args.batch_size_annotation + j][1]
+                    wrapped_title = "\n".join(textwrap.wrap(title, width=50))
+                    plt.title(wrapped_title)
                 else:
                     plt.title("Annotated image")
 
                 labels_list.append(np.array(labels))
 
+                plt.axis("off")
                 plt.savefig(
                     os.path.join(
                         bbox_dir, f"bbox_{i * args.batch_size_annotation + j}.jpg"
                     )
                 )
+
                 plt.close()
 
         # Save annotations as JSON files
@@ -558,6 +711,7 @@ def main():
             image_paths=image_paths,
             labels_list=labels_list,
             boxes_list=boxes_list,
+            masks_list=segment_list if len(segment_list) > 0 else None,
             class_names=args.class_names,
             save_dir=save_dir,
         )
@@ -570,6 +724,8 @@ def main():
                 "yolo",
                 args.split_ratios,
                 copy_files=False,
+                is_instance_segmentation=args.task == "instance-segmentation",
+                keep_unlabeled_images=args.keep_unlabeled_images,
                 seed=args.seed,
             )
         # Convert annotations to COCO format
@@ -579,6 +735,8 @@ def main():
                 args.save_dir,
                 "coco",
                 args.split_ratios,
+                is_instance_segmentation=args.task == "instance-segmentation",
+                keep_unlabeled_images=args.keep_unlabeled_images,
                 copy_files=False,
                 seed=args.seed,
             )
@@ -590,6 +748,10 @@ def main():
             args.save_dir,
             "luxonis-dataset",
             args.split_ratios,
+            dataset_plugin=args.dataset_plugin,
+            dataset_name=args.dataset_name,
+            is_instance_segmentation=args.task == "instance-segmentation",
+            keep_unlabeled_images=args.keep_unlabeled_images,
             copy_files=False,
             seed=args.seed,
         )

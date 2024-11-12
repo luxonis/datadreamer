@@ -4,8 +4,6 @@ name: Deploy single image to GAR (Google Artifact Registry)
 
 on:
   workflow_dispatch:
-  release:
-    types: [published]
 env:
   PROJECT_ID: easyml-394818
   GAR_LOCATION: us-central1

@@ -2,16 +2,33 @@ from __future__ import annotations
 
 import argparse
 import json
+import logging
 import os
 import shutil
+from typing import List
+
+logger = logging.getLogger(__name__)
 
 
-def merge_datasets(input_dirs, output_dir, copy_files=True):
+def merge_datasets(
+    input_dirs: List[str], output_dir: str, copy_files: bool = True
+) -> None:
+    """Merges multiple raw datasets into a single dataset.
+
+    Args:
+        input_dirs (List[str]): A list of input directories containing raw datasets.
+        output_dir (str): The output directory where the merged dataset will be saved.
+        copy_files (bool, optional): Whether to copy the files from the input directories
+            to the output directory. Defaults to True.
+
+    No return value.
+    """
+    # Check if all input directories exist
     config_tasks = []
     config_classes = []
     random_seeds = []
     for input_dir in input_dirs:
-        with open(os.path.join(input_dir, "generation_args.json")) as f:
+        with open(os.path.join(input_dir, "generation_args.yaml")) as f:
             generation_args = json.load(f)
         config_tasks.append(generation_args["task"])
         config_classes.append(generation_args["class_names"])
@@ -29,7 +46,7 @@ def merge_datasets(input_dirs, output_dir, copy_files=True):
         raise ValueError("All datasets must have different random seeds")
 
     # Create output directory
-    print(f"Output directory: {output_dir}")
+    logger.info(f"Output directory: {output_dir}")
     if os.path.exists(output_dir):
         shutil.rmtree(output_dir)
     os.makedirs(output_dir)
@@ -45,12 +62,12 @@ def merge_datasets(input_dirs, output_dir, copy_files=True):
         if copy_files:
             shutil.copy(
                 os.path.join(input_dir, "generation_args.yaml"),
-                os.path.join(output_dir, f"generation_args_{i}.json"),
+                os.path.join(output_dir, f"generation_args_{i}.yaml"),
             )
         else:
             shutil.move(
                 os.path.join(input_dir, "generation_args.yaml"),
-                os.path.join(output_dir, f"generation_args_{i}.json"),
+                os.path.join(output_dir, f"generation_args_{i}.yaml"),
             )
 
         # Copy or move images

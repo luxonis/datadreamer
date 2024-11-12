@@ -157,13 +157,13 @@ datadreamer --config <path-to-config>
 
 ### 🔧 Additional Parameters
 
-- `--task`: Choose between detection and classification. Default is `detection`.
+- `--task`: Choose between detection, classification and instance segmentation. Default is `detection`.
 - `--dataset_format`: Format of the dataset. Defaults to `raw`. Supported values: `raw`, `yolo`, `coco`, `luxonis-dataset`, `cls-single`.
 - `--split_ratios`: Split ratios for train, validation, and test sets. Defaults to `[0.8, 0.1, 0.1]`.
 - `--num_objects_range`: Range of objects in a prompt. Default is 1 to 3.
-- `--prompt_generator`: Choose between `simple`, `lm` (language model) and `tiny` (tiny LM). Default is `simple`.
+- `--prompt_generator`: Choose between `simple`, `lm` (Mistral-7B), `tiny` (tiny LM), and `qwen2` (Qwen2.5 LM). Default is `qwen2`.
 - `--image_generator`: Choose image generator, e.g., `sdxl`, `sdxl-turbo` or `sdxl-lightning`. Default is `sdxl-turbo`.
-- `--image_annotator`: Specify the image annotator, like `owlv2` for object detection or `clip` for image classification. Default is `owlv2`.
+- `--image_annotator`: Specify the image annotator, like `owlv2` for object detection or `clip` for image classification or `owlv2-slimsam` for instance segmentation. Default is `owlv2`.
 - `--conf_threshold`: Confidence threshold for annotation. Default is `0.15`.
 - `--annotation_iou_threshold`: Intersection over Union (IoU) threshold for annotation. Default is `0.2`.
 - `--prompt_prefix`: Prefix to add to every image generation prompt. Default is `""`.
@@ -175,6 +175,8 @@ datadreamer --config <path-to-config>
 - `--image_tester_patience`: Patience level for image tester. Default is `1`.
 - `--lm_quantization`: Quantization to use for Mistral language model. Choose between `none` and `4bit`. Default is `none`.
 - `--annotator_size`: Size of the annotator model to use. Choose between `base` and `large`. Default is `base`.
+- `--disable_lm_filter`: Use only a bad word list for profanity filtering. Default is `False`.
+- `--keep_unlabeled_images`: Whether to keep images without any annotations. Default if `False`.
 - `--batch_size_prompt`: Batch size for prompt generation. Default is 64.
 - `--batch_size_annotation`: Batch size for annotation. Default is `1`.
 - `--batch_size_image`: Batch size for image generation. Default is `1`.
@@ -190,12 +192,15 @@ datadreamer --config <path-to-config>
 | ----------------- | ------------------------------------------------------------------------------------- | --------------------------------------- |
 | Prompt Generation | [Mistral-7B-Instruct-v0.1](https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.1) | Semantically rich prompts               |
 |                   | [TinyLlama-1.1B-Chat-v1.0](https://huggingface.co/TinyLlama/TinyLlama-1.1B-Chat-v1.0) | Tiny LM                                 |
+|                   | [Qwen2.5-1.5B-Instruct](https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct)            | Qwen2.5 LM                              |
 |                   | Simple random generator                                                               | Joins randomly chosen object names      |
+| Profanity Filter  | [Qwen2.5-1.5B-Instruct](https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct)            | Fast and accurate LM profanity filter   |
 | Image Generation  | [SDXL-1.0](https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0)           | Slow and accurate (1024x1024 images)    |
 |                   | [SDXL-Turbo](https://huggingface.co/stabilityai/sdxl-turbo)                           | Fast and less accurate (512x512 images) |
 |                   | [SDXL-Lightning](https://huggingface.co/ByteDance/SDXL-Lightning)                     | Fast and accurate (1024x1024 images)    |
 | Image Annotation  | [OWLv2](https://huggingface.co/google/owlv2-base-patch16-ensemble)                    | Open-Vocabulary object detector         |
 |                   | [CLIP](https://huggingface.co/openai/clip-vit-base-patch32)                           | Zero-shot-image-classification          |
+|                   | [SlimSAM](https://huggingface.co/Zigeng/SlimSAM-uniform-50)                           | Zero-shot-instance-segmentation         |
 
 <a name="example"></a>
 
@@ -268,6 +273,23 @@ save_dir/
 }
 ```
 
+3. Instance Segmentation Annotations (instance_segmentation_annotations.json):
+
+- Each entry corresponds to an image and contains bounding boxes, masks and labels for objects in the image.
+- Format:
+
+```bash
+{
+  "image_path": {
+    "boxes": [[x_min, y_min, x_max, y_max], ...],
+    "masks": [[[x0, y0],[x1, y1],...], [[x0, y0],[x1, y1],...], ....]
+    "labels": [label_index, ...]
+  },
+  ...
+  "class_names": ["class1", "class2", ...]
+}
+```
+
 <a name="limitations"></a>
 
 ## ⚠️ Limitations
@@ -292,7 +314,7 @@ The above license does not cover the models. Please see the license of each mode
 
 ## 🙏 Acknowledgements
 
-This library was made possible by the use of several open-source projects, including Transformers, Diffusers, and others listed in the requirements.txt.
+This library was made possible by the use of several open-source projects, including Transformers, Diffusers, and others listed in the requirements.txt. Furthermore, we utilized a bad words list from [`@coffeeandfun/google-profanity-words`](https://github.com/coffee-and-fun/google-profanity-words) Node.js module created by Robert James Gabriel from Coffee & Fun LLC.
 
 [SD-XL 1.0 License](https://github.com/Stability-AI/generative-models/blob/main/model_licenses/LICENSE-SDXL1.0)
 [SDXL-Turbo License](https://github.com/Stability-AI/generative-models/blob/main/model_licenses/LICENSE-SDXL-Turbo)

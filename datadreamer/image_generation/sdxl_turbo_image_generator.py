@@ -1,12 +1,16 @@
 from __future__ import annotations
 
+import logging
 from typing import List, Optional
 
 import torch
+from compel import Compel, ReturnedEmbeddingsType
 from diffusers import AutoPipelineForText2Image
 from PIL import Image
 
 from datadreamer.image_generation.image_generator import ImageGenerator
+
+logger = logging.getLogger(__name__)
 
 
 class StableDiffusionTurboImageGenerator(ImageGenerator):
@@ -27,15 +31,16 @@ class StableDiffusionTurboImageGenerator(ImageGenerator):
         arguments."""
         super().__init__(*args, **kwargs)
         self.base = self._init_gen_model()
+        self.compel = self._init_compel()
 
-    def _init_gen_model(self):
+    def _init_gen_model(self) -> AutoPipelineForText2Image:
         """Initializes the Stable Diffusion Turbo model for image generation.
 
         Returns:
             AutoPipelineForText2Image: The initialized Stable Diffusion Turbo model.
         """
+        logger.info(f"Initializing SDXL Turbo on {self.device}...")
         if self.device == "cpu":
-            print("Loading SDXL Turbo on CPU...")
             base = AutoPipelineForText2Image.from_pretrained(
                 "stabilityai/sdxl-turbo",
                 # variant="fp16",
@@ -44,7 +49,6 @@ class StableDiffusionTurboImageGenerator(ImageGenerator):
             )
             base.to("cpu")
         else:
-            print("Loading SDXL Turbo on GPU...")
             base = AutoPipelineForText2Image.from_pretrained(
                 "stabilityai/sdxl-turbo",
                 torch_dtype=torch.float16,
@@ -54,6 +58,20 @@ class StableDiffusionTurboImageGenerator(ImageGenerator):
             base.enable_model_cpu_offload()
 
         return base
+
+    def _init_compel(self) -> Compel:
+        """Initializes the Compel model for text prompt weighting.
+
+        Returns:
+            Compel: The initialized Compel model.
+        """
+        compel = Compel(
+            tokenizer=[self.base.tokenizer, self.base.tokenizer_2],
+            text_encoder=[self.base.text_encoder, self.base.text_encoder_2],
+            returned_embeddings_type=ReturnedEmbeddingsType.PENULTIMATE_HIDDEN_STATES_NON_NORMALIZED,
+            requires_pooled=[False, True],
+        )
+        return compel
 
     def generate_images_batch(
         self,
@@ -74,9 +92,18 @@ class StableDiffusionTurboImageGenerator(ImageGenerator):
         Returns:
             List[Image.Image]: A list of generated images.
         """
+        if prompt_objects is not None:
+            for i in range(len(prompt_objects)):
+                for obj in prompt_objects[i]:
+                    prompts[i] = prompts[i].replace(obj, f"({obj})1.5", 1)
+
+        conditioning, pooled = self.compel(prompts)
+        conditioning_neg, pooled_neg = self.compel([negative_prompt] * len(prompts))
         images = self.base(
-            prompt=prompts,
-            negative_prompt=negative_prompt,
+            prompt_embeds=conditioning,
+            pooled_prompt_embeds=pooled,
+            negative_prompt_embeds=conditioning_neg,
+            negative_pooled_prompt_embeds=pooled_neg,
             guidance_scale=0.0,
             num_inference_steps=4,
         ).images
