@@ -50,4 +50,4 @@ class Config(LuxonisConfig):
     dataset_name: str = ""
     dataset_id: str = ""
     # Dataset arguments
-    keep_empty_images: bool = False
+    keep_unlabeled_images: bool = False

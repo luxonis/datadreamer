@@ -176,7 +176,7 @@ datadreamer --config <path-to-config>
 - `--lm_quantization`: Quantization to use for Mistral language model. Choose between `none` and `4bit`. Default is `none`.
 - `--annotator_size`: Size of the annotator model to use. Choose between `base` and `large`. Default is `base`.
 - `--disable_lm_filter`: Use only a bad word list for profanity filtering. Default is `False`.
-- `--keep_empty_images`: Whether to keep images without any annotations. Default if `False`.
+- `--keep_unlabeled_images`: Whether to keep images without any annotations. Default if `False`.
 - `--batch_size_prompt`: Batch size for prompt generation. Default is 64.
 - `--batch_size_annotation`: Batch size for annotation. Default is `1`.
 - `--batch_size_image`: Batch size for image generation. Default is `1`.

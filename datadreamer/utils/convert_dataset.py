@@ -19,7 +19,7 @@ def convert_dataset(
     dataset_plugin: Optional[str] = None,
     dataset_name: Optional[str] = None,
     is_instance_segmentation: bool = False,
-    keep_empty_images: bool = False,
+    keep_unlabeled_images: bool = False,
     copy_files: bool = True,
     seed: int = 42,
 ) -> None:
@@ -33,7 +33,7 @@ def convert_dataset(
         dataset_plugin (str, optional): Plugin for Luxonis dataset. Defaults to None.
         dataset_name (str, optional): Name of the Luxonis dataset. Defaults to None.
         is_instance_segmentation (bool, optional): Whether the dataset is for instance segmentation. Defaults to False.
-        keep_empty_images (bool, optional): Whether to keep images with no annotations. Defaults to False.
+        keep_unlabeled_images (bool, optional): Whether to keep images with no annotations. Defaults to False.
         copy_files (bool, optional): Whether to copy the files to the output directory. Defaults to True.
         seed (int, optional): Random seed. Defaults to 42.
 
@@ -61,7 +61,7 @@ def convert_dataset(
         raise ValueError(f"Invalid dataset format: {dataset_format}")
 
     converter.convert(
-        input_dir, output_dir, split_ratios, keep_empty_images, copy_files
+        input_dir, output_dir, split_ratios, keep_unlabeled_images, copy_files
     )
 
 
@@ -108,7 +108,7 @@ def main():
         help="Whether the dataset is for instance segmentation.",
     )
     parser.add_argument(
-        "--keep_empty_images",
+        "--keep_unlabeled_images",
         default=None,
         action="store_true",
         help="Whether to keep images without any annotations",
@@ -136,7 +136,7 @@ def main():
         dataset_plugin=args.dataset_plugin,
         dataset_name=args.dataset_name,
         is_instance_segmentation=args.is_instance_segmentation,
-        keep_empty_images=args.keep_empty_images,
+        keep_unlabeled_images=args.keep_unlabeled_images,
         copy_files=args.copy_files,
         seed=args.seed,
     )
