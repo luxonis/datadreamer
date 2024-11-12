@@ -56,7 +56,7 @@ class SlimSAMAnnotator(BaseAnnotator):
         Returns:
             SamModel: The initialized SAM model.
         """
-        logger.info(f"Initializing `SlimSAM {self.size} model...")
+        logger.info(f"Initializing SlimSAM {self.size} model...")
         if self.size == "large":
             return SamModel.from_pretrained("Zigeng/SlimSAM-uniform-50")
         return SamModel.from_pretrained("Zigeng/SlimSAM-uniform-77")

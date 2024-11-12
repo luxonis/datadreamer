@@ -218,6 +218,13 @@ def parse_args():
     )
 
     parser.add_argument(
+        "--keep_unlabeled_images",
+        default=None,
+        action="store_true",
+        help="Whether to keep images without any annotations",
+    )
+
+    parser.add_argument(
         "--batch_size_prompt",
         type=int,
         help="Batch size for prompt generation",
@@ -718,6 +725,7 @@ def main():
                 args.split_ratios,
                 copy_files=False,
                 is_instance_segmentation=args.task == "instance-segmentation",
+                keep_unlabeled_images=args.keep_unlabeled_images,
                 seed=args.seed,
             )
         # Convert annotations to COCO format
@@ -728,6 +736,7 @@ def main():
                 "coco",
                 args.split_ratios,
                 is_instance_segmentation=args.task == "instance-segmentation",
+                keep_unlabeled_images=args.keep_unlabeled_images,
                 copy_files=False,
                 seed=args.seed,
             )
@@ -742,6 +751,7 @@ def main():
             dataset_plugin=args.dataset_plugin,
             dataset_name=args.dataset_name,
             is_instance_segmentation=args.task == "instance-segmentation",
+            keep_unlabeled_images=args.keep_unlabeled_images,
             copy_files=False,
             seed=args.seed,
         )

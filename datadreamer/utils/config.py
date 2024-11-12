@@ -49,3 +49,5 @@ class Config(LuxonisConfig):
     loader_plugin: str = ""
     dataset_name: str = ""
     dataset_id: str = ""
+    # Dataset arguments
+    keep_unlabeled_images: bool = False

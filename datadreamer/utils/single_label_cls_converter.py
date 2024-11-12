@@ -41,6 +41,7 @@ class SingleLabelClsConverter(BaseConverter):
         dataset_dir: str,
         output_dir: str,
         split_ratios: List[float],
+        keep_unlabeled_images: bool = False,
         copy_files: bool = True,
     ) -> None:
         """Converts a dataset into a format suitable for single-label classification.
@@ -49,6 +50,7 @@ class SingleLabelClsConverter(BaseConverter):
             dataset_dir (str): The directory where the source dataset is located.
             output_dir (str): The directory where the processed dataset should be saved.
             split_ratios (list of float): The ratios to split the data into training, validation, and test sets.
+            keep_unlabeled_images (bool, optional): Whether to keep images with no annotations. Defaults to False.
             copy_files (bool, optional): Whether to copy the source files to the output directory, otherwise move them. Defaults to True.
 
         No return value.

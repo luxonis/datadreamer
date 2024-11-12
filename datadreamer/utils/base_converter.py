@@ -14,13 +14,21 @@ class BaseConverter(ABC):
         np.random.seed(seed)
 
     @abstractmethod
-    def convert(self, dataset_dir, output_dir, split_ratios, copy_files=True) -> None:
+    def convert(
+        self,
+        dataset_dir: str,
+        output_dir: str,
+        split_ratios: List[float],
+        keep_unlabeled_images: bool = False,
+        copy_files: bool = True,
+    ) -> None:
         """Converts a dataset into another format.
 
         Args:
             dataset_dir (str): The directory where the source dataset is located.
             output_dir (str): The directory where the processed dataset should be saved.
             split_ratios (list of float): The ratios to split the data into training, validation, and test sets.
+            keep_unlabeled_images (bool, optional): Whether to keep images with no annotations. Defaults to False.
             copy_files (bool, optional): Whether to copy the source files to the output directory, otherwise move them. Defaults to True.
 
         No return value.
@@ -28,7 +36,7 @@ class BaseConverter(ABC):
         pass
 
     @staticmethod
-    def read_annotations(annotation_path) -> Dict:
+    def read_annotations(annotation_path: str) -> Dict:
         """Reads annotations from a JSON file located at the specified path.
 
         Args:
@@ -42,7 +50,9 @@ class BaseConverter(ABC):
         return data
 
     @staticmethod
-    def make_splits(images, split_ratios, shuffle=True) -> Tuple[List, List, List]:
+    def make_splits(
+        images: List[str], split_ratios: List[float], shuffle: bool = True
+    ) -> Tuple[List, List, List]:
         """Splits the list of images into training, validation, and test sets.
 
         Args:
