@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 import os
 import shutil
 from typing import Dict, List
@@ -8,6 +9,8 @@ import numpy as np
 from PIL import Image
 
 from datadreamer.utils import BaseConverter
+
+logger = logging.getLogger(__name__)
 
 
 class YOLOConverter(BaseConverter):
@@ -40,6 +43,7 @@ class YOLOConverter(BaseConverter):
         dataset_dir: str,
         output_dir: str,
         split_ratios: List[float],
+        keep_empty_images: bool = False,
         copy_files: bool = True,
     ):
         """Converts a dataset into a format suitable for training with YOLO, including
@@ -49,13 +53,16 @@ class YOLOConverter(BaseConverter):
             dataset_dir (str): The directory where the source dataset is located.
             output_dir (str): The directory where the processed dataset should be saved.
             split_ratios (list of float): The ratios to split the data into training, validation, and test sets.
+            keep_empty_images (bool, optional): Whether to keep images with no annotations. Defaults to False.
             copy_files (bool, optional): Whether to copy the source files to the output directory, otherwise move them. Defaults to True.
 
         No return value.
         """
         annotation_path = os.path.join(dataset_dir, "annotations.json")
         data = BaseConverter.read_annotations(annotation_path)
-        self.process_data(data, dataset_dir, output_dir, split_ratios, copy_files)
+        self.process_data(
+            data, dataset_dir, output_dir, split_ratios, keep_empty_images, copy_files
+        )
 
     def convert_to_yolo_format(
         self, box: List[float], image_width: int, image_height: int
@@ -97,6 +104,7 @@ class YOLOConverter(BaseConverter):
         image_dir: str,
         output_dir: str,
         split_ratios: List[float],
+        keep_empty_images: bool = False,
         copy_files: bool = True,
     ) -> None:
         """Processes the data by dividing it into training and validation sets, and
@@ -107,13 +115,25 @@ class YOLOConverter(BaseConverter):
             image_dir (str): The directory where the source images are located.
             output_dir (str): The base directory where the processed data will be saved.
             split_ratios (float): The ratio to split the data into training, validation, and test sets.
+            keep_empty_images (bool, optional): Whether to keep images with no annotations. Defaults to False.
             copy_files (bool, optional): Whether to copy the source files to the output directory, otherwise move them. Defaults to True.
-
 
         No return value.
         """
         images = list(data.keys())
         images.remove("class_names")
+
+        empty_images = list(filter(lambda x: len(data[x]["labels"]) == 0, images))
+        if keep_empty_images and len(empty_images) > 0:
+            logger.warning(
+                f"{len(empty_images)} images with no annotations will be included in the dataset."
+            )
+        elif not keep_empty_images and len(empty_images) > 0:
+            logger.info(
+                f"{len(empty_images)} images with no annotations will be excluded from the dataset."
+            )
+            for image in empty_images:
+                images.remove(image)
 
         train_images, val_images, test_images = BaseConverter.make_splits(
             images, split_ratios

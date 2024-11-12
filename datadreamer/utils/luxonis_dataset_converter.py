@@ -38,6 +38,7 @@ class LuxonisDatasetConverter(BaseConverter):
         dataset_dir: str,
         output_dir: str,
         split_ratios: List[float],
+        keep_empty_images: bool = False,
         copy_files: bool = True,
     ) -> None:
         """Converts a dataset into a LuxonisDataset format.
@@ -46,16 +47,24 @@ class LuxonisDatasetConverter(BaseConverter):
             dataset_dir (str): The directory where the source dataset is located.
             output_dir (str): The directory where the processed dataset should be saved.
             split_ratios (list of float): The ratios to split the data into training, validation, and test sets.
+            keep_empty_images (bool, optional): Whether to keep images with no annotations. Defaults to False.
             copy_files (bool, optional): Whether to copy the source files to the output directory, otherwise move them. Defaults to True.
 
         No return value.
         """
         annotation_path = os.path.join(dataset_dir, "annotations.json")
         data = BaseConverter.read_annotations(annotation_path)
-        self.process_data(data, dataset_dir, output_dir, split_ratios)
+        self.process_data(
+            data, dataset_dir, output_dir, split_ratios, keep_empty_images
+        )
 
     def process_data(
-        self, data: Dict, dataset_dir: str, output_dir: str, split_ratios: List[float]
+        self,
+        data: Dict,
+        dataset_dir: str,
+        output_dir: str,
+        split_ratios: List[float],
+        keep_empty_images: bool = False,
     ) -> None:
         """Processes the data into LuxonisDataset format.
 
@@ -81,7 +90,10 @@ class LuxonisDatasetConverter(BaseConverter):
                 width, height = Image.open(image_full_path).size
                 labels = data[image_path]["labels"]
 
-                if len(labels) == 0:
+                if len(labels) == 0 and keep_empty_images:
+                    logger.warning(
+                        f"Image {image_path} has no annotations. Training on empty images with `luxonis-train` will result in an error."
+                    )
                     yield {
                         "file": image_full_path,
                     }
@@ -161,4 +173,13 @@ class LuxonisDatasetConverter(BaseConverter):
             dataset = LuxonisDataset(dataset_name)
 
         dataset.add(dataset_generator())
+
+        if not keep_empty_images:
+            n_empty_images = len(
+                list(filter(lambda x: len(data[x]["labels"]) == 0, image_paths))
+            )
+            if n_empty_images > 0:
+                logger.info(
+                    f"Removed {n_empty_images} empty images with no annotations from the dataset."
+                )
         dataset.make_splits(tuple(split_ratios))
