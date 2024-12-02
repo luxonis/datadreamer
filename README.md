@@ -32,6 +32,24 @@ datadreamer --class_names person moon robot
 
 - **Efficient and Potent Models**: The primary objective of `DataDreamer` is to enable the creation of compact models that are both size-efficient for integration into any device and robust in performance for specialized tasks.
 
+### ✨ New: Pre-annotate Real Data with DataDreamer
+
+DataDreamer helps you accelerate your annotation process by pre-annotating real data with minimal effort. Simply provide your dataset, and DataDreamer generates high-quality initial annotations for further refinement.
+
+Available tasks are: classification, object detection, and instance segmentation.
+
+<img src='images/dumplings_seg_preannotation.gif' align="center">
+
+#### Example
+
+Run the following to pre-annotate images in your dataset:
+
+```bash
+datadreamer --save_dir dataset_path --class_names dumpling --annotate_only
+```
+
+📚 **Tutorial**: [Training a Semantic Segmentation Model using luxonis-train and DataDreamer](https://github.com/luxonis/depthai-ml-training/blob/main/training/luxonis-train/train_semantic_segmentation_model_datadreamer.ipynb)
+
 ## 📜 Table of contents
 
 - [🚀 Quickstart](#quickstart)
