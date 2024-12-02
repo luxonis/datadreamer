@@ -38,7 +38,7 @@ datadreamer --class_names person moon robot
 
 Available tasks: classification, object detection, and instance segmentation.
 
-<img src='images/dumplings_seg_preannotation.gif' align="center">
+<img src='https://raw.githubusercontent.com/luxonis/datadreamer/main/images/dumplings_seg_preannotation.gif' align="center">
 
 #### Example
 
