@@ -34,9 +34,9 @@ datadreamer --class_names person moon robot
 
 ### ✨ New: Pre-annotate Real Data with DataDreamer
 
-DataDreamer helps you accelerate your annotation process by pre-annotating real data with minimal effort. Simply provide your dataset, and DataDreamer generates high-quality initial annotations for further refinement.
+`DataDreamer` helps you accelerate your annotation process by pre-annotating real data with minimal effort. Simply provide your dataset, and `DataDreamer` generates high-quality initial annotations for further refinement.
 
-Available tasks are: classification, object detection, and instance segmentation.
+Available tasks: classification, object detection, and instance segmentation.
 
 <img src='images/dumplings_seg_preannotation.gif' align="center">
 
