@@ -45,7 +45,7 @@ Available tasks: classification, object detection, and instance segmentation.
 Run the following to pre-annotate images in your dataset:
 
 ```bash
-datadreamer --save_dir dataset_path --class_names dumpling --annotate_only
+datadreamer --task instance-segmentation --image_annotator owlv2-slimsam --save_dir dataset_path --class_names dumpling --annotate_only
 ```
 
 📚 **Tutorial**: [Training a Semantic Segmentation Model using luxonis-train and DataDreamer](https://github.com/luxonis/depthai-ml-training/blob/main/training/luxonis-train/train_semantic_segmentation_model_datadreamer.ipynb)
@@ -175,7 +175,7 @@ datadreamer --config <path-to-config>
 
 ### 🔧 Additional Parameters
 
-- `--task`: Choose between detection, classification and instance segmentation. Default is `detection`.
+- `--task`: Choose between `detection`, `classification` and `instance-segmentation`. Default is `detection`.
 - `--dataset_format`: Format of the dataset. Defaults to `raw`. Supported values: `raw`, `yolo`, `coco`, `luxonis-dataset`, `cls-single`.
 - `--split_ratios`: Split ratios for train, validation, and test sets. Defaults to `[0.8, 0.1, 0.1]`.
 - `--num_objects_range`: Range of objects in a prompt. Default is 1 to 3.
