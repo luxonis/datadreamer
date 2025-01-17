@@ -1,3 +1,11 @@
+"""This file uses pre-trained model derived from Apple's software, provided under the
+Apple Sample Code License license. The license is available at:
+
+https://developer.apple.com/support/downloads/terms/apple-sample-code/Apple-Sample-Code-License.pdf
+
+In addition, this file and other parts of the repository are licensed under the Apache 2.0
+License. By using this file, you agree to comply with the terms of both licenses.
+"""
 from __future__ import annotations
 
 import logging
