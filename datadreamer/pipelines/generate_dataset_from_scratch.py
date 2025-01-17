@@ -17,6 +17,7 @@ from PIL import Image
 from tqdm import tqdm
 
 from datadreamer.dataset_annotation import (
+    AIMv2Annotator,
     CLIPAnnotator,
     OWLv2Annotator,
     SlimSAMAnnotator,
@@ -57,7 +58,7 @@ image_generators = {
 }
 
 det_annotators = {"owlv2": OWLv2Annotator}
-clf_annotators = {"clip": CLIPAnnotator}
+clf_annotators = {"clip": CLIPAnnotator, "aimv2": AIMv2Annotator}
 inst_seg_annotators = {"owlv2-slimsam": SlimSAMAnnotator}
 inst_seg_detectors = {"owlv2-slimsam": OWLv2Annotator}
 
@@ -122,7 +123,7 @@ def parse_args():
     parser.add_argument(
         "--image_annotator",
         type=str,
-        choices=["owlv2", "clip", "owlv2-slimsam"],
+        choices=["owlv2", "clip", "owlv2-slimsam", "aimv2"],
         help="Image annotator to use",
     )
 

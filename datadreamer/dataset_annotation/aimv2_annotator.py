@@ -7,26 +7,26 @@ import numpy as np
 import PIL
 import torch
 from PIL import Image
-from transformers import CLIPModel, CLIPProcessor
+from transformers import AutoModel, AutoProcessor
 
 from datadreamer.dataset_annotation.image_annotator import BaseAnnotator, TaskList
 
 logger = logging.getLogger(__name__)
 
 
-class CLIPAnnotator(BaseAnnotator):
-    """A class for image annotation using the CLIP model, specializing in image
+class AIMv2Annotator(BaseAnnotator):
+    """A class for image annotation using the AIMv2 model, specializing in image
     classification.
 
     Attributes:
-        model (CLIPModel): The CLIP model for image-text similarity evaluation.
-        processor (CLIPProcessor): The processor for preparing inputs to the CLIP model.
+        model (AutoModel): The AIMv2 model for image-text similarity evaluation.
+        processor (AutoProcessor): The processor for preparing inputs to the AIMv2 model.
         device (str): The device on which the model will run ('cuda' for GPU, 'cpu' for CPU).
-        size (str): The size of the CLIP model to use ('base' or 'large').
+        size (str): The size of the AIMv2 model to use ('base' or 'large').
 
     Methods:
-        _init_processor(): Initializes the CLIP processor.
-        _init_model(): Initializes the CLIP model.
+        _init_processor(): Initializes the AIMv2 processor.
+        _init_model(): Initializes the AIMv2 model.
         annotate_batch(image, prompts, conf_threshold, use_tta, synonym_dict): Annotates the given image with bounding boxes and labels.
         release(empty_cuda_cache): Releases resources and optionally empties the CUDA cache.
     """
@@ -37,7 +37,7 @@ class CLIPAnnotator(BaseAnnotator):
         device: str = "cuda",
         size: str = "base",
     ) -> None:
-        """Initializes the CLIPAnnotator with a specific seed and device.
+        """Initializes the AIMv2Annotator with a specific seed and device.
 
         Args:
             seed (float): Seed for reproducibility. Defaults to 42.
@@ -50,26 +50,24 @@ class CLIPAnnotator(BaseAnnotator):
         self.device = device
         self.model.to(self.device)
 
-    def _init_processor(self) -> CLIPProcessor:
-        """Initializes the CLIP processor.
+    def _init_processor(self) -> AutoProcessor:
+        """Initializes the AIMv2 processor.
 
         Returns:
-            CLIPProcessor: The initialized CLIP processor.
+            AutoProcessor: The initialized AIMv2 processor.
         """
-        if self.size == "large":
-            return CLIPProcessor.from_pretrained("openai/clip-vit-large-patch14")
-        return CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32")
+        return AutoProcessor.from_pretrained("apple/aimv2-large-patch14-224-lit")
 
-    def _init_model(self) -> CLIPModel:
-        """Initializes the CLIP model.
+    def _init_model(self) -> AutoModel:
+        """Initializes the AIMv2 model.
 
         Returns:
-            CLIPModel: The initialized CLIP model.
+            AutoModel: The initialized AIMv2 model.
         """
-        logger.info(f"Initializing CLIP {self.size} model...")
-        if self.size == "large":
-            return CLIPModel.from_pretrained("openai/clip-vit-large-patch14")
-        return CLIPModel.from_pretrained("openai/clip-vit-base-patch32")
+        logger.info(f"Initializing AIMv2 {self.size} model...")
+        return AutoModel.from_pretrained(
+            "apple/aimv2-large-patch14-224-lit", trust_remote_code=True
+        )
 
     def annotate_batch(
         self,
@@ -78,7 +76,7 @@ class CLIPAnnotator(BaseAnnotator):
         conf_threshold: float = 0.1,
         synonym_dict: Dict[str, List[str]] | None = None,
     ) -> List[np.ndarray]:
-        """Annotates images using the CLIP model.
+        """Annotates images using the AIMv2 model.
 
         Args:
             images: The images to be annotated.
@@ -154,7 +152,7 @@ if __name__ == "__main__":
     device = "cuda" if torch.cuda.is_available() else "cpu"
     url = "https://ultralytics.com/images/bus.jpg"
     im = Image.open(requests.get(url, stream=True).raw)
-    annotator = CLIPAnnotator(device=device)
+    annotator = AIMv2Annotator(device=device)
     labels = annotator.annotate_batch([im], ["bus", "people"])
     print(labels)
     annotator.release()
