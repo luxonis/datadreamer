@@ -54,7 +54,6 @@ class Shuttle3DiffusionImageGenerator(ImageGenerator):
             total_vram = torch.cuda.get_device_properties(gpu_id).total_memory / (
                 1024**3
             )
-            print(total_vram)
             if total_vram < 25:
                 logger.info("Quantizing the model because VRAM is less than 25 GB...")
 
@@ -130,11 +129,11 @@ if __name__ == "__main__":
     )
     prompts = [
         "A photo of a bicycle pedaling alongside an aeroplane.",
-        "A photo of a dragonfly flying in the sky.",
+        #"A photo of a dragonfly flying in the sky.",
         "A photo of a dog walking in the park.",
         "A photo of an alien exploring the galaxy.",
         "A photo of a robot working on a computer.",
-    ]
+    ] * 128
 
     image_paths = []
     counter = 0
