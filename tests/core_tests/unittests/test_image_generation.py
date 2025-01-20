@@ -9,6 +9,7 @@ import torch
 from PIL import Image
 
 from datadreamer.image_generation import (
+    Shuttle3DiffusionImageGenerator,
     StableDiffusionImageGenerator,
     StableDiffusionLightningImageGenerator,
     StableDiffusionTurboImageGenerator,
@@ -70,6 +71,7 @@ def _check_image_generator(
             StableDiffusionImageGenerator,
             StableDiffusionTurboImageGenerator,
             StableDiffusionLightningImageGenerator,
+            Shuttle3DiffusionImageGenerator,
         ]
     ],
     device: str,
@@ -111,3 +113,19 @@ def test_cuda_sdxl_turbo_image_generator():
 )
 def test_cpu_sdxl_turbo_image_generator():
     _check_image_generator(StableDiffusionTurboImageGenerator, "cpu")
+
+
+@pytest.mark.skipif(
+    not torch.cuda.is_available() or total_memory < 16 or total_disk_space < 25,
+    reason="Test requires GPU, at least 16GB of RAM and 25GB of HDD",
+)
+def test_cuda_shuttle_3_image_generator():
+    _check_image_generator(Shuttle3DiffusionImageGenerator, "cuda")
+
+
+@pytest.mark.skipif(
+    total_memory < 16 or total_disk_space < 25,
+    reason="Test requires at least 16GB of RAM and 25GB of HDD",
+)
+def test_cpu_shuttle_3_image_generator():
+    _check_image_generator(Shuttle3DiffusionImageGenerator, "cpu")

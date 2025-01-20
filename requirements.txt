@@ -15,3 +15,5 @@ nltk>=3.8.1
 luxonis-ml[all]>=0.5.0
 python-box>=7.1.1
 gcsfs>=2023.1.0
+sentencepiece>=0.2.0
+optimum-quanto>=0.2.6

@@ -23,6 +23,7 @@ from datadreamer.dataset_annotation import (
     SlimSAMAnnotator,
 )
 from datadreamer.image_generation import (
+    Shuttle3DiffusionImageGenerator,
     StableDiffusionImageGenerator,
     StableDiffusionLightningImageGenerator,
     StableDiffusionTurboImageGenerator,
@@ -55,6 +56,7 @@ image_generators = {
     "sdxl": StableDiffusionImageGenerator,
     "sdxl-turbo": StableDiffusionTurboImageGenerator,
     "sdxl-lightning": StableDiffusionLightningImageGenerator,
+    "shuttle-3": Shuttle3DiffusionImageGenerator,
 }
 
 det_annotators = {"owlv2": OWLv2Annotator}
@@ -117,7 +119,7 @@ def parse_args():
     parser.add_argument(
         "--image_generator",
         type=str,
-        choices=["sdxl", "sdxl-turbo", "sdxl-lightning"],
+        choices=["sdxl", "sdxl-turbo", "sdxl-lightning", "shuttle-3"],
         help="Image generator to use",
     )
     parser.add_argument(
