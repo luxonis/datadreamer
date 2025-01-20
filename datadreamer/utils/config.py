@@ -29,7 +29,9 @@ class Config(LuxonisConfig):
     lm_quantization: Literal["none", "4bit"] = "none"
     batch_size_prompt: int = 64
     # Image generation arguments
-    image_generator: Literal["sdxl", "sdxl-turbo", "sdxl-lightning"] = "sdxl-turbo"
+    image_generator: Literal[
+        "sdxl", "sdxl-turbo", "sdxl-lightning", "shuttle-3"
+    ] = "sdxl-turbo"
     prompt_prefix: str = ""
     prompt_suffix: str = ", hd, 8k, highly detailed"
     negative_prompt: str = "cartoon, blue skin, painting, scrispture, golden, illustration, worst quality, low quality, normal quality:2, unrealistic dream, low resolution, static, sd character, low quality, low resolution, greyscale, monochrome, nose, cropped, lowres, jpeg artifacts, deformed iris, deformed pupils, bad eyes, semi-realistic worst quality, bad lips, deformed mouth, deformed face, deformed fingers, bad anatomy"

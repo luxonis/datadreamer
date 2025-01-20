@@ -180,7 +180,7 @@ datadreamer --config <path-to-config>
 - `--split_ratios`: Split ratios for train, validation, and test sets. Defaults to `[0.8, 0.1, 0.1]`.
 - `--num_objects_range`: Range of objects in a prompt. Default is 1 to 3.
 - `--prompt_generator`: Choose between `simple`, `lm` (Mistral-7B), `tiny` (tiny LM), and `qwen2` (Qwen2.5 LM). Default is `qwen2`.
-- `--image_generator`: Choose image generator, e.g., `sdxl`, `sdxl-turbo` or `sdxl-lightning`. Default is `sdxl-turbo`.
+- `--image_generator`: Choose image generator, e.g., `sdxl`, `sdxl-turbo`, `sdxl-lightning` or `shuttle-3`. Default is `sdxl-turbo`.
 - `--image_annotator`: Specify the image annotator, like `owlv2` for object detection or `clip` for image classification or `owlv2-slimsam` for instance segmentation. Default is `owlv2`.
 - `--conf_threshold`: Confidence threshold for annotation. Default is `0.15`.
 - `--annotation_iou_threshold`: Intersection over Union (IoU) threshold for annotation. Default is `0.2`.
@@ -216,6 +216,7 @@ datadreamer --config <path-to-config>
 | Image Generation  | [SDXL-1.0](https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0)           | Slow and accurate (1024x1024 images)    |
 |                   | [SDXL-Turbo](https://huggingface.co/stabilityai/sdxl-turbo)                           | Fast and less accurate (512x512 images) |
 |                   | [SDXL-Lightning](https://huggingface.co/ByteDance/SDXL-Lightning)                     | Fast and accurate (1024x1024 images)    |
+|                   | [Shuttle-3-Diffusion](https://huggingface.co/shuttleai/shuttle-3-diffusion)           | Fast and accurate (512x512 images)      |
 | Image Annotation  | [OWLv2](https://huggingface.co/google/owlv2-base-patch16-ensemble)                    | Open-Vocabulary object detector         |
 |                   | [CLIP](https://huggingface.co/openai/clip-vit-base-patch32)                           | Zero-shot-image-classification          |
 |                   | [SlimSAM](https://huggingface.co/Zigeng/SlimSAM-uniform-50)                           | Zero-shot-instance-segmentation         |
