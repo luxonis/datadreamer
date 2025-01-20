@@ -7,6 +7,7 @@ import requests
 import torch
 from PIL import Image
 
+from datadreamer.dataset_annotation.aimv2_annotator import AIMv2Annotator
 from datadreamer.dataset_annotation.clip_annotator import CLIPAnnotator
 from datadreamer.dataset_annotation.owlv2_annotator import OWLv2Annotator
 from datadreamer.dataset_annotation.slimsam_annotator import SlimSAMAnnotator
@@ -54,6 +55,35 @@ def test_cuda_owlv2_annotator():
 )
 def test_cpu_owlv2_annotator():
     _check_owlv2_annotator("cpu")
+
+
+def _check_aimv2_annotator(device: str):
+    url = "https://ultralytics.com/images/bus.jpg"
+    im = Image.open(requests.get(url, stream=True).raw)
+    annotator = AIMv2Annotator(device=device)
+    labels = annotator.annotate_batch([im], ["bus", "people"])
+    # Check that the labels are lists
+    assert isinstance(labels, list) and len(labels) == 1
+    # Check that the labels are ndarray of integers
+    assert isinstance(labels[0], np.ndarray) and labels[0].dtype == np.int64
+
+    annotator.release(empty_cuda_cache=True if device != "cpu" else False)
+
+
+@pytest.mark.skipif(
+    not torch.cuda.is_available() or total_disk_space < 16,
+    reason="Test requires GPU and 16GB of HDD",
+)
+def test_cuda_aimv2_annotator():
+    _check_aimv2_annotator("cuda")
+
+
+@pytest.mark.skipif(
+    total_disk_space < 16,
+    reason="Test requires at least 16GB of HDD",
+)
+def test_cpu_aimv2_annotator():
+    _check_aimv2_annotator("cpu")
 
 
 def _check_clip_annotator(device: str, size: str = "base"):
