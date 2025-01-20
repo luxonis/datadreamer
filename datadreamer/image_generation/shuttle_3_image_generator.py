@@ -14,7 +14,8 @@ logger = logging.getLogger(__name__)
 
 
 class Shuttle3DiffusionImageGenerator(ImageGenerator):
-    """A subclass of ImageGenerator specifically designed to use the Shuttle 3 Diffusion model for faster image generation.
+    """A subclass of ImageGenerator specifically designed to use the Shuttle 3 Diffusion
+    model for faster image generation.
 
     Attributes:
         pipe (DiffusionPipeline): The Shuttle 3 Diffusion model for image generation.
@@ -26,8 +27,7 @@ class Shuttle3DiffusionImageGenerator(ImageGenerator):
     """
 
     def __init__(self, *args, **kwargs):
-        """Initializes the Shuttle3DiffusionImageGenerator with the given
-        arguments."""
+        """Initializes the Shuttle3DiffusionImageGenerator with the given arguments."""
         super().__init__(*args, **kwargs)
         self.pipe = self._init_gen_model()
 
@@ -81,8 +81,8 @@ class Shuttle3DiffusionImageGenerator(ImageGenerator):
         negative_prompt: str,
         prompt_objects: Optional[List[List[str]]] = None,
     ) -> List[Image.Image]:
-        """Generates a batch of images using the Shuttle 3 Diffusion model based
-        on the provided prompts.
+        """Generates a batch of images using the Shuttle 3 Diffusion model based on the
+        provided prompts.
 
         Args:
             prompts (List[str]): A list of positive prompts to guide image generation.
@@ -129,7 +129,7 @@ if __name__ == "__main__":
     )
     prompts = [
         "A photo of a bicycle pedaling alongside an aeroplane.",
-        #"A photo of a dragonfly flying in the sky.",
+        # "A photo of a dragonfly flying in the sky.",
         "A photo of a dog walking in the park.",
         "A photo of an alien exploring the galaxy.",
         "A photo of a robot working on a computer.",
