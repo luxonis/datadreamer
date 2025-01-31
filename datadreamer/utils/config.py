@@ -41,7 +41,9 @@ class Config(LuxonisConfig):
     # Profanity filter arguments
     disable_lm_filter: bool = False
     # Annotation arguments
-    image_annotator: Literal["owlv2", "aimv2", "clip", "owlv2-slimsam"] = "owlv2"
+    image_annotator: Literal[
+        "owlv2", "aimv2", "clip", "owlv2-slimsam", "owlv2-sam2"
+    ] = "owlv2"
     conf_threshold: float = 0.15
     annotation_iou_threshold: float = 0.2
     use_tta: bool = False
