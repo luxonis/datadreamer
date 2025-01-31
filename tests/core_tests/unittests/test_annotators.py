@@ -16,13 +16,26 @@ from datadreamer.dataset_annotation.slimsam_annotator import SlimSAMAnnotator
 total_disk_space = psutil.disk_usage("/").total / (1024**3)
 
 
-def _check_owlv2_annotator(device: str, size: str = "base"):
-    url = "https://ultralytics.com/images/bus.jpg"
-    im = Image.open(requests.get(url, stream=True).raw)
+def _check_owlv2_annotator(
+    device: str, size: str = "base", use_text_prompts: bool = True
+):
     annotator = OWLv2Annotator(device=device, size=size)
-    final_boxes, final_scores, final_labels = annotator.annotate_batch(
-        [im], ["bus", "people"]
-    )
+
+    if use_text_prompts:
+        url = "https://ultralytics.com/images/bus.jpg"
+        im = Image.open(requests.get(url, stream=True).raw)
+        final_boxes, final_scores, final_labels = annotator.annotate_batch(
+            [im], ["bus", "people"]
+        )
+    else:
+        url = "http://images.cocodataset.org/val2017/000000039769.jpg"
+        im = Image.open(requests.get(url, stream=True).raw)
+        query_url = "http://images.cocodataset.org/val2017/000000058111.jpg"
+        query_image = Image.open(requests.get(query_url, stream=True).raw)
+        annotator = OWLv2Annotator(device=device, size=size)
+        final_boxes, final_scores, final_labels = annotator.annotate_batch(
+            [im], [query_image], conf_threshold=0.9
+        )
     # Assert that the boxes, scores and labels are tensors
     assert isinstance(final_boxes, list) and len(final_boxes) == 1
     assert isinstance(final_scores, list) and len(final_scores) == 1
@@ -45,16 +58,32 @@ def _check_owlv2_annotator(device: str, size: str = "base"):
     not torch.cuda.is_available() or total_disk_space < 16,
     reason="Test requires GPU and 16GB of HDD",
 )
-def test_cuda_owlv2_annotator():
-    _check_owlv2_annotator("cuda")
+def test_cuda_owlv2_annotator_text():
+    _check_owlv2_annotator("cuda", use_text_prompts=True)
 
 
 @pytest.mark.skipif(
     total_disk_space < 16,
     reason="Test requires at least 16GB of HDD",
 )
-def test_cpu_owlv2_annotator():
-    _check_owlv2_annotator("cpu")
+def test_cpu_owlv2_annotator_text():
+    _check_owlv2_annotator("cpu", use_text_prompts=True)
+
+
+@pytest.mark.skipif(
+    not torch.cuda.is_available() or total_disk_space < 16,
+    reason="Test requires GPU and 16GB of HDD",
+)
+def test_cuda_owlv2_annotator_image():
+    _check_owlv2_annotator("cuda", use_text_prompts=False)
+
+
+@pytest.mark.skipif(
+    total_disk_space < 16,
+    reason="Test requires at least 16GB of HDD",
+)
+def test_cpu_owlv2_annotator_image():
+    _check_owlv2_annotator("cpu", use_text_prompts=False)
 
 
 def _check_aimv2_annotator(device: str):
