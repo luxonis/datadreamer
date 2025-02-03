@@ -56,10 +56,10 @@ class SAM2Annotator(BaseAnnotator):
         logger.info(f"Initializing SAM2.1 {self.size} model...")
         if self.size == "large":
             return SAM2ImagePredictor.from_pretrained(
-                "facebook/sam2.1-hiera-base-plus", device=device
+                "facebook/sam2-hiera-large", device=device
             )
         return SAM2ImagePredictor.from_pretrained(
-            "facebook/sam2-hiera-tiny", device=device
+            "facebook/sam2.1-hiera-base-plus", device=device
         )
 
     def annotate_batch(
@@ -131,7 +131,7 @@ if __name__ == "__main__":
 
     url = "https://ultralytics.com/images/bus.jpg"
     im = Image.open(requests.get(url, stream=True).raw)
-    annotator = SAM2Annotator(device="cpu", size="base")
+    annotator = SAM2Annotator(device="cpu", size="large")
     final_segments = annotator.annotate_batch([im], [np.array([[3, 229, 559, 650]])])
     print(len(final_segments), len(final_segments[0]))
     print(final_segments[0][0][:5])

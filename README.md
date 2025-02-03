@@ -221,7 +221,7 @@ datadreamer --config <path-to-config>
 |                   | [CLIP](https://huggingface.co/openai/clip-vit-base-patch32)                           | Zero-shot-image-classification          |
 |                   | [AIMv2](https://huggingface.co/apple/aimv2-large-patch14-224-lit)                     | Zero-shot-image-classification          |
 |                   | [SlimSAM](https://huggingface.co/Zigeng/SlimSAM-uniform-50)                           | Zero-shot-instance-segmentation         |
-|                   | [SAM2.1](https://huggingface.co/facebook/sam2-hiera-tiny)                             | Zero-shot-instance-segmentation         |
+|                   | [SAM2.1](https://huggingface.co/facebook/sam2.1-hiera-large)                          | Zero-shot-instance-segmentation         |
 
 <a name="example"></a>
 
