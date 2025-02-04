@@ -20,6 +20,7 @@ from datadreamer.dataset_annotation import (
     AIMv2Annotator,
     CLIPAnnotator,
     OWLv2Annotator,
+    SAM2Annotator,
     SlimSAMAnnotator,
 )
 from datadreamer.image_generation import (
@@ -61,8 +62,8 @@ image_generators = {
 
 det_annotators = {"owlv2": OWLv2Annotator}
 clf_annotators = {"clip": CLIPAnnotator, "aimv2": AIMv2Annotator}
-inst_seg_annotators = {"owlv2-slimsam": SlimSAMAnnotator}
-inst_seg_detectors = {"owlv2-slimsam": OWLv2Annotator}
+inst_seg_annotators = {"owlv2-slimsam": SlimSAMAnnotator, "owlv2-sam2": SAM2Annotator}
+inst_seg_detectors = {"owlv2-slimsam": OWLv2Annotator, "owlv2-sam2": OWLv2Annotator}
 
 setup_logging(use_rich=True)
 
@@ -125,7 +126,7 @@ def parse_args():
     parser.add_argument(
         "--image_annotator",
         type=str,
-        choices=["owlv2", "clip", "owlv2-slimsam", "aimv2"],
+        choices=["owlv2", "clip", "owlv2-slimsam", "aimv2", "owlv2-sam2"],
         help="Image annotator to use",
     )
 
@@ -668,9 +669,10 @@ def main():
                     if args.task == "instance-segmentation":
                         if k < len(masks_batch[j]):
                             mask = masks_batch[j][k]
-                            x_points, y_points = zip(*mask)
+                            if len(mask) > 0:
+                                x_points, y_points = zip(*mask)
 
-                            ax.fill(x_points, y_points, label, alpha=0.5)
+                                ax.fill(x_points, y_points, label, alpha=0.5)
 
                     labels.append(label)
                     x1, y1, x2, y2 = box
