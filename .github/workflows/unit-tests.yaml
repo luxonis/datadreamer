@@ -17,6 +17,8 @@ jobs:
         version: ['3.10', '3.11']
 
     runs-on: ${{ matrix.os }}
+    env:
+      CUDA_VISIBLE_DEVICES: ""
 
     steps:
     - name: Checkout
