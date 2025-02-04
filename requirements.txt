@@ -1,4 +1,4 @@
-torch>=2.0.0
+torch>=2.0.0,<=2.5.1
 torchvision>=0.16.0
 transformers>=4.45.2
 diffusers>=0.31.0
@@ -17,4 +17,3 @@ python-box>=7.1.1
 gcsfs>=2023.1.0
 sentencepiece>=0.2.0
 optimum-quanto>=0.2.6
-triton==3.1.0
