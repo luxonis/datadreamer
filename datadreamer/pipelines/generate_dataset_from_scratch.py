@@ -705,7 +705,7 @@ def main():
                 plt.axis("off")
                 plt.savefig(
                     os.path.join(
-                        bbox_dir, f"bbox_{i * args.batch_size_annotation + j}.jpg"
+                        bbox_dir, f"bbox_{(i * args.batch_size_annotation + j):07d}.jpg"
                     )
                 )
 
