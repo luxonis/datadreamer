@@ -65,7 +65,7 @@ clf_annotators = {"clip": CLIPAnnotator, "aimv2": AIMv2Annotator}
 inst_seg_annotators = {"owlv2-slimsam": SlimSAMAnnotator, "owlv2-sam2": SAM2Annotator}
 inst_seg_detectors = {"owlv2-slimsam": OWLv2Annotator, "owlv2-sam2": OWLv2Annotator}
 
-setup_logging(level="WARNING")
+setup_logging()
 
 
 def parse_args():
