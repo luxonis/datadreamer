@@ -315,7 +315,7 @@ def check_args(args):
         )
 
     # Check num_objects_range[1]
-    if args.num_objects_range[1] > len(args.class_names):
+    if not args.annotate_only and args.num_objects_range[1] > len(args.class_names):
         raise ValueError(
             "--num_objects_range[1] must be less than or equal to the number of class names"
         )
