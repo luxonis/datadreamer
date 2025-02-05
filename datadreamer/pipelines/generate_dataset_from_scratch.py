@@ -652,7 +652,7 @@ def main():
                 masks_batch = inst_seg_annotator.annotate_batch(
                     images=images,
                     boxes_batch=boxes_batch,
-                    iou_threshold=args.annotation_iou_threshold,
+                    conf_threshold=args.conf_threshold,
                 )
                 segment_list.extend(masks_batch)
 

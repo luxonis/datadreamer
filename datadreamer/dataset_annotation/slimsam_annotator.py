@@ -75,7 +75,7 @@ class SlimSAMAnnotator(BaseAnnotator):
         self,
         images: List[PIL.Image.Image],
         boxes_batch: List[np.ndarray],
-        iou_threshold: float = 0.2,
+        conf_threshold: float = 0.2,
     ) -> List[List[List[float]]]:
         """Annotates images for the task of instance segmentation using the SlimSAM
         model.
@@ -83,7 +83,7 @@ class SlimSAMAnnotator(BaseAnnotator):
         Args:
             images: The images to be annotated.
             boxes_batch: The bounding boxes of found objects.
-            iou_threshold (float, optional): Intersection over union threshold for non-maximum suppression. Defaults to 0.2.
+            conf_threshold (float, optional): Confidence threshold for the annotations. Defaults to 0.2.
 
         Returns:
             List: A list containing the final segment masks represented as a polygon.
@@ -115,7 +115,7 @@ class SlimSAMAnnotator(BaseAnnotator):
 
             image_masks = []
             for j in range(len(boxes)):
-                keep_idx = iou_scores[0, j] >= iou_threshold
+                keep_idx = iou_scores[0, j] >= conf_threshold
                 filtered_masks = masks[j, keep_idx].cpu().float()
                 final_masks = filtered_masks.permute(1, 2, 0)
                 final_masks = final_masks.mean(axis=-1)
