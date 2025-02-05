@@ -1,16 +1,14 @@
 from __future__ import annotations
 
-import logging
 import os
 from typing import Dict, List
 
+from loguru import logger
 from luxonis_ml.data import DATASETS_REGISTRY, LuxonisDataset
 from luxonis_ml.data.utils.enums import BucketStorage
 from PIL import Image
 
 from datadreamer.utils import BaseConverter
-
-logger = logging.getLogger(__name__)
 
 
 class LuxonisDatasetConverter(BaseConverter):

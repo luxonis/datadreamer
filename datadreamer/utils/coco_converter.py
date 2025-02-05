@@ -1,17 +1,15 @@
 from __future__ import annotations
 
 import json
-import logging
 import os
 import shutil
 from typing import Dict, List
 
 import numpy as np
+from loguru import logger
 from PIL import Image
 
 from datadreamer.utils.base_converter import BaseConverter
-
-logger = logging.getLogger(__name__)
 
 
 class COCOConverter(BaseConverter):

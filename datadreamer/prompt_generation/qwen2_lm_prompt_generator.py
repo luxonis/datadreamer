@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-import logging
 import re
 from typing import List, Literal, Optional, Tuple
 
 import torch
+from loguru import logger
 from transformers import (
     AutoModelForCausalLM,
     AutoTokenizer,
@@ -14,8 +14,6 @@ from transformers import (
 )
 
 from datadreamer.prompt_generation.lm_prompt_generator import LMPromptGenerator
-
-logger = logging.getLogger(__name__)
 
 
 class Qwen2LMPromptGenerator(LMPromptGenerator):

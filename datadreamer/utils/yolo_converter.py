@@ -1,16 +1,14 @@
 from __future__ import annotations
 
-import logging
 import os
 import shutil
 from typing import Dict, List
 
 import numpy as np
+from loguru import logger
 from PIL import Image
 
 from datadreamer.utils import BaseConverter
-
-logger = logging.getLogger(__name__)
 
 
 class YOLOConverter(BaseConverter):

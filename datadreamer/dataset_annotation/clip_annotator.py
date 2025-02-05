@@ -1,14 +1,11 @@
 from __future__ import annotations
 
-import logging
-
 import torch
+from loguru import logger
 from PIL import Image
 from transformers import CLIPModel, CLIPProcessor
 
 from datadreamer.dataset_annotation.cls_annotator import ImgClassificationAnnotator
-
-logger = logging.getLogger(__name__)
 
 
 class CLIPAnnotator(ImgClassificationAnnotator):

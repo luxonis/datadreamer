@@ -8,15 +8,12 @@ License. By using this file, you agree to comply with the terms of both licenses
 """
 from __future__ import annotations
 
-import logging
-
 import torch
+from loguru import logger
 from PIL import Image
 from transformers import AutoModel, AutoProcessor
 
 from datadreamer.dataset_annotation.cls_annotator import ImgClassificationAnnotator
-
-logger = logging.getLogger(__name__)
 
 
 class AIMv2Annotator(ImgClassificationAnnotator):

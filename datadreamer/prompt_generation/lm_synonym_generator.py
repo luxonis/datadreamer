@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-import logging
 import re
 from typing import List, Optional, Tuple
 
 import torch
+from loguru import logger
 from transformers import (
     AutoModelForCausalLM,
     AutoTokenizer,
@@ -13,8 +13,6 @@ from transformers import (
 )
 
 from datadreamer.prompt_generation.synonym_generator import SynonymGenerator
-
-logger = logging.getLogger(__name__)
 
 
 class LMSynonymGenerator(SynonymGenerator):

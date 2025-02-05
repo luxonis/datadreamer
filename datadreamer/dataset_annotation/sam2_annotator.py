@@ -1,17 +1,15 @@
 from __future__ import annotations
 
-import logging
 from typing import List
 
 import numpy as np
 import PIL
 import torch
+from loguru import logger
 from sam2.sam2_image_predictor import SAM2ImagePredictor
 
 from datadreamer.dataset_annotation.image_annotator import BaseAnnotator
 from datadreamer.dataset_annotation.utils import mask_to_polygon
-
-logger = logging.getLogger(__name__)
 
 
 class SAM2Annotator(BaseAnnotator):
