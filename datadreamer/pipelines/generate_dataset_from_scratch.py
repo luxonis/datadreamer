@@ -65,7 +65,7 @@ clf_annotators = {"clip": CLIPAnnotator, "aimv2": AIMv2Annotator}
 inst_seg_annotators = {"owlv2-slimsam": SlimSAMAnnotator, "owlv2-sam2": SAM2Annotator}
 inst_seg_detectors = {"owlv2-slimsam": OWLv2Annotator, "owlv2-sam2": OWLv2Annotator}
 
-setup_logging(use_rich=True)
+setup_logging()
 
 
 def parse_args():
@@ -315,7 +315,7 @@ def check_args(args):
         )
 
     # Check num_objects_range[1]
-    if args.num_objects_range[1] > len(args.class_names):
+    if not args.annotate_only and args.num_objects_range[1] > len(args.class_names):
         raise ValueError(
             "--num_objects_range[1] must be less than or equal to the number of class names"
         )
@@ -652,7 +652,7 @@ def main():
                 masks_batch = inst_seg_annotator.annotate_batch(
                     images=images,
                     boxes_batch=boxes_batch,
-                    iou_threshold=args.annotation_iou_threshold,
+                    conf_threshold=args.conf_threshold,
                 )
                 segment_list.extend(masks_batch)
 
@@ -705,7 +705,7 @@ def main():
                 plt.axis("off")
                 plt.savefig(
                     os.path.join(
-                        bbox_dir, f"bbox_{i * args.batch_size_annotation + j}.jpg"
+                        bbox_dir, f"bbox_{(i * args.batch_size_annotation + j):07d}.jpg"
                     )
                 )
 

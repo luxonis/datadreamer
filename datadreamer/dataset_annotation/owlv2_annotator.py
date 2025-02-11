@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import logging
 from typing import Dict, List, Tuple
 
 import matplotlib.patches as patches
@@ -8,13 +7,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 import PIL
 import torch
+from loguru import logger
 from transformers import Owlv2ForObjectDetection, Owlv2Processor
 
 from datadreamer.dataset_annotation.image_annotator import BaseAnnotator
 from datadreamer.dataset_annotation.utils import apply_tta
 from datadreamer.utils.nms import non_max_suppression
-
-logger = logging.getLogger(__name__)
 
 
 class OWLv2Annotator(BaseAnnotator):

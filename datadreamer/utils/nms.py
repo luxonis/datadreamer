@@ -4,7 +4,6 @@
 # https://github.com/ultralytics/yolov5/blob/master/utils/general.py
 from __future__ import annotations
 
-import logging
 import os
 import time
 from typing import List
@@ -13,6 +12,7 @@ import cv2
 import numpy as np
 import torch
 import torchvision
+from loguru import logger
 
 # Settings
 torch.set_printoptions(linewidth=320, precision=5, profile="long")
@@ -23,8 +23,6 @@ cv2.setNumThreads(
     0
 )  # prevent OpenCV from multithreading (incompatible with PyTorch DataLoader)
 os.environ["NUMEXPR_MAX_THREADS"] = str(min(os.cpu_count(), 8))  # NumExpr max threads
-
-logger = logging.getLogger(__name__)
 
 
 def xywh2xyxy(x):

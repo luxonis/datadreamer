@@ -1,16 +1,14 @@
 from __future__ import annotations
 
-import logging
 import os
 from typing import Dict, List
 
+from loguru import logger
 from luxonis_ml.data import DATASETS_REGISTRY, LuxonisDataset
 from luxonis_ml.data.utils.enums import BucketStorage
 from PIL import Image
 
 from datadreamer.utils import BaseConverter
-
-logger = logging.getLogger(__name__)
 
 
 class LuxonisDatasetConverter(BaseConverter):
@@ -88,7 +86,8 @@ class LuxonisDatasetConverter(BaseConverter):
             for image_path in image_paths:
                 image_full_path = os.path.join(dataset_dir, image_path)
                 width, height = Image.open(image_full_path).size
-                labels = data[image_path]["labels"]
+                image_data = data[image_path]
+                labels = image_data["labels"]
 
                 if len(labels) == 0 and keep_unlabeled_images:
                     logger.warning(
@@ -98,55 +97,49 @@ class LuxonisDatasetConverter(BaseConverter):
                         "file": image_full_path,
                     }
 
-                for label in labels:
-                    yield {
-                        "file": image_full_path,
-                        "annotation": {
-                            "class": class_names[label],
-                            "type": "classification",
-                            # "value": True,
-                        },
+                has_boxes = "boxes" in image_data
+                has_masks = "masks" in image_data
+
+                if has_masks:
+                    task = "instance_segmentation"
+                elif has_boxes:
+                    task = "detection"
+                else:
+                    task = "classification"
+
+                for i, label in enumerate(labels):
+                    annotation = {
+                        "class": class_names[label],
                     }
 
-                if "masks" in data[image_path]:  # polyline format
-                    masks = data[image_path]["masks"]
-                    for mask, label in zip(masks, labels):
-                        poly = []
-                        poly += [
-                            (point[0] / width, point[1] / height) for point in mask
-                        ]
-                        yield {
-                            "file": image_full_path,
-                            "annotation": {
-                                "type": "polyline",
-                                "class": class_names[label],
-                                "points": poly,  # masks,
-                            },
-                        }
-
-                if "boxes" in data[image_path]:
-                    boxes = data[image_path]["boxes"]
-                    for box, label in zip(boxes, labels):
+                    if has_boxes:
+                        box = image_data["boxes"][i]
                         x, y = max(0, box[0] / width), max(0, box[1] / height)
                         w = min(box[2] / width - x, 1 - x)
                         h = min(box[3] / height - y, 1 - y)
-                        yield {
-                            "file": image_full_path,
-                            "annotation": {
-                                "class": class_names[label],
-                                "type": "boundingbox",
-                                "x": x,
-                                "y": y,
-                                "w": w,
-                                "h": h,
-                            },
-                        }
+                        annotation["boundingbox"] = {"x": x, "y": y, "w": w, "h": h}
+
+                if has_masks:
+                    mask = image_data["masks"][i]
+                    poly = [(point[0] / width, point[1] / height) for point in mask]
+                    annotation["instance_segmentation"] = {
+                        "points": poly,
+                        "height": height,
+                        "width": width,
+                    }
+
+                yield {
+                    "file": image_full_path,
+                    "task": f"datadreamer_{task}",
+                    "annotation": annotation,
+                }
 
         dataset_name = (
             os.path.basename(output_dir)
-            if self.dataset_name is None
+            if self.dataset_name is None or self.dataset_name == ""
             else self.dataset_name
         )
+
         if LuxonisDataset.exists(dataset_name):
             dataset = LuxonisDataset(dataset_name)
             dataset.delete_dataset()

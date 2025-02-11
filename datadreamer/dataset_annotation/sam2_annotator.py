@@ -1,17 +1,15 @@
 from __future__ import annotations
 
-import logging
 from typing import List
 
 import numpy as np
 import PIL
 import torch
+from loguru import logger
 from sam2.sam2_image_predictor import SAM2ImagePredictor
 
 from datadreamer.dataset_annotation.image_annotator import BaseAnnotator
 from datadreamer.dataset_annotation.utils import mask_to_polygon
-
-logger = logging.getLogger(__name__)
 
 
 class SAM2Annotator(BaseAnnotator):
@@ -66,7 +64,7 @@ class SAM2Annotator(BaseAnnotator):
         self,
         images: List[PIL.Image.Image],
         boxes_batch: List[np.ndarray],
-        iou_threshold: float = 0.2,
+        conf_threshold: float = 0.2,
     ) -> List[List[List[float]]]:
         """Annotates images for the task of instance segmentation using the SAM2.1
         model.
@@ -74,7 +72,7 @@ class SAM2Annotator(BaseAnnotator):
         Args:
             images: The images to be annotated.
             boxes_batch: The bounding boxes of found objects.
-            iou_threshold (float, optional): Intersection over union threshold for non-maximum suppression. Defaults to 0.2.
+            conf_threshold (float, optional): Confidence threshold for the annotations. Defaults to 0.2.
 
         Returns:
             List: A list containing the final segment masks represented as a polygon.
@@ -102,7 +100,7 @@ class SAM2Annotator(BaseAnnotator):
             image_masks = []
             for j in range(len(boxes)):
                 mask, score = masks_batch[i][j].astype(np.uint8), scores_batch[i][j]
-                if score < iou_threshold:
+                if score < conf_threshold:
                     image_masks.append([])
                     continue
                 if len(mask.shape) == 3:

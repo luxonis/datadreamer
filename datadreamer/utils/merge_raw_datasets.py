@@ -2,12 +2,11 @@ from __future__ import annotations
 
 import argparse
 import json
-import logging
 import os
 import shutil
 from typing import List
 
-logger = logging.getLogger(__name__)
+from loguru import logger
 
 
 def merge_datasets(

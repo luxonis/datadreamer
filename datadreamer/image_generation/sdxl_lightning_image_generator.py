@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import logging
 from typing import List, Optional
 
 import torch
@@ -11,12 +10,11 @@ from diffusers import (
     UNet2DConditionModel,
 )
 from huggingface_hub import hf_hub_download
+from loguru import logger
 from PIL import Image
 from safetensors.torch import load_file
 
 from datadreamer.image_generation.image_generator import ImageGenerator
-
-logger = logging.getLogger(__name__)
 
 
 class StableDiffusionLightningImageGenerator(ImageGenerator):
@@ -144,7 +142,7 @@ if __name__ == "__main__":
         use_clip_image_tester=False,
         image_tester_patience=1,
         batch_size=4,
-        device="cpu",
+        device="cuda",
     )
     prompts = [
         "A photo of a bicycle pedaling alongside an aeroplane.",
@@ -167,7 +165,7 @@ if __name__ == "__main__":
         prompts, prompt_objects
     ):
         for generated_image in generated_images_batch:
-            image_path = os.path.join("./", f"image_lightning_{counter}.jpg")
+            image_path = os.path.join("./", f"image_lightning_{counter}_no_compel.jpg")
             generated_image.save(image_path)
             image_paths.append(image_path)
             counter += 1

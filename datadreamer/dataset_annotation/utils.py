@@ -36,25 +36,33 @@ def apply_tta(image) -> List[transforms.Compose]:
     return augmented_images
 
 
-def mask_to_polygon(mask: np.ndarray) -> List[List[int]]:
-    """Converts a binary mask to a polygon.
+def mask_to_polygon(
+    mask: np.ndarray, blur_ksize: int = 3, epsilon_ratio: float = 0.001
+) -> List[List[int]]:
+    """Converts a binary mask to a smoothed polygon.
 
     Args:
         mask: The binary mask to be converted.
+        epsilon_ratio: Controls the smoothing level. Higher values mean more smoothing.
 
     Returns:
         List: A list of vertices of the polygon.
     """
-    # Find contours in the binary mask
+    mask = cv2.medianBlur(mask.astype(np.uint8), 3)
+
     contours, _ = cv2.findContours(
         mask.astype(np.uint8), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
     )
     if len(contours) == 0:
         return []
+
     # Find the contour with the largest area
     largest_contour = max(contours, key=cv2.contourArea)
 
-    # Extract the vertices of the contour
-    polygon = largest_contour.reshape(-1, 2).tolist()
+    # Apply contour approximation for smoothing
+    epsilon = epsilon_ratio * cv2.arcLength(largest_contour, True)
+    smoothed_contour = cv2.approxPolyDP(largest_contour, epsilon, True)
+
+    polygon = smoothed_contour.reshape(-1, 2).tolist()
 
     return polygon

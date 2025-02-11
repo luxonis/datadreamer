@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import logging
 from typing import Dict, List
 
 import numpy as np
@@ -8,8 +7,6 @@ import PIL
 import torch
 
 from datadreamer.dataset_annotation.image_annotator import BaseAnnotator, TaskList
-
-logger = logging.getLogger(__name__)
 
 
 class ImgClassificationAnnotator(BaseAnnotator):

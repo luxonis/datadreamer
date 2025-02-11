@@ -1,13 +1,11 @@
 from __future__ import annotations
 
-import logging
 from typing import List, Tuple
 
 import torch
+from loguru import logger
 from PIL import Image
 from transformers import CLIPModel, CLIPProcessor
-
-logger = logging.getLogger(__name__)
 
 
 class ClipImageTester:

@@ -1,16 +1,14 @@
 from __future__ import annotations
 
-import logging
 from typing import List, Optional
 
 import torch
 from diffusers import DiffusionPipeline
+from loguru import logger
 from optimum.quanto import freeze, qint8, quantize
 from PIL import Image
 
 from datadreamer.image_generation.image_generator import ImageGenerator
-
-logger = logging.getLogger(__name__)
 
 
 class Shuttle3DiffusionImageGenerator(ImageGenerator):
