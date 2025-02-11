@@ -9,6 +9,7 @@ from PIL import Image
 
 from datadreamer.dataset_annotation.aimv2_annotator import AIMv2Annotator
 from datadreamer.dataset_annotation.clip_annotator import CLIPAnnotator
+from datadreamer.dataset_annotation.image_annotator import BaseAnnotator
 from datadreamer.dataset_annotation.owlv2_annotator import OWLv2Annotator
 from datadreamer.dataset_annotation.sam2_annotator import SAM2Annotator
 from datadreamer.dataset_annotation.slimsam_annotator import SlimSAMAnnotator
