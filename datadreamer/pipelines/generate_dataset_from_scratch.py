@@ -750,6 +750,22 @@ def main():
                             f"bbox_{(i * args.batch_size_annotation + j):07d}.jpg",
                         )
                     )
+                    # Add prompt text as title
+                if generated_prompts:
+                    title = generated_prompts[i * args.batch_size_annotation + j][1]
+                    wrapped_title = "\n".join(textwrap.wrap(title, width=50))
+                    plt.title(wrapped_title)
+                else:
+                    plt.title("Annotated image")
+
+                labels_list.append(np.array(labels))
+
+                plt.axis("off")
+                plt.savefig(
+                    os.path.join(
+                        bbox_dir, f"bbox_{(i * args.batch_size_annotation + j):07d}.jpg"
+                    )
+                )
 
                     plt.close()
 
