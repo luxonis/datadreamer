@@ -198,6 +198,8 @@ datadreamer --config <path-to-config>
 - `--batch_size_prompt`: Batch size for prompt generation. Default is 64.
 - `--batch_size_annotation`: Batch size for annotation. Default is `1`.
 - `--batch_size_image`: Batch size for image generation. Default is `1`.
+- `--raw_mask_format`: Format of segmentations masks when saved in raw dataset format. Default is `polyline`.
+- `--vis_anns`: Whether to save visualizations of annotations. Default is `False`.
 - `--device`: Choose between `cuda` and `cpu`. Default is `cuda`.
 - `--seed`: Set a random seed for image and prompt generation. Default is `42`.
 - `--config`: A path to an optional `.yaml` config file specifying the pipeline's arguments.
@@ -263,7 +265,7 @@ save_dir/
 
 ### 📝 Annotations Format
 
-1. Detection Annotations (detection_annotations.json):
+1. Detection Annotations:
 
 - Each entry corresponds to an image and contains bounding boxes and labels for objects in the image.
 - Format:
@@ -279,7 +281,7 @@ save_dir/
 }
 ```
 
-2. Classification Annotations (classification_annotations.json):
+2. Classification Annotations:
 
 - Each entry corresponds to an image and contains labels for the image.
 - Format:
@@ -294,7 +296,7 @@ save_dir/
 }
 ```
 
-3. Instance Segmentation Annotations (instance_segmentation_annotations.json):
+3. Instance Segmentation Annotations:
 
 - Each entry corresponds to an image and contains bounding boxes, masks and labels for objects in the image.
 - Format:
@@ -304,6 +306,7 @@ save_dir/
   "image_path": {
     "boxes": [[x_min, y_min, x_max, y_max], ...],
     "masks": [[[x0, y0],[x1, y1],...], [[x0, y0],[x1, y1],...], ....]
+    # "masks": [{"counts": ..., "size": ...}, {"counts": ..., "size": ...}, ...] # for RLE raw_mask_format
     "labels": [label_index, ...]
   },
   ...

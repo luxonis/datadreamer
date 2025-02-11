@@ -4,6 +4,7 @@ from typing import List
 
 import cv2
 import numpy as np
+import pycocotools.mask as mask_utils
 from torchvision import transforms
 
 
@@ -36,9 +37,26 @@ def apply_tta(image) -> List[transforms.Compose]:
     return augmented_images
 
 
-def mask_to_polygon(
-    mask: np.ndarray, blur_ksize: int = 3, epsilon_ratio: float = 0.001
+def convert_binary_mask(
+    mask: np.ndarray, mask_format: str = "polygon", epsilon_ratio: float = 0.001
 ) -> List[List[int]]:
+    mask = cv2.medianBlur(mask, 5)
+    blurred = cv2.GaussianBlur(mask.astype(np.float32), (3, 3), 0)
+    mask = (blurred > 0.5).astype(np.uint8)
+
+    if mask_format == "polyline":
+        return mask_to_polygon(mask, epsilon_ratio)
+    elif mask_format == "rle":
+        return mask_to_rle(mask)
+
+
+def mask_to_rle(mask: np.ndarray) -> dict:
+    rle = mask_utils.encode(np.array(mask, dtype=np.uint8, order="F"))
+    rle["counts"] = rle["counts"].decode("utf-8")
+    return rle
+
+
+def mask_to_polygon(mask: np.ndarray, epsilon_ratio: float = 0.001) -> List[List[int]]:
     """Converts a binary mask to a smoothed polygon.
 
     Args:
@@ -48,8 +66,6 @@ def mask_to_polygon(
     Returns:
         List: A list of vertices of the polygon.
     """
-    mask = cv2.medianBlur(mask.astype(np.uint8), 3)
-
     contours, _ = cv2.findContours(
         mask.astype(np.uint8), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
     )
