@@ -198,7 +198,7 @@ datadreamer --config <path-to-config>
 - `--batch_size_prompt`: Batch size for prompt generation. Default is 64.
 - `--batch_size_annotation`: Batch size for annotation. Default is `1`.
 - `--batch_size_image`: Batch size for image generation. Default is `1`.
-- `--raw_mask_format`: Format of segmentations masks when saved in raw dataset format. Default is `polyline`.
+- `--raw_mask_format`: Format of segmentations masks when saved in raw dataset format. Default is `rle`.
 - `--vis_anns`: Whether to save visualizations of annotations. Default is `False`.
 - `--device`: Choose between `cuda` and `cpu`. Default is `cuda`.
 - `--seed`: Set a random seed for image and prompt generation. Default is `42`.

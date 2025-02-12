@@ -34,7 +34,7 @@ class SlimSAMAnnotator(BaseAnnotator):
         seed: float = 42,
         device: str = "cuda",
         size: str = "base",
-        mask_format: str = "polyline",
+        mask_format: str = "rle",
     ) -> None:
         """Initializes the SlimSAMAnnotator.
 
