@@ -435,11 +435,6 @@ def check_args(args):
                 f"Invalid dataset plugin: {args.dataset_plugin}. Available plugins: {list(DATASETS_REGISTRY.module_dict.keys())}"
             )
 
-    if args.raw_mask_format == "rle" and args.dataset_format in ["yolo"]:
-        raise ValueError(
-            "Invalid combination of --raw_mask_format and --dataset_format. --raw_mask_format must be 'polyline' when --dataset_format is 'yolo'"
-        )
-
 
 def main():
     args = parse_args()
