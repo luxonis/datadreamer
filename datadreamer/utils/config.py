@@ -36,6 +36,8 @@ class Config(LuxonisConfig):
     prompt_suffix: str = ", hd, 8k, highly detailed"
     negative_prompt: str = "cartoon, blue skin, painting, scrispture, golden, illustration, worst quality, low quality, normal quality:2, unrealistic dream, low resolution, static, sd character, low quality, low resolution, greyscale, monochrome, nose, cropped, lowres, jpeg artifacts, deformed iris, deformed pupils, bad eyes, semi-realistic worst quality, bad lips, deformed mouth, deformed face, deformed fingers, bad anatomy"
     batch_size_image: int = 1
+    raw_mask_format: Literal["polyline", "rle"] = "rle"
+    vis_anns: bool = False
     use_image_tester: bool = False
     image_tester_patience: int = 1
     # Profanity filter arguments

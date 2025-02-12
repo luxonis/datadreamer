@@ -9,6 +9,7 @@ import uuid
 import matplotlib.patches as patches
 import matplotlib.pyplot as plt
 import numpy as np
+import pycocotools.mask as mask_utils
 import torch
 from box import Box
 from luxonis_ml.data import DATASETS_REGISTRY, LOADERS_REGISTRY
@@ -136,6 +137,7 @@ def parse_args():
         choices=["raw", "yolo", "coco", "luxonis-dataset", "cls-single"],
         help="Dataset format to use",
     )
+
     parser.add_argument(
         "--split_ratios",
         type=float,
@@ -244,6 +246,20 @@ def parse_args():
         "--batch_size_image",
         type=int,
         help="Batch size for image generation",
+    )
+
+    parser.add_argument(
+        "--raw_mask_format",
+        type=str,
+        choices=["polyline", "rle"],
+        help="Format of segmentations masks when saved in raw dataset format",
+    )
+
+    parser.add_argument(
+        "--vis_anns",
+        default=None,
+        action="store_true",
+        help="Whether to save visualizations of annotations",
     )
 
     parser.add_argument(
@@ -622,7 +638,9 @@ def main():
             annotator_class = inst_seg_detectors[args.image_annotator]
             inst_seg_annotator_class = inst_seg_annotators[args.image_annotator]
             inst_seg_annotator = inst_seg_annotator_class(
-                device=args.device, size=args.annotator_size
+                device=args.device,
+                size=args.annotator_size,
+                mask_format=args.raw_mask_format,
             )
         annotator = annotator_class(device=args.device, size=args.annotator_size)
 
@@ -647,6 +665,7 @@ def main():
 
             boxes_list.extend(boxes_batch)
             scores_list.extend(scores_batch)
+            labels_list.extend(local_labels_batch)
 
             if args.task == "instance-segmentation":
                 masks_batch = inst_seg_annotator.annotate_batch(
@@ -656,60 +675,78 @@ def main():
                 )
                 segment_list.extend(masks_batch)
 
-            for j, image in enumerate(images):
-                labels = []
-                # Save bbox visualizations
-                fig, ax = plt.subplots(1)
-                ax.imshow(image)
-                for k in range(len(boxes_batch[j])):
-                    box = boxes_batch[j][k]
-                    score = scores_batch[j][k]
-                    label = local_labels_batch[j][k]
+            if args.vis_anns:
+                for j, image in enumerate(images):
+                    # Save bbox visualizations
+                    fig, ax = plt.subplots(1)
+                    ax.imshow(image)
+                    for k in range(len(boxes_batch[j])):
+                        box = boxes_batch[j][k]
+                        score = scores_batch[j][k]
+                        label = local_labels_batch[j][k]
 
-                    if args.task == "instance-segmentation":
-                        if k < len(masks_batch[j]):
-                            mask = masks_batch[j][k]
-                            if len(mask) > 0:
-                                x_points, y_points = zip(*mask)
+                        if args.task == "instance-segmentation":
+                            if k < len(masks_batch[j]):
+                                mask = masks_batch[j][k]
+                                if len(mask) > 0:  # Ensure mask is valid
+                                    if isinstance(mask, dict) and "counts" in mask:
+                                        binary_mask = mask_utils.decode(mask)
+                                        if len(binary_mask.shape) == 3:
+                                            binary_mask = binary_mask.squeeze(0)
+                                        rgba_mask = np.zeros(
+                                            (
+                                                binary_mask.shape[0],
+                                                binary_mask.shape[1],
+                                                4,
+                                            ),
+                                            dtype=np.uint8,
+                                        )
+                                        rgba_mask[..., :3] = np.random.randint(
+                                            0, 256, size=3
+                                        )
+                                        rgba_mask[..., 3] = np.where(
+                                            binary_mask == 1, 128, 0
+                                        )
 
-                                ax.fill(x_points, y_points, label, alpha=0.5)
+                                        ax.imshow(rgba_mask)
+                                    else:
+                                        x_points, y_points = zip(*mask)
+                                        ax.fill(x_points, y_points, label, alpha=0.5)
 
-                    labels.append(label)
-                    x1, y1, x2, y2 = box
-                    rect = patches.Rectangle(
-                        (x1, y1),
-                        x2 - x1,
-                        y2 - y1,
-                        linewidth=2,
-                        edgecolor="r",
-                        facecolor="none",
+                        x1, y1, x2, y2 = box
+                        rect = patches.Rectangle(
+                            (x1, y1),
+                            x2 - x1,
+                            y2 - y1,
+                            linewidth=2,
+                            edgecolor="r",
+                            facecolor="none",
+                        )
+                        ax.add_patch(rect)
+                        label_text = args.class_names[label]
+                        plt.text(
+                            x1,
+                            y1,
+                            f"{label_text} {score:.2f}",
+                            bbox=dict(facecolor="yellow", alpha=0.5),
+                        )
+                        # Add prompt text as title
+                    if generated_prompts:
+                        title = generated_prompts[i * args.batch_size_annotation + j][1]
+                        wrapped_title = "\n".join(textwrap.wrap(title, width=50))
+                        plt.title(wrapped_title)
+                    else:
+                        plt.title("Annotated image")
+
+                    plt.axis("off")
+                    plt.savefig(
+                        os.path.join(
+                            bbox_dir,
+                            f"bbox_{(i * args.batch_size_annotation + j):07d}.jpg",
+                        )
                     )
-                    ax.add_patch(rect)
-                    label_text = args.class_names[label]
-                    plt.text(
-                        x1,
-                        y1,
-                        f"{label_text} {score:.2f}",
-                        bbox=dict(facecolor="yellow", alpha=0.5),
-                    )
-                    # Add prompt text as title
-                if generated_prompts:
-                    title = generated_prompts[i * args.batch_size_annotation + j][1]
-                    wrapped_title = "\n".join(textwrap.wrap(title, width=50))
-                    plt.title(wrapped_title)
-                else:
-                    plt.title("Annotated image")
 
-                labels_list.append(np.array(labels))
-
-                plt.axis("off")
-                plt.savefig(
-                    os.path.join(
-                        bbox_dir, f"bbox_{(i * args.batch_size_annotation + j):07d}.jpg"
-                    )
-                )
-
-                plt.close()
+                    plt.close()
 
         # Save annotations as JSON files
         save_annotations_to_json(

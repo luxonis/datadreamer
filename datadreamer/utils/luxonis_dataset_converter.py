@@ -74,8 +74,8 @@ class LuxonisDatasetConverter(BaseConverter):
 
         No return value.
         """
-        if not os.path.exists(output_dir):
-            os.makedirs(output_dir)
+        if output_dir is None:
+            output_dir = dataset_dir
         class_names = data["class_names"]
         image_paths = list(data.keys())
         image_paths.remove("class_names")
@@ -89,13 +89,16 @@ class LuxonisDatasetConverter(BaseConverter):
                 image_data = data[image_path]
                 labels = image_data["labels"]
 
-                if len(labels) == 0 and keep_unlabeled_images:
-                    logger.warning(
-                        f"Image {image_path} has no annotations. Training on empty images with `luxonis-train` will result in an error."
-                    )
-                    yield {
-                        "file": image_full_path,
-                    }
+                if len(labels) == 0:
+                    if keep_unlabeled_images:
+                        logger.warning(
+                            f"Image {image_path} has no annotations. Training on empty images with `luxonis-train` will result in an error."
+                        )
+                        yield {
+                            "file": image_full_path,
+                        }
+                    else:
+                        continue
 
                 has_boxes = "boxes" in image_data
                 has_masks = "masks" in image_data
@@ -121,12 +124,19 @@ class LuxonisDatasetConverter(BaseConverter):
 
                 if has_masks:
                     mask = image_data["masks"][i]
-                    poly = [(point[0] / width, point[1] / height) for point in mask]
-                    annotation["instance_segmentation"] = {
-                        "points": poly,
-                        "height": height,
-                        "width": width,
-                    }
+                    if isinstance(mask, list):
+                        poly = [(point[0] / width, point[1] / height) for point in mask]
+                        annotation["instance_segmentation"] = {
+                            "points": poly,
+                            "height": height,
+                            "width": width,
+                        }
+                    else:
+                        annotation["instance_segmentation"] = {
+                            "counts": mask["counts"],
+                            "height": mask["size"][0],
+                            "width": mask["size"][1],
+                        }
 
                 yield {
                     "file": image_full_path,

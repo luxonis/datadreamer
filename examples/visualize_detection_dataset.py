@@ -4,6 +4,7 @@ import os
 
 import cv2
 import numpy as np
+from pycocotools import mask as mask_utils
 
 
 def draw_rounded_rectangle(img, pt1, pt2, color, thickness, r):
@@ -27,15 +28,20 @@ def draw_rounded_rectangle(img, pt1, pt2, color, thickness, r):
 
 def draw_mask(image, mask, color, alpha=0.5):
     overlay = image.copy()
-    mask = np.array([[int(p[0]), int(p[1])] for p in mask])
-    cv2.fillPoly(overlay, [mask], color)
-    cv2.addWeighted(overlay, alpha, image, 1 - alpha, 0, image)
+    if isinstance(mask, list):
+        mask = np.array([[int(p[0]), int(p[1])] for p in mask])
+        cv2.fillPoly(overlay, [mask], color)
+        cv2.addWeighted(overlay, alpha, image, 1 - alpha, 0, image)
+    else:
+        binary_mask = mask_utils.decode(mask)
+        overlay[binary_mask == 1] = color
+        cv2.addWeighted(overlay, alpha, image, 1 - alpha, 0, image)
 
 
 def draw_bboxes_and_labels(image, annotations, class_names):
     font = cv2.FONT_HERSHEY_SIMPLEX
-    font_scale = 1.5  # Increased font size
-    font_thickness = 4
+    font_scale = 1.0
+    font_thickness = 3
     bbox_thickness = 2
     text_color = (255, 255, 255)  # White text
     rectangle_radius = 8
@@ -62,12 +68,13 @@ def draw_bboxes_and_labels(image, annotations, class_names):
             (0, 255, 0),
             bbox_thickness,
             rectangle_radius,
-            1,
         )
 
         if "masks" in annotations:
             masks = annotations["masks"][i]
-            draw_mask(image, masks, (0, 255, 0), 0.5)
+            # Choose random color
+            color = np.random.randint(0, 256, size=3).tolist()
+            draw_mask(image, masks, color, 0.5)
 
         # Draw text background
         draw_rounded_rectangle(
@@ -77,7 +84,6 @@ def draw_bboxes_and_labels(image, annotations, class_names):
             (0, 255, 0),
             2,
             rectangle_radius,
-            1,
         )
 
         # Put the text
@@ -102,15 +108,20 @@ def visualize_dataset(dataset_dir, save_images):
 
     class_names = all_annotations.pop("class_names", [])
 
+    if save_images:
+        if not os.path.exists(os.path.join(dataset_dir, "visualization")):
+            os.makedirs(os.path.join(dataset_dir, "visualization"))
+        vis_dir = os.path.join(dataset_dir, "visualization")
+
     for image_name, annotations in all_annotations.items():
         image_path = image_name
         image = cv2.imread(os.path.join(dataset_dir, image_path))
+        if image is None:
+            continue
         image = draw_bboxes_and_labels(image, annotations, class_names)
 
         if save_images:
-            save_path = os.path.join(
-                dataset_dir, "bbox_" + os.path.basename(image_name)
-            )
+            save_path = os.path.join(vis_dir, "bbox_" + os.path.basename(image_name))
             cv2.imwrite(save_path, image)
         else:
             cv2.imshow("Image with Bounding Boxes", image)

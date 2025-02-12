@@ -7,7 +7,9 @@ from typing import Dict, List
 import numpy as np
 from loguru import logger
 from PIL import Image
+from pycocotools import mask as mask_utils
 
+from datadreamer.dataset_annotation.utils import mask_to_polygon
 from datadreamer.utils import BaseConverter
 
 
@@ -87,7 +89,7 @@ class YOLOConverter(BaseConverter):
         return [x_center, y_center, width, height]
 
     def convert_masks_to_yolo_format(
-        self, masks: List[List[float]], w: int, h: int
+        self, masks: List[List[float]] | Dict, w: int, h: int
     ) -> List[float]:
         """Converts masks to YOLO format.
 
@@ -99,6 +101,10 @@ class YOLOConverter(BaseConverter):
         Returns:
             list of float: A list containing the masks in YOLO format.
         """
+        if isinstance(masks, dict):
+            binary_mask = mask_utils.decode(masks)
+            masks = mask_to_polygon(binary_mask)
+
         return (np.array(masks) / np.array([w, h])).reshape(-1).tolist()
 
     def process_data(

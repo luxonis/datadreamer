@@ -9,7 +9,7 @@ from loguru import logger
 from sam2.sam2_image_predictor import SAM2ImagePredictor
 
 from datadreamer.dataset_annotation.image_annotator import BaseAnnotator
-from datadreamer.dataset_annotation.utils import mask_to_polygon
+from datadreamer.dataset_annotation.utils import convert_binary_mask
 
 
 class SAM2Annotator(BaseAnnotator):
@@ -32,18 +32,22 @@ class SAM2Annotator(BaseAnnotator):
         seed: float = 42,
         device: str = "cuda",
         size: str = "base",
+        mask_format: str = "rle",
     ) -> None:
-        """Initializes the SAMAnnotator with a specific seed and device.
+        """Initializes the SAM2Annotator.
 
         Args:
             seed (float): Seed for reproducibility. Defaults to 42.
             device (str): The device to run the model on. Defaults to 'cuda'.
+            size (str): The size of the SAM2.1 model to use ('base' or 'large').
+            mask_format (str): The format of the output masks ('rle' or 'polyline').
         """
         super().__init__(seed)
         self.size = size
         self.device = device
         self.model = self._init_model(device=device)
         self.dtype = torch.bfloat16 if self.device == "cuda" else torch.float16
+        self.mask_format = mask_format
 
     def _init_model(self, device: str) -> SAM2ImagePredictor:
         """Initializes the SAM2.1 model for object detection.
@@ -65,7 +69,7 @@ class SAM2Annotator(BaseAnnotator):
         images: List[PIL.Image.Image],
         boxes_batch: List[np.ndarray],
         conf_threshold: float = 0.2,
-    ) -> List[List[List[float]]]:
+    ) -> List[List[List[float]]] | List[List[dict]]:
         """Annotates images for the task of instance segmentation using the SAM2.1
         model.
 
@@ -75,9 +79,9 @@ class SAM2Annotator(BaseAnnotator):
             conf_threshold (float, optional): Confidence threshold for the annotations. Defaults to 0.2.
 
         Returns:
-            List: A list containing the final segment masks represented as a polygon.
+            List: A list containing masks.
         """
-        final_segments = []
+        final_masks = []
 
         image_batch = [np.array(img.convert("RGB")) for img in images]
         bboxes_batch = [None if len(boxes) == 0 else boxes for boxes in boxes_batch]
@@ -94,23 +98,24 @@ class SAM2Annotator(BaseAnnotator):
         for i in range(n):
             boxes = boxes_batch[i].tolist()
             if boxes is None:
-                final_segments.append([])
+                final_masks.append([])
                 continue
 
             image_masks = []
             for j in range(len(boxes)):
                 mask, score = masks_batch[i][j].astype(np.uint8), scores_batch[i][j]
-                if score < conf_threshold:
+                if score < conf_threshold or mask.sum() == 0:
                     image_masks.append([])
                     continue
                 if len(mask.shape) == 3:
                     mask = mask.squeeze(0)
-                polygon = mask_to_polygon(mask)
-                image_masks.append(polygon if len(polygon) != 0 else [])
 
-            final_segments.append(image_masks)
+                converted_mask = convert_binary_mask(mask, self.mask_format)
+                image_masks.append(converted_mask)
 
-        return final_segments
+            final_masks.append(image_masks)
+
+        return final_masks
 
     def release(self, empty_cuda_cache: bool = False) -> None:
         """Releases the model and optionally empties the CUDA cache.
@@ -118,6 +123,7 @@ class SAM2Annotator(BaseAnnotator):
         Args:
             empty_cuda_cache (bool, optional): Whether to empty the CUDA cache. Defaults to False.
         """
+        self.model.model = self.model.model.to("cpu")
         if empty_cuda_cache:
             with torch.no_grad():
                 torch.cuda.empty_cache()
@@ -129,7 +135,7 @@ if __name__ == "__main__":
 
     url = "https://ultralytics.com/images/bus.jpg"
     im = Image.open(requests.get(url, stream=True).raw)
-    annotator = SAM2Annotator(device="cpu", size="large")
-    final_segments = annotator.annotate_batch([im], [np.array([[3, 229, 559, 650]])])
-    print(len(final_segments), len(final_segments[0]))
-    print(final_segments[0][0][:5])
+    annotator = SAM2Annotator(device="cpu", size="large", mask_format="polyline")
+    final_masks = annotator.annotate_batch([im], [np.array([[3, 229, 559, 650]])])
+    print(len(final_masks), len(final_masks[0]))
+    print(final_masks[0][0][:5])

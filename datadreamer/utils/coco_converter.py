@@ -148,11 +148,14 @@ class COCOConverter(BaseConverter):
                     annotation["boxes"], annotation["labels"], masks
                 ):
                     bbox = [box[0], box[1], box[2] - box[0], box[3] - box[1]]
-                    segmentation = (
-                        np.array(mask).reshape(1, -1).tolist() if mask else None
-                    )
-                    if segmentation is None or len(segmentation[0]) == 0:
-                        continue
+                    if isinstance(mask, list):
+                        segmentation = (
+                            np.array(mask).reshape(1, -1).tolist() if mask else None
+                        )
+                        if segmentation is None or len(segmentation[0]) == 0:
+                            continue
+                    else:
+                        segmentation = mask
                     area = (box[2] - box[0]) * (box[3] - box[1])
 
                     annotations.append(

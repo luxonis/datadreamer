@@ -9,7 +9,7 @@ from loguru import logger
 from transformers import SamModel, SamProcessor
 
 from datadreamer.dataset_annotation.image_annotator import BaseAnnotator
-from datadreamer.dataset_annotation.utils import mask_to_polygon
+from datadreamer.dataset_annotation.utils import convert_binary_mask
 
 
 class SlimSAMAnnotator(BaseAnnotator):
@@ -34,12 +34,15 @@ class SlimSAMAnnotator(BaseAnnotator):
         seed: float = 42,
         device: str = "cuda",
         size: str = "base",
+        mask_format: str = "rle",
     ) -> None:
-        """Initializes the SAMAnnotator with a specific seed and device.
+        """Initializes the SlimSAMAnnotator.
 
         Args:
             seed (float): Seed for reproducibility. Defaults to 42.
             device (str): The device to run the model on. Defaults to 'cuda'.
+            size (str): The size of the SAM model to use ('base' or 'large').
+            mask_format (str): The format of the output masks ('rle' or 'polyline').
         """
         super().__init__(seed)
         self.size = size
@@ -47,6 +50,7 @@ class SlimSAMAnnotator(BaseAnnotator):
         self.processor = self._init_processor()
         self.device = device
         self.model.to(self.device)
+        self.mask_format = mask_format
 
     def _init_model(self) -> SamModel:
         """Initializes the SAM model for object detection.
@@ -55,9 +59,12 @@ class SlimSAMAnnotator(BaseAnnotator):
             SamModel: The initialized SAM model.
         """
         logger.info(f"Initializing SlimSAM {self.size} model...")
-        if self.size == "large":
-            return SamModel.from_pretrained("Zigeng/SlimSAM-uniform-50")
-        return SamModel.from_pretrained("Zigeng/SlimSAM-uniform-77")
+        model_name = (
+            "Zigeng/SlimSAM-uniform-50"
+            if self.size == "large"
+            else "Zigeng/SlimSAM-uniform-77"
+        )
+        return SamModel.from_pretrained(model_name)
 
     def _init_processor(self) -> SamProcessor:
         """Initializes the processor for the SAM model.
@@ -86,14 +93,14 @@ class SlimSAMAnnotator(BaseAnnotator):
         Returns:
             List: A list containing the final segment masks represented as a polygon.
         """
-        final_segments = []
+        final_masks = []
 
         n = len(images)
 
         for i in range(n):
             boxes = boxes_batch[i].tolist()
             if len(boxes) == 0:
-                final_segments.append([])
+                final_masks.append([])
                 continue
 
             inputs = self.processor(
@@ -114,18 +121,22 @@ class SlimSAMAnnotator(BaseAnnotator):
             image_masks = []
             for j in range(len(boxes)):
                 keep_idx = iou_scores[0, j] >= conf_threshold
-                filtered_masks = masks[j, keep_idx].cpu().float()
-                final_masks = filtered_masks.permute(1, 2, 0)
-                final_masks = final_masks.mean(axis=-1)
-                final_masks = (final_masks > 0).int()
-                final_masks = final_masks.numpy().astype(np.uint8)
-                polygon = mask_to_polygon(final_masks)
-                if len(polygon) != 0:
-                    image_masks.append(polygon)
+                filtered_mask = masks[j, keep_idx].cpu().float()
 
-            final_segments.append(image_masks)
+                if filtered_mask.shape[0] == 0 or filtered_mask.sum() == 0:
+                    image_masks.append([])
+                    continue
 
-        return final_segments
+                mask = filtered_mask.permute(1, 2, 0)
+                mask = mask.mean(axis=-1)
+                mask = (mask > 0).int().numpy().astype(np.uint8)
+
+                converted_mask = convert_binary_mask(mask, self.mask_format)
+                image_masks.append(converted_mask)
+
+            final_masks.append(image_masks)
+
+        return final_masks
 
     def release(self, empty_cuda_cache: bool = False) -> None:
         """Releases the model and optionally empties the CUDA cache.
@@ -145,7 +156,7 @@ if __name__ == "__main__":
 
     url = "https://ultralytics.com/images/bus.jpg"
     im = Image.open(requests.get(url, stream=True).raw)
-    annotator = SlimSAMAnnotator(device="cpu", size="large")
-    final_segments = annotator.annotate_batch([im], [np.array([[3, 229, 559, 650]])])
-    print(len(final_segments), len(final_segments[0]))
-    print(final_segments[0][0][:5])
+    annotator = SlimSAMAnnotator(device="cpu", size="large", mask_format="polyline")
+    final_masks = annotator.annotate_batch([im], [np.array([[3, 229, 559, 650]])])
+    print(len(final_masks), len(final_masks[0]))
+    print(final_masks[0][0][:5])
