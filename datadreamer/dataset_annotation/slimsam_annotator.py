@@ -156,7 +156,7 @@ if __name__ == "__main__":
 
     url = "https://ultralytics.com/images/bus.jpg"
     im = Image.open(requests.get(url, stream=True).raw)
-    annotator = SlimSAMAnnotator(device="cpu", size="large")
+    annotator = SlimSAMAnnotator(device="cpu", size="large", mask_format="polyline")
     final_masks = annotator.annotate_batch([im], [np.array([[3, 229, 559, 650]])])
     print(len(final_masks), len(final_masks[0]))
     print(final_masks[0][0][:5])
