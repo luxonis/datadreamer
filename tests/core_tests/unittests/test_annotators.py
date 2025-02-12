@@ -263,7 +263,7 @@ def test_cpu_slimsam_large_annotator():
 def _check_sam2_annotator(device: str, size: str = "base"):
     url = "https://ultralytics.com/images/bus.jpg"
     im = Image.open(requests.get(url, stream=True).raw)
-    annotator = SAM2Annotator(device=device, size=size)
+    annotator = SAM2Annotator(device=device, size=size, mask_format="polyline")
     masks = annotator.annotate_batch([im], [np.array([[3, 229, 559, 650]])])
     w, h = im.width, im.height
     # Check that the masks are lists
