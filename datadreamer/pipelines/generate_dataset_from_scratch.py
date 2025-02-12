@@ -134,7 +134,7 @@ def parse_args():
     parser.add_argument(
         "--dataset_format",
         type=str,
-        choices=["raw", "yolo", "coco", "luxonis-dataset", "cls-single"],
+        choices=["raw", "yolo", "coco", "voc", "luxonis-dataset", "cls-single"],
         help="Dataset format to use",
     )
 
@@ -399,7 +399,7 @@ def check_args(args):
         )
 
     # Check coorect task and dataset_format
-    if args.task == "classification" and args.dataset_format in ["coco", "yolo"]:
+    if args.task == "classification" and args.dataset_format in ["coco", "yolo", "voc"]:
         raise ValueError(
             "--dataset_format must be one of the available dataset formats for classification task: raw, cls-single, luxonis-dataset"
         )
@@ -758,7 +758,7 @@ def main():
             save_dir=save_dir,
         )
 
-        if args.dataset_format == "yolo":
+        if args.dataset_format in ["yolo", "coco", "voc"]:
             # Convert annotations to YOLO format
             convert_dataset.convert_dataset(
                 args.save_dir,
@@ -768,18 +768,6 @@ def main():
                 copy_files=False,
                 is_instance_segmentation=args.task == "instance-segmentation",
                 keep_unlabeled_images=args.keep_unlabeled_images,
-                seed=args.seed,
-            )
-        # Convert annotations to COCO format
-        elif args.dataset_format == "coco":
-            convert_dataset.convert_dataset(
-                args.save_dir,
-                args.save_dir,
-                "coco",
-                args.split_ratios,
-                is_instance_segmentation=args.task == "instance-segmentation",
-                keep_unlabeled_images=args.keep_unlabeled_images,
-                copy_files=False,
                 seed=args.seed,
             )
 

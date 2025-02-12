@@ -5,6 +5,7 @@ from .coco_converter import COCOConverter
 from .config import Config
 from .luxonis_dataset_converter import LuxonisDatasetConverter
 from .single_label_cls_converter import SingleLabelClsConverter
+from .voc_converter import VOCConverter
 from .yolo_converter import YOLOConverter
 
 __all__ = [
@@ -13,5 +14,6 @@ __all__ = [
     "LuxonisDatasetConverter",
     "YOLOConverter",
     "SingleLabelClsConverter",
+    "VOCConverter",
     "Config",
 ]
