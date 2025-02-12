@@ -123,7 +123,7 @@ class SAM2Annotator(BaseAnnotator):
         Args:
             empty_cuda_cache (bool, optional): Whether to empty the CUDA cache. Defaults to False.
         """
-        self.model = self.model.to("cpu")
+        self.model.model = self.model.model.to("cpu")
         if empty_cuda_cache:
             with torch.no_grad():
                 torch.cuda.empty_cache()
