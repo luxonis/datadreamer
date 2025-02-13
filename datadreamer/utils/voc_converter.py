@@ -55,7 +55,7 @@ class VOCConverter(BaseConverter):
         keep_unlabeled_images: bool = False,
         copy_files: bool = True,
     ):
-        """Convert a dataset to PASCAL VOC format
+        """Convert a dataset to PASCAL VOC format.
 
         Args:
             dataset_dir (str): The directory where the source dataset is located.
