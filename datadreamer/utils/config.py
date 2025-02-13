@@ -15,7 +15,7 @@ class Config(LuxonisConfig):
     device: Literal["cuda", "cpu"] = "cuda"
     annotate_only: bool = False
     dataset_format: Literal[
-        "raw", "yolo", "coco", "luxonis-dataset", "cls-single"
+        "raw", "yolo", "coco", "voc", "luxonis-dataset", "cls-single"
     ] = "raw"
     split_ratios: Annotated[
         List[float], Field(default=[0.8, 0.1, 0.1], min_length=3, max_length=3)

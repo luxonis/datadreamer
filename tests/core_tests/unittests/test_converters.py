@@ -2,7 +2,9 @@ import json
 import os
 import shutil
 import unittest
+from xml.etree.ElementTree import tostring
 
+import numpy as np
 from luxonis_ml.data import LuxonisDataset
 from PIL import Image
 
@@ -11,6 +13,7 @@ from datadreamer.utils import (
     COCOConverter,
     LuxonisDatasetConverter,
     SingleLabelClsConverter,
+    VOCConverter,
     YOLOConverter,
 )
 
@@ -365,6 +368,114 @@ class TestSingleLabelClsConverter(unittest.TestCase):
                 os.path.join(self.output_dir, "train", "class_1", "image3.jpg")
             )
         )
+
+
+class TestVOCConverter(unittest.TestCase):
+    def setUp(self):
+        self.dataset_dir = "test_dataset"
+        self.output_dir = "test_output"
+        os.makedirs(self.dataset_dir, exist_ok=True)
+        os.makedirs(self.output_dir, exist_ok=True)
+
+        # Mock image and annotations
+        self.image_name = "test_image.jpg"
+        image = Image.new("RGB", (100, 100))
+        image.save(os.path.join(self.dataset_dir, self.image_name))
+
+        self.annotations = {
+            self.image_name: {
+                "boxes": [[10, 20, 30, 40]],
+                "labels": [0],
+                "masks": [[[10, 20], [30, 20], [30, 40], [10, 40]]],
+            },
+            "class_names": ["cat"],
+        }
+
+        # Create annotation file
+        with open(os.path.join(self.dataset_dir, "annotations.json"), "w") as f:
+            import json
+
+            json.dump(self.annotations, f)
+
+        self.converter = VOCConverter(is_instance_segmentation=True)
+
+    def tearDown(self):
+        shutil.rmtree(self.dataset_dir)
+        shutil.rmtree(self.output_dir)
+
+    def test_convert(self):
+        self.converter.convert(
+            self.dataset_dir,
+            self.output_dir,
+            split_ratios=[0.8, 0.2, 0.0],
+            keep_unlabeled_images=False,
+            copy_files=True,
+        )
+
+        # Check directories
+        self.assertTrue(os.path.exists(os.path.join(self.output_dir, "Annotations")))
+        self.assertTrue(os.path.exists(os.path.join(self.output_dir, "JPEGImages")))
+        self.assertTrue(
+            os.path.exists(os.path.join(self.output_dir, "SegmentationClass"))
+        )
+        self.assertTrue(
+            os.path.exists(os.path.join(self.output_dir, "SegmentationObject"))
+        )
+        self.assertTrue(os.path.exists(os.path.join(self.output_dir, "ImageSets/Main")))
+
+    def test_create_image_sets(self):
+        train_images = ["train1.jpg", "train2.jpg"]
+        val_images = ["val1.jpg"]
+        test_images = []
+
+        image_sets_dir = os.path.join(self.output_dir, "ImageSets", "Main")
+        os.makedirs(image_sets_dir, exist_ok=True)
+
+        self.converter.create_image_sets(
+            image_sets_dir, train_images, val_images, test_images
+        )
+
+        with open(os.path.join(image_sets_dir, "train.txt")) as f:
+            train_content = f.read().splitlines()
+        self.assertEqual(train_content, ["train1", "train2"])
+
+        with open(os.path.join(image_sets_dir, "val.txt")) as f:
+            val_content = f.read().splitlines()
+        self.assertEqual(val_content, ["val1"])
+
+        with open(os.path.join(image_sets_dir, "test.txt")) as f:
+            test_content = f.read().splitlines()
+        self.assertEqual(test_content, [])
+
+    def test_create_xml(self):
+        annotation = self.annotations[self.image_name]
+        xml_element = self.converter.create_xml(
+            annotation,
+            folder_name="VOC",
+            image_name=self.image_name,
+            width=100,
+            height=100,
+            class_names=self.annotations["class_names"],
+        )
+
+        xml_str = tostring(xml_element).decode()
+        self.assertIn("<filename>test_image.jpg</filename>", xml_str)
+        self.assertIn("<name>cat</name>", xml_str)
+        self.assertIn("<xmin>10</xmin>", xml_str)
+        self.assertIn("<ymin>20</ymin>", xml_str)
+        self.assertIn("<xmax>30</xmax>", xml_str)
+        self.assertIn("<ymax>40</ymax>", xml_str)
+
+    def test_create_segmentation_masks(self):
+        annotation = self.annotations[self.image_name]
+        class_mask, object_mask = self.converter.create_segmentation_masks(
+            annotation, image_name=self.image_name, width=100, height=100
+        )
+
+        self.assertEqual(class_mask.shape, (100, 100))
+        self.assertEqual(object_mask.shape, (100, 100))
+        self.assertTrue(np.any(class_mask > 0))
+        self.assertTrue(np.any(object_mask > 0))
 
 
 if __name__ == "__main__":
