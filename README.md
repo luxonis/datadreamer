@@ -48,7 +48,7 @@ Run the following to pre-annotate images in your dataset:
 datadreamer --task instance-segmentation --image_annotator owlv2-slimsam --save_dir dataset_path --class_names dumpling --annotate_only
 ```
 
-📚 **Tutorial**: [Training a Semantic Segmentation Model using luxonis-train and DataDreamer](https://github.com/luxonis/depthai-ml-training/blob/main/training/luxonis-train/train_semantic_segmentation_model_datadreamer.ipynb)
+📚 **Tutorial**: [Training a Semantic Segmentation Model using luxonis-train and DataDreamer](https://github.com/luxonis/depthai-ml-training/blob/main/training/train_semantic_segmentation_model_datadreamer.ipynb)
 
 ## 📜 Table of contents
 
