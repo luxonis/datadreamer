@@ -221,7 +221,9 @@ def test_negative_num_objects_range():
 
 
 def test_dataset_plugin_without_luxonis_format():
-    cmd = "datadreamer --dataset_plugin custom_plugin --dataset_format yolo"
+    cmd = (
+        "datadreamer --dataset_plugin custom_plugin --dataset_format yolo --device cpu"
+    )
     expected_message = (
         "--dataset_format must be 'luxonis-dataset' if --dataset_plugin is specified"
     )
@@ -229,7 +231,7 @@ def test_dataset_plugin_without_luxonis_format():
 
 
 def test_dataset_plugin_with_invalid_plugin():
-    cmd = "datadreamer --dataset_plugin unknown_plugin --dataset_format luxonis-dataset"
+    cmd = "datadreamer --dataset_plugin unknown_plugin --dataset_format luxonis-dataset --device cpu"
     expected_message = (
         "Dataset plugin 'unknown_plugin' is not registered in DATASETS_REGISTRY"
     )
