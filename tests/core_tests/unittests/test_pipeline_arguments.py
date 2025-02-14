@@ -10,12 +10,19 @@ def _check_wrong_argument_choice(cmd: str):
         subprocess.check_call(cmd, shell=True)
 
 
-def _check_wrong_value(cmd: str):
-    with pytest.raises(ValueError):
-        try:
-            subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT)
-        except subprocess.CalledProcessError as e:
-            raise ValueError(e.output.decode()) from e
+def _check_wrong_value(cmd: str, expected_message: str = None):
+    if expected_message:
+        with pytest.raises(ValueError, match=expected_message):
+            try:
+                subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT)
+            except subprocess.CalledProcessError as e:
+                raise ValueError(e.output.decode()) from e
+    else:
+        with pytest.raises(ValueError):
+            try:
+                subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT)
+            except subprocess.CalledProcessError as e:
+                raise ValueError(e.output.decode()) from e
 
 
 # =========================================================
@@ -211,3 +218,19 @@ def test_negative_num_objects_range():
     # Define the cmd
     cmd = "datadreamer --num_objects_range -3 1"
     _check_wrong_value(cmd)
+
+
+def test_dataset_plugin_without_luxonis_format():
+    cmd = "datadreamer --dataset_plugin custom_plugin --dataset_format yolo"
+    expected_message = (
+        "--dataset_format must be 'luxonis-dataset' if --dataset_plugin is specified"
+    )
+    _check_wrong_value(cmd, expected_message)
+
+
+def test_dataset_plugin_with_invalid_plugin():
+    cmd = "datadreamer --dataset_plugin unknown_plugin --dataset_format luxonis-dataset"
+    expected_message = (
+        "Dataset plugin 'unknown_plugin' is not registered in DATASETS_REGISTRY"
+    )
+    _check_wrong_value(cmd, expected_message)
