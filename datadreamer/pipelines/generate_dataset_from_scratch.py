@@ -430,10 +430,12 @@ def check_args(args):
             raise ValueError(
                 "--dataset_format must be 'luxonis-dataset' if --dataset_plugin is specified"
             )
-        if args.dataset_plugin not in DATASETS_REGISTRY.module_dict:
-            raise ValueError(
-                f"Invalid dataset plugin: {args.dataset_plugin}. Available plugins: {list(DATASETS_REGISTRY.module_dict.keys())}"
-            )
+        try:
+            DATASETS_REGISTRY.get(args.dataset_plugin)
+        except KeyError:
+            raise KeyError(
+                f"Dataset plugin '{args.dataset_plugin}' is not registered in DATASETS_REGISTRY"
+            ) from None
 
 
 def main():

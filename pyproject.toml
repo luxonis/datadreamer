@@ -4,14 +4,13 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "datadreamer"
-version = "0.2.1"
 description = "A library for dataset generation and knowledge extraction from foundation computer vision models."
 readme = "README.md"
 requires-python = ">=3.8"
 license = { file = "LICENSE" }
 maintainers = [{ name = "Luxonis", email = "support@luxonis.com"}]
 keywords = ["computer vision", "AI", "machine learning", "generative models"]
-dynamic = ["dependencies", "optional-dependencies"]
+dynamic = ["dependencies", "optional-dependencies", "version"]
 classifiers = [
     "License :: OSI Approved :: Apache Software License",
     "Development Status :: 3 - Alpha",
@@ -26,6 +25,7 @@ classifiers = [
 [tool.setuptools.dynamic]
 dependencies = { file = ["requirements.txt"] }
 optional-dependencies = { dev = { file = ["requirements-dev.txt"] } }
+version = {attr = "datadreamer.__version__"}
 
 [project.urls]
 Homepage = "https://github.com/luxonis/datadreamer"
