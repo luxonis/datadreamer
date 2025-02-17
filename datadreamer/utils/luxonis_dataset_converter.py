@@ -1,16 +1,14 @@
 from __future__ import annotations
 
-import logging
 import os
 from typing import Dict, List
 
+from loguru import logger
 from luxonis_ml.data import DATASETS_REGISTRY, LuxonisDataset
 from luxonis_ml.data.utils.enums import BucketStorage
 from PIL import Image
 
 from datadreamer.utils import BaseConverter
-
-logger = logging.getLogger(__name__)
 
 
 class LuxonisDatasetConverter(BaseConverter):
@@ -76,8 +74,8 @@ class LuxonisDatasetConverter(BaseConverter):
 
         No return value.
         """
-        if not os.path.exists(output_dir):
-            os.makedirs(output_dir)
+        if output_dir is None:
+            output_dir = dataset_dir
         class_names = data["class_names"]
         image_paths = list(data.keys())
         image_paths.remove("class_names")
@@ -88,65 +86,70 @@ class LuxonisDatasetConverter(BaseConverter):
             for image_path in image_paths:
                 image_full_path = os.path.join(dataset_dir, image_path)
                 width, height = Image.open(image_full_path).size
-                labels = data[image_path]["labels"]
+                image_data = data[image_path]
+                labels = image_data["labels"]
 
-                if len(labels) == 0 and keep_unlabeled_images:
-                    logger.warning(
-                        f"Image {image_path} has no annotations. Training on empty images with `luxonis-train` will result in an error."
-                    )
-                    yield {
-                        "file": image_full_path,
-                    }
-
-                for label in labels:
-                    yield {
-                        "file": image_full_path,
-                        "annotation": {
-                            "class": class_names[label],
-                            "type": "classification",
-                            # "value": True,
-                        },
-                    }
-
-                if "masks" in data[image_path]:  # polyline format
-                    masks = data[image_path]["masks"]
-                    for mask, label in zip(masks, labels):
-                        poly = []
-                        poly += [
-                            (point[0] / width, point[1] / height) for point in mask
-                        ]
+                if len(labels) == 0:
+                    if keep_unlabeled_images:
+                        logger.warning(
+                            f"Image {image_path} has no annotations. Training on empty images with `luxonis-train` will result in an error."
+                        )
                         yield {
                             "file": image_full_path,
-                            "annotation": {
-                                "type": "polyline",
-                                "class": class_names[label],
-                                "points": poly,  # masks,
-                            },
                         }
+                    else:
+                        continue
 
-                if "boxes" in data[image_path]:
-                    boxes = data[image_path]["boxes"]
-                    for box, label in zip(boxes, labels):
+                has_boxes = "boxes" in image_data
+                has_masks = "masks" in image_data
+
+                if has_masks:
+                    task = "instance_segmentation"
+                elif has_boxes:
+                    task = "detection"
+                else:
+                    task = "classification"
+
+                for i, label in enumerate(labels):
+                    annotation = {
+                        "class": class_names[label],
+                    }
+
+                    if has_boxes:
+                        box = image_data["boxes"][i]
                         x, y = max(0, box[0] / width), max(0, box[1] / height)
                         w = min(box[2] / width - x, 1 - x)
                         h = min(box[3] / height - y, 1 - y)
-                        yield {
-                            "file": image_full_path,
-                            "annotation": {
-                                "class": class_names[label],
-                                "type": "boundingbox",
-                                "x": x,
-                                "y": y,
-                                "w": w,
-                                "h": h,
-                            },
+                        annotation["boundingbox"] = {"x": x, "y": y, "w": w, "h": h}
+
+                if has_masks:
+                    mask = image_data["masks"][i]
+                    if isinstance(mask, list):
+                        poly = [(point[0] / width, point[1] / height) for point in mask]
+                        annotation["instance_segmentation"] = {
+                            "points": poly,
+                            "height": height,
+                            "width": width,
                         }
+                    else:
+                        annotation["instance_segmentation"] = {
+                            "counts": mask["counts"],
+                            "height": mask["size"][0],
+                            "width": mask["size"][1],
+                        }
+
+                yield {
+                    "file": image_full_path,
+                    "task": f"datadreamer_{task}",
+                    "annotation": annotation,
+                }
 
         dataset_name = (
             os.path.basename(output_dir)
-            if self.dataset_name is None
+            if self.dataset_name is None or self.dataset_name == ""
             else self.dataset_name
         )
+
         if LuxonisDataset.exists(dataset_name):
             dataset = LuxonisDataset(dataset_name)
             dataset.delete_dataset()

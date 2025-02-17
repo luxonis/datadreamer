@@ -7,6 +7,7 @@ from datadreamer.utils import (
     COCOConverter,
     LuxonisDatasetConverter,
     SingleLabelClsConverter,
+    VOCConverter,
     YOLOConverter,
 )
 
@@ -28,7 +29,7 @@ def convert_dataset(
     Args:
         input_dir (str): Directory containing the images and annotations.
         output_dir (str): Directory where the processed dataset will be saved.
-        dataset_format (str): Format of the dataset. Can be 'yolo', 'coco', 'luxonis-dataset', or 'cls-single'.
+        dataset_format (str): Format of the dataset. Can be 'yolo', 'coco', 'voc', 'luxonis-dataset', or 'cls-single'.
         split_ratios (lis of float): List of ratios for train, val, and test splits.
         dataset_plugin (str, optional): Plugin for Luxonis dataset. Defaults to None.
         dataset_name (str, optional): Name of the Luxonis dataset. Defaults to None.
@@ -46,6 +47,10 @@ def convert_dataset(
         )
     elif dataset_format == "coco":
         converter = COCOConverter(
+            seed=seed, is_instance_segmentation=is_instance_segmentation
+        )
+    elif dataset_format == "voc":
+        converter = VOCConverter(
             seed=seed, is_instance_segmentation=is_instance_segmentation
         )
     elif dataset_format == "luxonis-dataset":
@@ -81,7 +86,7 @@ def main():
         "--dataset_format",
         type=str,
         default="yolo",
-        choices=["yolo", "coco", "luxonis-dataset", "cls-single"],
+        choices=["yolo", "coco", "voc", "luxonis-dataset", "cls-single"],
     )
     parser.add_argument(
         "--split_ratios",

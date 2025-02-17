@@ -9,6 +9,7 @@ import uuid
 import matplotlib.patches as patches
 import matplotlib.pyplot as plt
 import numpy as np
+import pycocotools.mask as mask_utils
 import torch
 from box import Box
 from luxonis_ml.data import DATASETS_REGISTRY, LOADERS_REGISTRY
@@ -17,11 +18,14 @@ from PIL import Image
 from tqdm import tqdm
 
 from datadreamer.dataset_annotation import (
+    AIMv2Annotator,
     CLIPAnnotator,
     OWLv2Annotator,
+    SAM2Annotator,
     SlimSAMAnnotator,
 )
 from datadreamer.image_generation import (
+    Shuttle3DiffusionImageGenerator,
     StableDiffusionImageGenerator,
     StableDiffusionLightningImageGenerator,
     StableDiffusionTurboImageGenerator,
@@ -54,14 +58,15 @@ image_generators = {
     "sdxl": StableDiffusionImageGenerator,
     "sdxl-turbo": StableDiffusionTurboImageGenerator,
     "sdxl-lightning": StableDiffusionLightningImageGenerator,
+    "shuttle-3": Shuttle3DiffusionImageGenerator,
 }
 
 det_annotators = {"owlv2": OWLv2Annotator}
-clf_annotators = {"clip": CLIPAnnotator}
-inst_seg_annotators = {"owlv2-slimsam": SlimSAMAnnotator}
-inst_seg_detectors = {"owlv2-slimsam": OWLv2Annotator}
+clf_annotators = {"clip": CLIPAnnotator, "aimv2": AIMv2Annotator}
+inst_seg_annotators = {"owlv2-slimsam": SlimSAMAnnotator, "owlv2-sam2": SAM2Annotator}
+inst_seg_detectors = {"owlv2-slimsam": OWLv2Annotator, "owlv2-sam2": OWLv2Annotator}
 
-setup_logging(use_rich=True)
+setup_logging()
 
 
 def parse_args():
@@ -116,22 +121,23 @@ def parse_args():
     parser.add_argument(
         "--image_generator",
         type=str,
-        choices=["sdxl", "sdxl-turbo", "sdxl-lightning"],
+        choices=["sdxl", "sdxl-turbo", "sdxl-lightning", "shuttle-3"],
         help="Image generator to use",
     )
     parser.add_argument(
         "--image_annotator",
         type=str,
-        choices=["owlv2", "clip", "owlv2-slimsam"],
+        choices=["owlv2", "clip", "owlv2-slimsam", "aimv2", "owlv2-sam2"],
         help="Image annotator to use",
     )
 
     parser.add_argument(
         "--dataset_format",
         type=str,
-        choices=["raw", "yolo", "coco", "luxonis-dataset", "cls-single"],
+        choices=["raw", "yolo", "coco", "voc", "luxonis-dataset", "cls-single"],
         help="Dataset format to use",
     )
+
     parser.add_argument(
         "--split_ratios",
         type=float,
@@ -243,6 +249,20 @@ def parse_args():
     )
 
     parser.add_argument(
+        "--raw_mask_format",
+        type=str,
+        choices=["polyline", "rle"],
+        help="Format of segmentations masks when saved in raw dataset format",
+    )
+
+    parser.add_argument(
+        "--vis_anns",
+        default=None,
+        action="store_true",
+        help="Whether to save visualizations of annotations",
+    )
+
+    parser.add_argument(
         "--device",
         type=str,
         choices=["cuda", "cpu"],
@@ -311,7 +331,7 @@ def check_args(args):
         )
 
     # Check num_objects_range[1]
-    if args.num_objects_range[1] > len(args.class_names):
+    if not args.annotate_only and args.num_objects_range[1] > len(args.class_names):
         raise ValueError(
             "--num_objects_range[1] must be less than or equal to the number of class names"
         )
@@ -379,7 +399,7 @@ def check_args(args):
         )
 
     # Check coorect task and dataset_format
-    if args.task == "classification" and args.dataset_format in ["coco", "yolo"]:
+    if args.task == "classification" and args.dataset_format in ["coco", "yolo", "voc"]:
         raise ValueError(
             "--dataset_format must be one of the available dataset formats for classification task: raw, cls-single, luxonis-dataset"
         )
@@ -410,10 +430,12 @@ def check_args(args):
             raise ValueError(
                 "--dataset_format must be 'luxonis-dataset' if --dataset_plugin is specified"
             )
-        if args.dataset_plugin not in DATASETS_REGISTRY.module_dict:
-            raise ValueError(
-                f"Invalid dataset plugin: {args.dataset_plugin}. Available plugins: {list(DATASETS_REGISTRY.module_dict.keys())}"
-            )
+        try:
+            DATASETS_REGISTRY.get(args.dataset_plugin)
+        except KeyError:
+            raise KeyError(
+                f"Dataset plugin '{args.dataset_plugin}' is not registered in DATASETS_REGISTRY"
+            ) from None
 
 
 def main():
@@ -618,7 +640,9 @@ def main():
             annotator_class = inst_seg_detectors[args.image_annotator]
             inst_seg_annotator_class = inst_seg_annotators[args.image_annotator]
             inst_seg_annotator = inst_seg_annotator_class(
-                device=args.device, size=args.annotator_size
+                device=args.device,
+                size=args.annotator_size,
+                mask_format=args.raw_mask_format,
             )
         annotator = annotator_class(device=args.device, size=args.annotator_size)
 
@@ -643,68 +667,88 @@ def main():
 
             boxes_list.extend(boxes_batch)
             scores_list.extend(scores_batch)
+            labels_list.extend(local_labels_batch)
 
             if args.task == "instance-segmentation":
                 masks_batch = inst_seg_annotator.annotate_batch(
                     images=images,
                     boxes_batch=boxes_batch,
-                    iou_threshold=args.annotation_iou_threshold,
+                    conf_threshold=args.conf_threshold,
                 )
                 segment_list.extend(masks_batch)
 
-            for j, image in enumerate(images):
-                labels = []
-                # Save bbox visualizations
-                fig, ax = plt.subplots(1)
-                ax.imshow(image)
-                for k in range(len(boxes_batch[j])):
-                    box = boxes_batch[j][k]
-                    score = scores_batch[j][k]
-                    label = local_labels_batch[j][k]
+            if args.vis_anns:
+                for j, image in enumerate(images):
+                    # Save bbox visualizations
+                    fig, ax = plt.subplots(1)
+                    ax.imshow(image)
+                    for k in range(len(boxes_batch[j])):
+                        box = boxes_batch[j][k]
+                        score = scores_batch[j][k]
+                        label = local_labels_batch[j][k]
 
-                    if args.task == "instance-segmentation":
-                        if k < len(masks_batch[j]):
-                            mask = masks_batch[j][k]
-                            x_points, y_points = zip(*mask)
+                        if args.task == "instance-segmentation":
+                            if k < len(masks_batch[j]):
+                                mask = masks_batch[j][k]
+                                if len(mask) > 0:  # Ensure mask is valid
+                                    if isinstance(mask, dict) and "counts" in mask:
+                                        binary_mask = mask_utils.decode(mask)
+                                        if len(binary_mask.shape) == 3:
+                                            binary_mask = binary_mask.squeeze(0)
+                                        rgba_mask = np.zeros(
+                                            (
+                                                binary_mask.shape[0],
+                                                binary_mask.shape[1],
+                                                4,
+                                            ),
+                                            dtype=np.uint8,
+                                        )
+                                        rgba_mask[..., :3] = np.random.randint(
+                                            0, 256, size=3
+                                        )
+                                        rgba_mask[..., 3] = np.where(
+                                            binary_mask == 1, 128, 0
+                                        )
 
-                            ax.fill(x_points, y_points, label, alpha=0.5)
+                                        ax.imshow(rgba_mask)
+                                    else:
+                                        x_points, y_points = zip(*mask)
+                                        ax.fill(x_points, y_points, label, alpha=0.5)
 
-                    labels.append(label)
-                    x1, y1, x2, y2 = box
-                    rect = patches.Rectangle(
-                        (x1, y1),
-                        x2 - x1,
-                        y2 - y1,
-                        linewidth=2,
-                        edgecolor="r",
-                        facecolor="none",
+                        x1, y1, x2, y2 = box
+                        rect = patches.Rectangle(
+                            (x1, y1),
+                            x2 - x1,
+                            y2 - y1,
+                            linewidth=2,
+                            edgecolor="r",
+                            facecolor="none",
+                        )
+                        ax.add_patch(rect)
+                        label_text = args.class_names[label]
+                        plt.text(
+                            x1,
+                            y1,
+                            f"{label_text} {score:.2f}",
+                            bbox=dict(facecolor="yellow", alpha=0.5),
+                        )
+                        # Add prompt text as title
+                    if generated_prompts:
+                        title = generated_prompts[i * args.batch_size_annotation + j][1]
+                        wrapped_title = "\n".join(textwrap.wrap(title, width=50))
+                        plt.title(wrapped_title)
+                    else:
+                        plt.title("Annotated image")
+
+                    plt.axis("off")
+                    plt.savefig(
+                        os.path.join(
+                            bbox_dir,
+                            f"bbox_{(i * args.batch_size_annotation + j):07d}.jpg",
+                        )
                     )
-                    ax.add_patch(rect)
-                    label_text = args.class_names[label]
-                    plt.text(
-                        x1,
-                        y1,
-                        f"{label_text} {score:.2f}",
-                        bbox=dict(facecolor="yellow", alpha=0.5),
-                    )
-                    # Add prompt text as title
-                if generated_prompts:
-                    title = generated_prompts[i * args.batch_size_annotation + j][1]
-                    wrapped_title = "\n".join(textwrap.wrap(title, width=50))
-                    plt.title(wrapped_title)
-                else:
-                    plt.title("Annotated image")
 
-                labels_list.append(np.array(labels))
-
-                plt.axis("off")
-                plt.savefig(
-                    os.path.join(
-                        bbox_dir, f"bbox_{i * args.batch_size_annotation + j}.jpg"
-                    )
-                )
-
-                plt.close()
+                    plt.close()
 
         # Save annotations as JSON files
         save_annotations_to_json(
@@ -716,7 +760,7 @@ def main():
             save_dir=save_dir,
         )
 
-        if args.dataset_format == "yolo":
+        if args.dataset_format in ["yolo", "coco", "voc"]:
             # Convert annotations to YOLO format
             convert_dataset.convert_dataset(
                 args.save_dir,
@@ -726,18 +770,6 @@ def main():
                 copy_files=False,
                 is_instance_segmentation=args.task == "instance-segmentation",
                 keep_unlabeled_images=args.keep_unlabeled_images,
-                seed=args.seed,
-            )
-        # Convert annotations to COCO format
-        elif args.dataset_format == "coco":
-            convert_dataset.convert_dataset(
-                args.save_dir,
-                args.save_dir,
-                "coco",
-                args.split_ratios,
-                is_instance_segmentation=args.task == "instance-segmentation",
-                keep_unlabeled_images=args.keep_unlabeled_images,
-                copy_files=False,
                 seed=args.seed,
             )
 

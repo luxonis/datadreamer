@@ -4,6 +4,7 @@ from typing import List
 
 import cv2
 import numpy as np
+import pycocotools.mask as mask_utils
 from torchvision import transforms
 
 
@@ -36,25 +37,48 @@ def apply_tta(image) -> List[transforms.Compose]:
     return augmented_images
 
 
-def mask_to_polygon(mask: np.ndarray) -> List[List[int]]:
-    """Converts a binary mask to a polygon.
+def convert_binary_mask(
+    mask: np.ndarray, mask_format: str = "polygon", epsilon_ratio: float = 0.001
+) -> List[List[int]]:
+    mask = cv2.medianBlur(mask, 5)
+    blurred = cv2.GaussianBlur(mask.astype(np.float32), (3, 3), 0)
+    mask = (blurred > 0.5).astype(np.uint8)
+
+    if mask_format == "polyline":
+        return mask_to_polygon(mask, epsilon_ratio)
+    elif mask_format == "rle":
+        return mask_to_rle(mask)
+
+
+def mask_to_rle(mask: np.ndarray) -> dict:
+    rle = mask_utils.encode(np.array(mask, dtype=np.uint8, order="F"))
+    rle["counts"] = rle["counts"].decode("utf-8")
+    return rle
+
+
+def mask_to_polygon(mask: np.ndarray, epsilon_ratio: float = 0.001) -> List[List[int]]:
+    """Converts a binary mask to a smoothed polygon.
 
     Args:
         mask: The binary mask to be converted.
+        epsilon_ratio: Controls the smoothing level. Higher values mean more smoothing.
 
     Returns:
         List: A list of vertices of the polygon.
     """
-    # Find contours in the binary mask
     contours, _ = cv2.findContours(
         mask.astype(np.uint8), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
     )
     if len(contours) == 0:
         return []
+
     # Find the contour with the largest area
     largest_contour = max(contours, key=cv2.contourArea)
 
-    # Extract the vertices of the contour
-    polygon = largest_contour.reshape(-1, 2).tolist()
+    # Apply contour approximation for smoothing
+    epsilon = epsilon_ratio * cv2.arcLength(largest_contour, True)
+    smoothed_contour = cv2.approxPolyDP(largest_contour, epsilon, True)
+
+    polygon = smoothed_contour.reshape(-1, 2).tolist()
 
     return polygon

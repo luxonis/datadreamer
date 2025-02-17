@@ -1,13 +1,12 @@
 from __future__ import annotations
 
-import logging
 import os
 import shutil
 from typing import Dict, List
 
-from datadreamer.utils import BaseConverter
+from loguru import logger
 
-logger = logging.getLogger(__name__)
+from datadreamer.utils import BaseConverter
 
 
 class SingleLabelClsConverter(BaseConverter):

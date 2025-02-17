@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-import logging
 import random
 import re
 from typing import List, Literal, Optional, Tuple
 
 import torch
+from loguru import logger
 from tqdm import tqdm
 from transformers import (
     AutoModelForCausalLM,
@@ -16,8 +16,6 @@ from transformers import (
 )
 
 from datadreamer.prompt_generation.prompt_generator import PromptGenerator
-
-logger = logging.getLogger(__name__)
 
 
 class LMPromptGenerator(PromptGenerator):

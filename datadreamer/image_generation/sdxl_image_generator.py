@@ -1,16 +1,14 @@
 from __future__ import annotations
 
-import logging
 from typing import List, Optional, Tuple
 
 import torch
 from compel import Compel, ReturnedEmbeddingsType
 from diffusers import DiffusionPipeline
+from loguru import logger
 from PIL import Image
 
 from datadreamer.image_generation.image_generator import ImageGenerator
-
-logger = logging.getLogger(__name__)
 
 
 class StableDiffusionImageGenerator(ImageGenerator):

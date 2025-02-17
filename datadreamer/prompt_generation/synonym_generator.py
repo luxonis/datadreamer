@@ -1,13 +1,10 @@
 from __future__ import annotations
 
 import json
-import logging
 from abc import ABC, abstractmethod
 from typing import Dict, List, Optional
 
 from tqdm import tqdm
-
-logger = logging.getLogger(__name__)
 
 
 # Abstract base class for synonym generation

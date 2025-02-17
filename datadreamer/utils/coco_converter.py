@@ -1,17 +1,15 @@
 from __future__ import annotations
 
 import json
-import logging
 import os
 import shutil
 from typing import Dict, List
 
 import numpy as np
+from loguru import logger
 from PIL import Image
 
 from datadreamer.utils.base_converter import BaseConverter
-
-logger = logging.getLogger(__name__)
 
 
 class COCOConverter(BaseConverter):
@@ -150,11 +148,14 @@ class COCOConverter(BaseConverter):
                     annotation["boxes"], annotation["labels"], masks
                 ):
                     bbox = [box[0], box[1], box[2] - box[0], box[3] - box[1]]
-                    segmentation = (
-                        np.array(mask).reshape(1, -1).tolist()
-                        if mask is not None
-                        else None
-                    )
+                    if isinstance(mask, list):
+                        segmentation = (
+                            np.array(mask).reshape(1, -1).tolist() if mask else None
+                        )
+                        if segmentation is None or len(segmentation[0]) == 0:
+                            continue
+                    else:
+                        segmentation = mask
                     area = (box[2] - box[0]) * (box[3] - box[1])
 
                     annotations.append(

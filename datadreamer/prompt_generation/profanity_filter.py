@@ -1,15 +1,13 @@
 from __future__ import annotations
 
-import logging
 import random
 from typing import List, Optional, Tuple
 
 import torch
+from loguru import logger
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from datadreamer.utils.bad_words import BAD_WORDS_LIST
-
-logger = logging.getLogger(__name__)
 
 
 class ProfanityFilter:

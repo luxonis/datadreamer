@@ -15,7 +15,7 @@ class Config(LuxonisConfig):
     device: Literal["cuda", "cpu"] = "cuda"
     annotate_only: bool = False
     dataset_format: Literal[
-        "raw", "yolo", "coco", "luxonis-dataset", "cls-single"
+        "raw", "yolo", "coco", "voc", "luxonis-dataset", "cls-single"
     ] = "raw"
     split_ratios: Annotated[
         List[float], Field(default=[0.8, 0.1, 0.1], min_length=3, max_length=3)
@@ -29,17 +29,23 @@ class Config(LuxonisConfig):
     lm_quantization: Literal["none", "4bit"] = "none"
     batch_size_prompt: int = 64
     # Image generation arguments
-    image_generator: Literal["sdxl", "sdxl-turbo", "sdxl-lightning"] = "sdxl-turbo"
+    image_generator: Literal[
+        "sdxl", "sdxl-turbo", "sdxl-lightning", "shuttle-3"
+    ] = "sdxl-turbo"
     prompt_prefix: str = ""
     prompt_suffix: str = ", hd, 8k, highly detailed"
     negative_prompt: str = "cartoon, blue skin, painting, scrispture, golden, illustration, worst quality, low quality, normal quality:2, unrealistic dream, low resolution, static, sd character, low quality, low resolution, greyscale, monochrome, nose, cropped, lowres, jpeg artifacts, deformed iris, deformed pupils, bad eyes, semi-realistic worst quality, bad lips, deformed mouth, deformed face, deformed fingers, bad anatomy"
     batch_size_image: int = 1
+    raw_mask_format: Literal["polyline", "rle"] = "rle"
+    vis_anns: bool = False
     use_image_tester: bool = False
     image_tester_patience: int = 1
     # Profanity filter arguments
     disable_lm_filter: bool = False
     # Annotation arguments
-    image_annotator: Literal["owlv2", "clip", "owlv2-slimsam"] = "owlv2"
+    image_annotator: Literal[
+        "owlv2", "aimv2", "clip", "owlv2-slimsam", "owlv2-sam2"
+    ] = "owlv2"
     conf_threshold: float = 0.15
     annotation_iou_threshold: float = 0.2
     use_tta: bool = False
