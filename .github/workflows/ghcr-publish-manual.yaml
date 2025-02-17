@@ -37,5 +37,5 @@ jobs:
       - name: 'Build and Push Image to GHCR'
         run: |
           docker build --build-arg GITHUB_TOKEN=${{secrets.GHCR_PAT}} --build-arg BRANCH=${{ inputs.branch }} . \
-            --tag ghcr.io/luxonis/datadreamer:${{ steps.commit_hash.outputs.short_hash }}
+            --tag ghcr.io/luxonis/datadreamer:${{ env.short_hash }}
           docker push ghcr.io/luxonis/datadreamer --all-tags
