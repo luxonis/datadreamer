@@ -1,5 +1,5 @@
 ## define a base image
-FROM pytorch/pytorch:2.1.0-cuda12.1-cudnn8-runtime
+FROM pytorch/pytorch:2.5.1-cuda12.4-cudnn9-runtime
 
 ## set working directory
 WORKDIR /app
