@@ -27,6 +27,5 @@ RUN cd datadreamer && pip install .
 ## Set PATH for the installed executable
 ENV PATH="/home/non-root/.local/bin:/usr/local/bin:$PATH"
 
-
-## define image execution
+## Define image execution
 ENTRYPOINT ["datadreamer"]
