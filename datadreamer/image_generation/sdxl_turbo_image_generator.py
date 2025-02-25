@@ -41,8 +41,6 @@ class StableDiffusionTurboImageGenerator(ImageGenerator):
         if self.device == "cpu":
             base = AutoPipelineForText2Image.from_pretrained(
                 "stabilityai/sdxl-turbo",
-                # variant="fp16",
-                torch_dtype=torch.float32,
                 use_safetensors=True,
             )
             base.to("cpu")
