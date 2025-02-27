@@ -1,0 +1,65 @@
+name: Semgrep SAST Scan
+
+on:
+  pull_request:
+
+jobs:
+  semgrep:
+    # User definable name of this GitHub Actions job.
+    name: semgrep/ci
+    # If you are self-hosting, change the following `runs-on` value:
+    runs-on: ubuntu-latest
+    container:
+      # A Docker image with Semgrep installed. Do not change this.
+      image: returntocorp/semgrep
+    # Skip any PR created by dependabot to avoid permission issues:
+    if: (github.actor != 'dependabot[bot]')
+    permissions:
+      # required for all workflows
+      security-events: write
+      # only required for workflows in private repositories
+      actions: read
+      contents: read
+
+    steps:
+      # Fetch project source with GitHub Actions Checkout.
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Perform Semgrep Analysis
+      # @NOTE: This is the actual semgrep command to scan your code.
+      # Modify the --config option to 'r/all' to scan using all rules,
+      # or use multiple flags to specify particular rules, such as
+      # --config r/all --config custom/rules
+        run: semgrep scan -q --sarif --config auto --config "p/secrets" . > semgrep-results.sarif
+        
+      - name: Pretty-Print SARIF Output
+        run: |
+          jq . semgrep-results.sarif > formatted-semgrep-results.sarif || echo "{}"
+          echo "Formatted SARIF Output (First 20 lines):"
+          head -n 20 formatted-semgrep-results.sarif || echo "{}"
+
+      - name: Validate JSON Output
+        run: |
+          if ! jq empty formatted-semgrep-results.sarif > /dev/null 2>&1; then
+            echo "⚠️ Semgrep output is not valid JSON. Skipping annotations."
+            exit 0
+          fi
+
+      - name: Add PR Annotations for Semgrep Findings
+        run: |
+          total_issues=$(jq '.runs[0].results | length' formatted-semgrep-results.sarif)
+          if [[ "$total_issues" -eq 0 ]]; then
+            echo "✅ No Semgrep issues found!"
+            exit 0
+          fi
+
+          jq -c '.runs[0].results[]' formatted-semgrep-results.sarif | while IFS= read -r issue; do
+            file=$(echo "$issue" | jq -r '.locations[0].physicalLocation.artifactLocation.uri')
+            line=$(echo "$issue" | jq -r '.locations[0].physicalLocation.region.startLine')
+            message=$(echo "$issue" | jq -r '.message.text')
+
+            if [[ -n "$file" && -n "$line" && -n "$message" ]]; then
+              echo "::error file=$file,line=$line,title=Semgrep Issue::${message}"
+            fi
+          done

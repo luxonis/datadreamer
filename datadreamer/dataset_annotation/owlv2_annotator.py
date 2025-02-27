@@ -410,9 +410,9 @@ if __name__ == "__main__":
 
     # Image-driven annotation
     url = "http://images.cocodataset.org/val2017/000000039769.jpg"
-    im = Image.open(requests.get(url, stream=True).raw)
+    im = Image.open(requests.get(url, stream=True).raw)  # nosemgrep
     query_url = "http://images.cocodataset.org/val2017/000000058111.jpg"
-    query_image = Image.open(requests.get(query_url, stream=True).raw)
+    query_image = Image.open(requests.get(query_url, stream=True).raw)  # nosemgrep
 
     final_boxes, final_scores, final_labels = annotator.annotate_batch(
         [im], [query_image], conf_threshold=0.9
