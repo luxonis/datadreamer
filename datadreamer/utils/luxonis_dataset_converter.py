@@ -152,16 +152,18 @@ class LuxonisDatasetConverter(BaseConverter):
             else self.dataset_name
         )
 
-        if LuxonisDataset.exists(dataset_name):
-            dataset = LuxonisDataset(dataset_name)
-            dataset.delete_dataset()
+        # if LuxonisDataset.exists(dataset_name):
+        #     dataset = LuxonisDataset(dataset_name)
+        #     dataset.delete_dataset()
 
         # if dataset_plugin is set, use that
         if self.dataset_plugin:
             if "GOOGLE_APPLICATION_CREDENTIALS" in os.environ:
                 logger.info(f"Using {self.dataset_plugin} dataset")
                 dataset_constructor = DATASETS_REGISTRY.get(self.dataset_plugin)
-                dataset = dataset_constructor(dataset_name)
+                dataset = dataset_constructor(
+                    dataset_name, delete_existing=True, delete_remote=True
+                )
             else:
                 raise ValueError(
                     "GOOGLE_APPLICATION_CREDENTIALS environment variable is not set for using the dataset plugin."
@@ -172,10 +174,15 @@ class LuxonisDatasetConverter(BaseConverter):
             and "GOOGLE_APPLICATION_CREDENTIALS" in os.environ
         ):
             logger.info("Using GCS bucket")
-            dataset = LuxonisDataset(dataset_name, bucket_storage=BucketStorage.GCS)
+            dataset = LuxonisDataset(
+                dataset_name,
+                bucket_storage=BucketStorage.GCS,
+                delete_existing=True,
+                delete_remote=True,
+            )
         else:
             logger.info("Using local dataset")
-            dataset = LuxonisDataset(dataset_name)
+            dataset = LuxonisDataset(dataset_name, delete_existing=True)
 
         dataset.add(dataset_generator())
 
