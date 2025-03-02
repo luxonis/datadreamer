@@ -122,27 +122,29 @@ class LuxonisDatasetConverter(BaseConverter):
                         h = min(box[3] / height - y, 1 - y)
                         annotation["boundingbox"] = {"x": x, "y": y, "w": w, "h": h}
 
-                if has_masks:
-                    mask = image_data["masks"][i]
-                    if isinstance(mask, list):
-                        poly = [(point[0] / width, point[1] / height) for point in mask]
-                        annotation["instance_segmentation"] = {
-                            "points": poly,
-                            "height": height,
-                            "width": width,
-                        }
-                    else:
-                        annotation["instance_segmentation"] = {
-                            "counts": mask["counts"],
-                            "height": mask["size"][0],
-                            "width": mask["size"][1],
-                        }
+                    if has_masks:
+                        mask = image_data["masks"][i]
+                        if isinstance(mask, list):
+                            poly = [
+                                (point[0] / width, point[1] / height) for point in mask
+                            ]
+                            annotation["instance_segmentation"] = {
+                                "points": poly,
+                                "height": height,
+                                "width": width,
+                            }
+                        else:
+                            annotation["instance_segmentation"] = {
+                                "counts": mask["counts"],
+                                "height": mask["size"][0],
+                                "width": mask["size"][1],
+                            }
 
-                yield {
-                    "file": image_full_path,
-                    "task": f"datadreamer_{task}",
-                    "annotation": annotation,
-                }
+                    yield {
+                        "file": image_full_path,
+                        "task": f"datadreamer_{task}",
+                        "annotation": annotation,
+                    }
 
         dataset_name = (
             os.path.basename(output_dir)
