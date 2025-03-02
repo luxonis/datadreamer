@@ -152,10 +152,6 @@ class LuxonisDatasetConverter(BaseConverter):
             else self.dataset_name
         )
 
-        # if LuxonisDataset.exists(dataset_name):
-        #     dataset = LuxonisDataset(dataset_name)
-        #     dataset.delete_dataset()
-
         # if dataset_plugin is set, use that
         if self.dataset_plugin:
             if "GOOGLE_APPLICATION_CREDENTIALS" in os.environ:
