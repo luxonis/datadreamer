@@ -1,11 +1,6 @@
 name: Tests
 
 on:
-  pull_request:
-    paths:
-      - 'datadreamer/**/**.py'
-      - 'tests/core_tests/**/**.py'
-      - .github/workflows/tests.yaml
   workflow_dispatch:
 
 jobs:
