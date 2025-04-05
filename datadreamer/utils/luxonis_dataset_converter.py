@@ -103,13 +103,6 @@ class LuxonisDatasetConverter(BaseConverter):
                 has_boxes = "boxes" in image_data
                 has_masks = "masks" in image_data
 
-                if has_masks:
-                    task = "instance_segmentation"
-                elif has_boxes:
-                    task = "detection"
-                else:
-                    task = "classification"
-
                 for i, label in enumerate(labels):
                     annotation = {
                         "class": class_names[label],
@@ -142,7 +135,6 @@ class LuxonisDatasetConverter(BaseConverter):
 
                     yield {
                         "file": image_full_path,
-                        "task": f"datadreamer_{task}",
                         "annotation": annotation,
                     }
 
