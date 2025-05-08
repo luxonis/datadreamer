@@ -75,7 +75,7 @@ jobs:
     - name: Install specified luxonis-ml
       shell: bash
       if: inputs.ml_ref != ''
-      working-directory: tools
+      working-directory: datadreamer
       env:
         ML_REF: ${{ inputs.ml_ref }}
       run: |
