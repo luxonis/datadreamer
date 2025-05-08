@@ -71,6 +71,19 @@ jobs:
       run: |
         pip install -e .[dev]
         pip install coverage-badge>=1.1.0 pytest-cov>=4.1.0
+
+    - name: Install specified luxonis-ml
+      shell: bash
+      if: inputs.ml_ref != ''
+      working-directory: tools
+      env:
+        ML_REF: ${{ inputs.ml_ref }}
+      run: |
+        pip uninstall luxonis-ml -y
+        pip install \
+          "luxonis-ml[all] @ git+https://github.com/luxonis/luxonis-ml.git@${ML_REF}" \
+          --upgrade --force-reinstall
+
     - name: Run tests with coverage [Ubuntu]
       if: matrix.os == 'ubuntu-latest' && matrix.version == '3.10'
       working-directory: ${{ inputs.datadreamer_ref != '' && 'datadreamer' || '' }}
