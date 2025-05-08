@@ -7,16 +7,16 @@ on:
       - 'datadreamer/**/**.py'
       - 'tests/core_tests/unittests/**.py'
       - .github/workflows/unit-tests.yaml
-    workflow_call:
-      inputs:
-        ml_ref:
-          description: 'luxonis-ml version (branch/tag/SHA)'
-          required: true
-          type: string
-        datadreamer_ref:
-          description: 'datadreamer version (branch/tag/SHA)'
-          required: true
-          type: string
+  workflow_call:
+    inputs:
+      ml_ref:
+        description: 'luxonis-ml version (branch/tag/SHA)'
+        required: true
+        type: string
+      datadreamer_ref:
+        description: 'datadreamer version (branch/tag/SHA)'
+        required: true
+        type: string
 
 jobs:
   run_tests:
