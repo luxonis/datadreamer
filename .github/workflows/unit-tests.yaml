@@ -10,6 +10,7 @@ on:
     workflow_dispatch:
 
 jobs:
+  
   run_tests:
     strategy:
       fail-fast: false
@@ -32,6 +33,13 @@ jobs:
       with:
         python-version: ${{ matrix.version }}
         cache: pip
+
+    - name: Free Disk Space (Ubuntu)
+      if: matrix.os == 'ubuntu-latest'
+      uses: jlumbroso/free-disk-space@main
+      with:
+        tool-cache: false
+        large-packages: false
 
     - name: Install dependencies [Ubuntu]
       if: matrix.os == 'ubuntu-latest'

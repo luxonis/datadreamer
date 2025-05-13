@@ -150,7 +150,7 @@ class LuxonisDatasetConverter(BaseConverter):
                 logger.info(f"Using {self.dataset_plugin} dataset")
                 dataset_constructor = DATASETS_REGISTRY.get(self.dataset_plugin)
                 dataset = dataset_constructor(
-                    dataset_name, delete_existing=True, delete_remote=True
+                    dataset_name, delete_local=True, delete_remote=True
                 )
             else:
                 raise ValueError(
@@ -165,12 +165,12 @@ class LuxonisDatasetConverter(BaseConverter):
             dataset = LuxonisDataset(
                 dataset_name,
                 bucket_storage=BucketStorage.GCS,
-                delete_existing=True,
+                delete_local=True,
                 delete_remote=True,
             )
         else:
             logger.info("Using local dataset")
-            dataset = LuxonisDataset(dataset_name, delete_existing=True)
+            dataset = LuxonisDataset(dataset_name, delete_local=True)
 
         dataset.add(dataset_generator())
 
