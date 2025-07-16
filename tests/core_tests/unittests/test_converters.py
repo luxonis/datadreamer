@@ -278,7 +278,7 @@ class TestLuxonisDatasetConverter(unittest.TestCase):
             self.dataset_name
         ):
             dataset = LuxonisDataset(self.dataset_name)
-            dataset.delete_dataset()
+            dataset.delete_dataset(delete_local=True)
 
     def create_sample_image(self, filename):
         image = Image.new("RGB", self.image_size, color="white")
