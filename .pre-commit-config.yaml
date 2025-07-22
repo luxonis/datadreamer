@@ -30,6 +30,6 @@ repos:
     hooks:
       - id: mdformat
         additional_dependencies:
-          - mdformat-gfm
+          - mdformat-gfm==0.3.6
           - mdformat-toc
         exclude: '.github/'
