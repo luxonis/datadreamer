@@ -47,6 +47,11 @@ jobs:
       run: |
         pip install -e .[dev]
         pip install coverage-badge>=1.1.0 pytest-cov>=4.1.0
+
+    - name: Disable HF Xet [macOS]
+      if: matrix.os == 'macOS-latest'
+      run: echo "HF_HUB_DISABLE_XET=1" >> "$GITHUB_ENV"
+
     - name: Run tests with coverage [Ubuntu]
       if: matrix.os == 'buildjet-8vcpu-ubuntu-2204' && matrix.version == '3.10'
       run: pytest tests/core_tests --cov=datadreamer --cov-report xml --junit-xml pytest.xml
