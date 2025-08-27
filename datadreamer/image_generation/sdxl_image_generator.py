@@ -89,12 +89,14 @@ class StableDiffusionImageGenerator(ImageGenerator):
             text_encoder=[self.base.text_encoder, self.base.text_encoder_2],
             returned_embeddings_type=ReturnedEmbeddingsType.PENULTIMATE_HIDDEN_STATES_NON_NORMALIZED,
             requires_pooled=[False, True],
+            device=self.device,
         )
         compel_refiner = Compel(
             tokenizer=[self.refiner.tokenizer_2],
             text_encoder=[self.refiner.text_encoder_2],
             returned_embeddings_type=ReturnedEmbeddingsType.PENULTIMATE_HIDDEN_STATES_NON_NORMALIZED,
             requires_pooled=[True],
+            device=self.device,
         )
         return compel, compel_refiner
 

@@ -84,6 +84,7 @@ class StableDiffusionLightningImageGenerator(ImageGenerator):
             text_encoder=[self.pipe.text_encoder, self.pipe.text_encoder_2],
             returned_embeddings_type=ReturnedEmbeddingsType.PENULTIMATE_HIDDEN_STATES_NON_NORMALIZED,
             requires_pooled=[False, True],
+            device=self.device,
         )
         return compel
 
