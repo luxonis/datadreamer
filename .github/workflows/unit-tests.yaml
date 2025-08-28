@@ -80,6 +80,10 @@ jobs:
         pip install -e .[dev]
         pip install coverage-badge>=1.1.0 pytest-cov>=4.1.0
 
+    - name: Disable HF Xet [macOS]
+      if: matrix.os == 'macOS-latest'
+      run: echo "HF_HUB_DISABLE_XET=1" >> "$GITHUB_ENV"
+
     - name: Install specified luxonis-ml
       shell: bash
       if: inputs.ml_ref != ''
