@@ -7,12 +7,12 @@ name = "datadreamer"
 description = "A library for dataset generation and knowledge extraction from foundation computer vision models."
 readme = "README.md"
 requires-python = ">=3.8"
-license = { file = "LICENSE" }
+license-files = ["LICENSE"]
+license = "Apache-2.0"
 maintainers = [{ name = "Luxonis", email = "support@luxonis.com"}]
 keywords = ["computer vision", "AI", "machine learning", "generative models"]
 dynamic = ["dependencies", "optional-dependencies", "version"]
 classifiers = [
-    "License :: OSI Approved :: Apache Software License",
     "Development Status :: 3 - Alpha",
     "Programming Language :: Python :: 3.8",
     "Intended Audience :: Developers",
