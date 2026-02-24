@@ -42,6 +42,7 @@ class Config(LuxonisConfig):
     image_tester_patience: int = 1
     # Profanity filter arguments
     disable_lm_filter: bool = False
+    disable_profanity_filter: bool = False
     # Annotation arguments
     image_annotator: Literal[
         "owlv2", "aimv2", "clip", "owlv2-slimsam", "owlv2-sam2"
