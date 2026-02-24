@@ -222,6 +222,12 @@ def parse_args():
         action="store_true",
         help="Whether to use only bad words in profanity filter",
     )
+    parser.add_argument(
+        "--disable_profanity_filter",
+        default=None,
+        action="store_true",
+        help="Whether to disable profanity filtering entirely",
+    )
 
     parser.add_argument(
         "--keep_unlabeled_images",
@@ -447,13 +453,14 @@ def main():
     # Check arguments
     check_args(args)
 
-    profanity_filter = ProfanityFilter(
-        seed=args.seed, device=args.device, use_lm=not args.disable_lm_filter
-    )
-    # Check class names for bad words
-    if not profanity_filter.is_safe(args.class_names):
-        raise ValueError(f"Class names: '{args.class_names}' contain bad words!")
-    profanity_filter.release(empty_cuda_cache=True)
+    if not args.disable_profanity_filter:
+        profanity_filter = ProfanityFilter(
+            seed=args.seed, device=args.device, use_lm=not args.disable_lm_filter
+        )
+        # Check class names for bad words
+        if not profanity_filter.is_safe(args.class_names):
+            raise ValueError(f"Class names: '{args.class_names}' contain bad words!")
+        profanity_filter.release(empty_cuda_cache=True)
 
     # Directories for saving images and bboxes
     save_dir = args.save_dir
