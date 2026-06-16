@@ -3,7 +3,8 @@ from __future__ import annotations
 from typing import List, Optional
 
 import torch
-from compel import Compel, ReturnedEmbeddingsType
+from compel.compel import Compel
+from compel.embeddings_provider import ReturnedEmbeddingsType
 from diffusers import AutoPipelineForText2Image
 from loguru import logger
 from PIL import Image
