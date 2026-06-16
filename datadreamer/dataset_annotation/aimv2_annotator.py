@@ -15,6 +15,9 @@ from transformers import AutoModel, AutoProcessor
 
 from datadreamer.dataset_annotation.cls_annotator import ImgClassificationAnnotator
 
+_AIMV2_MODEL_ID = "apple/aimv2-large-patch14-224-lit"
+_AIMV2_MODEL_REVISION = "b17c109df4f9dbb941074073ad3771c28df5c826"
+
 
 class AIMv2Annotator(ImgClassificationAnnotator):
     """A class for image annotation using the AIMv2 model, specializing in image
@@ -39,7 +42,10 @@ class AIMv2Annotator(ImgClassificationAnnotator):
         Returns:
             AutoProcessor: The initialized AIMv2 processor.
         """
-        return AutoProcessor.from_pretrained("apple/aimv2-large-patch14-224-lit")
+        return AutoProcessor.from_pretrained(
+            _AIMV2_MODEL_ID,
+            revision=_AIMV2_MODEL_REVISION,
+        )
 
     def _init_model(self) -> AutoModel:
         """Initializes the AIMv2 model.
@@ -49,7 +55,9 @@ class AIMv2Annotator(ImgClassificationAnnotator):
         """
         logger.info(f"Initializing AIMv2 {self.size} model...")
         return AutoModel.from_pretrained(
-            "apple/aimv2-large-patch14-224-lit", trust_remote_code=True
+            _AIMV2_MODEL_ID,
+            revision=_AIMV2_MODEL_REVISION,
+            trust_remote_code=True,
         )
 
 

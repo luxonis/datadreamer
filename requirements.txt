@@ -1,8 +1,8 @@
 torch>=2.6.0
 torchvision>=0.16.0
-transformers>=4.45.2
-diffusers>=0.31.0
-compel>=2.0.0
+transformers>=4.45.2,<5
+diffusers>=0.31.0,<0.38
+compel>=2.0.0,<2.4
 tqdm>=4.0.0
 Pillow>=9.0.0
 numpy>=1.22.0
