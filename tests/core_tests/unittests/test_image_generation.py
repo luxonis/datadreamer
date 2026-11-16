@@ -4,7 +4,6 @@ from typing import Type, Union
 
 import psutil
 import pytest
-import requests
 import torch
 from PIL import Image
 
@@ -22,9 +21,8 @@ total_memory = psutil.virtual_memory().total / (1024**3)
 total_disk_space = psutil.disk_usage("/").total / (1024**3)
 
 
-def _check_clip_image_tester(device: str):
-    url = "https://ultralytics.com/images/bus.jpg"
-    im = Image.open(requests.get(url, stream=True).raw)
+def _check_clip_image_tester(device: str, bus_image: Image.Image):
+    im = bus_image
     tester = ClipImageTester(device=device)
     # Check that the tester is not None
     assert tester is not None
@@ -53,16 +51,16 @@ def _check_clip_image_tester(device: str):
     not torch.cuda.is_available() or total_disk_space < 16,
     reason="Test requires GPU and 16GB of HDD",
 )
-def test_cuda_clip_image_tester():
-    _check_clip_image_tester("cuda")
+def test_cuda_clip_image_tester(bus_image):
+    _check_clip_image_tester("cuda", bus_image)
 
 
 @pytest.mark.skipif(
     total_disk_space < 16,
     reason="Test requires at least 16GB of HDD",
 )
-def test_cpu_clip_image_tester():
-    _check_clip_image_tester("cpu")
+def test_cpu_clip_image_tester(bus_image):
+    _check_clip_image_tester("cpu", bus_image)
 
 
 def _check_image_generator(
