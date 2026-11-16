@@ -1,26 +1,39 @@
 from io import BytesIO
+from time import sleep
 
 import pytest
 import requests
 from PIL import Image
-from requests.adapters import HTTPAdapter
-from urllib3.util.retry import Retry
 
 
 @pytest.fixture(scope="session")
 def _bus_image_bytes():
-    retries = Retry(
-        total=3,
-        backoff_factor=1,
-        status_forcelist=(429, 500, 502, 503, 504),
-    )
     with requests.Session() as session:
-        session.mount("https://", HTTPAdapter(max_retries=retries))
-        with session.get(
-            "https://ultralytics.com/images/bus.jpg", timeout=30
-        ) as response:
-            response.raise_for_status()
-            return response.content
+        # Retry the complete download, including failures after response headers.
+        for attempt in range(4):
+            try:
+                with session.get(
+                    "https://ultralytics.com/images/bus.jpg", timeout=30, stream=True
+                ) as response:
+                    response.raise_for_status()
+                    return response.content
+            except (
+                requests.ConnectionError,
+                requests.Timeout,
+                requests.exceptions.ChunkedEncodingError,
+            ):
+                if attempt == 3:
+                    raise
+            except requests.HTTPError as error:
+                if attempt == 3 or error.response.status_code not in (
+                    429,
+                    500,
+                    502,
+                    503,
+                    504,
+                ):
+                    raise
+            sleep(2**attempt)
 
 
 @pytest.fixture

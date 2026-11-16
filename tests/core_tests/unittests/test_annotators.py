@@ -20,7 +20,7 @@ total_disk_space = psutil.disk_usage("/").total / (1024**3)
 
 def _check_owlv2_annotator(
     device: str,
-    bus_image: Image.Image,
+    bus_image: Image.Image | None = None,
     size: str = "base",
     use_text_prompts: bool = True,
 ):
@@ -78,16 +78,16 @@ def test_cpu_owlv2_annotator_text(bus_image):
     not torch.cuda.is_available() or total_disk_space < 16,
     reason="Test requires GPU and 16GB of HDD",
 )
-def test_cuda_owlv2_annotator_image(bus_image):
-    _check_owlv2_annotator("cuda", use_text_prompts=False, bus_image=bus_image)
+def test_cuda_owlv2_annotator_image():
+    _check_owlv2_annotator("cuda", use_text_prompts=False)
 
 
 @pytest.mark.skipif(
     total_disk_space < 16,
     reason="Test requires at least 16GB of HDD",
 )
-def test_cpu_owlv2_annotator_image(bus_image):
-    _check_owlv2_annotator("cpu", use_text_prompts=False, bus_image=bus_image)
+def test_cpu_owlv2_annotator_image():
+    _check_owlv2_annotator("cpu", use_text_prompts=False)
 
 
 def _check_aimv2_annotator(device: str, bus_image: Image.Image):
