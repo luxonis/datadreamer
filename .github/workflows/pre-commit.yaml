@@ -6,7 +6,8 @@ on:
 
 jobs:
   pre-commit:
-    runs-on: ubuntu-latest
+    # Python 3.8 is unavailable on Ubuntu 26.04 (ubuntu-latest).
+    runs-on: ubuntu-24.04
     steps:
     - uses: actions/checkout@v3
     - uses: actions/setup-python@v3

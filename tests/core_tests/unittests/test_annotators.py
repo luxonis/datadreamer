@@ -19,13 +19,15 @@ total_disk_space = psutil.disk_usage("/").total / (1024**3)
 
 
 def _check_owlv2_annotator(
-    device: str, size: str = "base", use_text_prompts: bool = True
+    device: str,
+    bus_image: Image.Image | None = None,
+    size: str = "base",
+    use_text_prompts: bool = True,
 ):
     annotator = OWLv2Annotator(device=device, size=size)
 
     if use_text_prompts:
-        url = "https://ultralytics.com/images/bus.jpg"
-        im = Image.open(requests.get(url, stream=True).raw)
+        im = bus_image
         final_boxes, final_scores, final_labels = annotator.annotate_batch(
             [im], ["bus", "people"]
         )
@@ -60,16 +62,16 @@ def _check_owlv2_annotator(
     not torch.cuda.is_available() or total_disk_space < 16,
     reason="Test requires GPU and 16GB of HDD",
 )
-def test_cuda_owlv2_annotator_text():
-    _check_owlv2_annotator("cuda", use_text_prompts=True)
+def test_cuda_owlv2_annotator_text(bus_image):
+    _check_owlv2_annotator("cuda", use_text_prompts=True, bus_image=bus_image)
 
 
 @pytest.mark.skipif(
     total_disk_space < 16,
     reason="Test requires at least 16GB of HDD",
 )
-def test_cpu_owlv2_annotator_text():
-    _check_owlv2_annotator("cpu", use_text_prompts=True)
+def test_cpu_owlv2_annotator_text(bus_image):
+    _check_owlv2_annotator("cpu", use_text_prompts=True, bus_image=bus_image)
 
 
 @pytest.mark.skipif(
@@ -88,9 +90,8 @@ def test_cpu_owlv2_annotator_image():
     _check_owlv2_annotator("cpu", use_text_prompts=False)
 
 
-def _check_aimv2_annotator(device: str):
-    url = "https://ultralytics.com/images/bus.jpg"
-    im = Image.open(requests.get(url, stream=True).raw)
+def _check_aimv2_annotator(device: str, bus_image: Image.Image):
+    im = bus_image
     annotator = AIMv2Annotator(device=device)
     labels = annotator.annotate_batch([im], ["bus", "people"])
     # Check that the labels are lists
@@ -105,21 +106,20 @@ def _check_aimv2_annotator(device: str):
     not torch.cuda.is_available() or total_disk_space < 16,
     reason="Test requires GPU and 16GB of HDD",
 )
-def test_cuda_aimv2_annotator():
-    _check_aimv2_annotator("cuda")
+def test_cuda_aimv2_annotator(bus_image):
+    _check_aimv2_annotator("cuda", bus_image=bus_image)
 
 
 @pytest.mark.skipif(
     total_disk_space < 16,
     reason="Test requires at least 16GB of HDD",
 )
-def test_cpu_aimv2_annotator():
-    _check_aimv2_annotator("cpu")
+def test_cpu_aimv2_annotator(bus_image):
+    _check_aimv2_annotator("cpu", bus_image=bus_image)
 
 
-def _check_clip_annotator(device: str, size: str = "base"):
-    url = "https://ultralytics.com/images/bus.jpg"
-    im = Image.open(requests.get(url, stream=True).raw)
+def _check_clip_annotator(device: str, bus_image: Image.Image, size: str = "base"):
+    im = bus_image
     annotator = CLIPAnnotator(device=device, size=size)
     labels = annotator.annotate_batch([im], ["bus", "people"])
     # Check that the labels are lists
@@ -134,37 +134,36 @@ def _check_clip_annotator(device: str, size: str = "base"):
     not torch.cuda.is_available() or total_disk_space < 16,
     reason="Test requires GPU and 16GB of HDD",
 )
-def test_cuda_clip_base_annotator():
-    _check_clip_annotator("cuda")
+def test_cuda_clip_base_annotator(bus_image):
+    _check_clip_annotator("cuda", bus_image=bus_image)
 
 
 @pytest.mark.skipif(
     total_disk_space < 16,
     reason="Test requires at least 16GB of HDD",
 )
-def test_cpu_clip_base_annotator():
-    _check_clip_annotator("cpu")
+def test_cpu_clip_base_annotator(bus_image):
+    _check_clip_annotator("cpu", bus_image=bus_image)
 
 
 @pytest.mark.skipif(
     not torch.cuda.is_available() or total_disk_space < 16,
     reason="Test requires GPU and 16GB of HDD",
 )
-def test_cuda_clip_large_annotator():
-    _check_clip_annotator("cuda", size="large")
+def test_cuda_clip_large_annotator(bus_image):
+    _check_clip_annotator("cuda", size="large", bus_image=bus_image)
 
 
 @pytest.mark.skipif(
     total_disk_space < 16,
     reason="Test requires at least 16GB of HDD",
 )
-def test_cpu_clip_large_annotator():
-    _check_clip_annotator("cpu", size="large")
+def test_cpu_clip_large_annotator(bus_image):
+    _check_clip_annotator("cpu", size="large", bus_image=bus_image)
 
 
-def _check_slimsam_annotator(device: str, size: str = "base"):
-    url = "https://ultralytics.com/images/bus.jpg"
-    im = Image.open(requests.get(url, stream=True).raw)
+def _check_slimsam_annotator(device: str, bus_image: Image.Image, size: str = "base"):
+    im = bus_image
     annotator = SlimSAMAnnotator(device=device, size=size, mask_format="polyline")
     masks = annotator.annotate_batch([im], [np.array([[3, 229, 559, 650]])])
     w, h = im.width, im.height
@@ -185,10 +184,12 @@ def _check_slimsam_annotator(device: str, size: str = "base"):
 
 
 def _check_annotator_rle(
-    annotator_class: BaseAnnotator, device: str, size: str = "base"
+    annotator_class: BaseAnnotator,
+    device: str,
+    bus_image: Image.Image,
+    size: str = "base",
 ):
-    url = "https://ultralytics.com/images/bus.jpg"
-    im = Image.open(requests.get(url, stream=True).raw)
+    im = bus_image
     annotator = annotator_class(device=device, size=size, mask_format="rle")
     masks = annotator.annotate_batch([im], [np.array([[3, 229, 559, 650]])])
 
@@ -216,53 +217,52 @@ def _check_annotator_rle(
     not torch.cuda.is_available() or total_disk_space < 16,
     reason="Test requires GPU and 16GB of HDD",
 )
-def test_cuda_slimsam_base_annotator():
-    _check_slimsam_annotator("cuda")
+def test_cuda_slimsam_base_annotator(bus_image):
+    _check_slimsam_annotator("cuda", bus_image=bus_image)
 
 
 @pytest.mark.skipif(
     total_disk_space < 16,
     reason="Test requires at least 16GB of HDD",
 )
-def test_cpu_slimsam_base_annotator():
-    _check_slimsam_annotator("cpu")
+def test_cpu_slimsam_base_annotator(bus_image):
+    _check_slimsam_annotator("cpu", bus_image=bus_image)
 
 
 @pytest.mark.skipif(
     total_disk_space < 16,
     reason="Test requires at least 16GB of HDD",
 )
-def test_cpu_slimsam_base_annotator_rle():
-    _check_annotator_rle(SlimSAMAnnotator, "cpu")
+def test_cpu_slimsam_base_annotator_rle(bus_image):
+    _check_annotator_rle(SlimSAMAnnotator, "cpu", bus_image=bus_image)
 
 
 @pytest.mark.skipif(
     total_disk_space < 16,
     reason="Test requires at least 16GB of HDD",
 )
-def test_cpu_sam2_base_annotator_rle():
-    _check_annotator_rle(SAM2Annotator, "cpu")
+def test_cpu_sam2_base_annotator_rle(bus_image):
+    _check_annotator_rle(SAM2Annotator, "cpu", bus_image=bus_image)
 
 
 @pytest.mark.skipif(
     not torch.cuda.is_available() or total_disk_space < 16,
     reason="Test requires GPU and 16GB of HDD",
 )
-def test_cuda_slimsam_large_annotator():
-    _check_slimsam_annotator("cuda", size="large")
+def test_cuda_slimsam_large_annotator(bus_image):
+    _check_slimsam_annotator("cuda", size="large", bus_image=bus_image)
 
 
 @pytest.mark.skipif(
     total_disk_space < 16,
     reason="Test requires at least 16GB of HDD",
 )
-def test_cpu_slimsam_large_annotator():
-    _check_slimsam_annotator("cpu", size="large")
+def test_cpu_slimsam_large_annotator(bus_image):
+    _check_slimsam_annotator("cpu", size="large", bus_image=bus_image)
 
 
-def _check_sam2_annotator(device: str, size: str = "base"):
-    url = "https://ultralytics.com/images/bus.jpg"
-    im = Image.open(requests.get(url, stream=True).raw)
+def _check_sam2_annotator(device: str, bus_image: Image.Image, size: str = "base"):
+    im = bus_image
     annotator = SAM2Annotator(device=device, size=size, mask_format="polyline")
     masks = annotator.annotate_batch([im], [np.array([[3, 229, 559, 650]])])
     w, h = im.width, im.height
@@ -286,29 +286,29 @@ def _check_sam2_annotator(device: str, size: str = "base"):
     not torch.cuda.is_available() or total_disk_space < 16,
     reason="Test requires GPU and 16GB of HDD",
 )
-def test_cuda_sam2_base_annotator():
-    _check_sam2_annotator("cuda")
+def test_cuda_sam2_base_annotator(bus_image):
+    _check_sam2_annotator("cuda", bus_image=bus_image)
 
 
 @pytest.mark.skipif(
     total_disk_space < 16,
     reason="Test requires at least 16GB of HDD",
 )
-def test_cpu_sam2_base_annotator():
-    _check_sam2_annotator("cpu")
+def test_cpu_sam2_base_annotator(bus_image):
+    _check_sam2_annotator("cpu", bus_image=bus_image)
 
 
 @pytest.mark.skipif(
     not torch.cuda.is_available() or total_disk_space < 16,
     reason="Test requires GPU and 16GB of HDD",
 )
-def test_cuda_sam2_large_annotator():
-    _check_sam2_annotator("cuda", size="large")
+def test_cuda_sam2_large_annotator(bus_image):
+    _check_sam2_annotator("cuda", size="large", bus_image=bus_image)
 
 
 @pytest.mark.skipif(
     total_disk_space < 16,
     reason="Test requires at least 16GB of HDD",
 )
-def test_cpu_sam2_large_annotator():
-    _check_sam2_annotator("cpu", size="large")
+def test_cpu_sam2_large_annotator(bus_image):
+    _check_sam2_annotator("cpu", size="large", bus_image=bus_image)
